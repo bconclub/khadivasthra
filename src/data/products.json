@@ -6,7 +6,23 @@
     "price": 550,
     "description": "High-quality pure cotton white mundu perfect for daily wear and special occasions. Features a comfortable texture and breathability.",
     "image": "/images/white-mundu-1.jpg",
-    "isFeatured": true
+    "isFeatured": true,
+    "details": {
+      "material": "100% Premium Cotton",
+      "weave": "Handloom",
+      "fit": "Regular Fit",
+      "pattern": "Solid/Plain",
+      "origin": "Aluva, Kerala",
+      "dimensions": "2.0m x 1.25m (Single)"
+    },
+    "careInstructions": [
+      "Hand wash separately in cold water",
+      "Do not bleach",
+      "Dry in shade",
+      "Iron on medium heat",
+      "Do not wring forcefully"
+    ],
+    "longDescription": "High-quality pure cotton white mundu perfect for daily wear and special occasions. Features a comfortable texture and breathability. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
   },
   {
     "id": "wm-002",
@@ -15,7 +31,23 @@
     "price": 450,
     "description": "Traditional single white mundu adorned with a subtle kasavu border.",
     "image": "/images/white-mundu-2.jpg",
-    "isFeatured": false
+    "isFeatured": false,
+    "details": {
+      "material": "100% Premium Cotton",
+      "weave": "Handloom",
+      "fit": "Regular Fit",
+      "pattern": "Kasavu Border",
+      "origin": "Aluva, Kerala",
+      "dimensions": "2.0m x 1.25m (Single)"
+    },
+    "careInstructions": [
+      "Hand wash separately in cold water",
+      "Do not bleach",
+      "Dry in shade",
+      "Iron on medium heat",
+      "Do not wring forcefully"
+    ],
+    "longDescription": "Traditional single white mundu adorned with a subtle kasavu border. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
   },
   {
     "id": "om-001",
@@ -24,7 +56,23 @@
     "price": 1200,
     "description": "Elegant tissue double mundu in off-white shade, ideal for weddings and festivals.",
     "image": "/images/offwhite-mundu-1.jpg",
-    "isFeatured": true
+    "isFeatured": true,
+    "details": {
+      "material": "Tissue Cotton Blend",
+      "weave": "Handloom",
+      "fit": "Regular Fit",
+      "pattern": "Solid/Plain",
+      "origin": "Aluva, Kerala",
+      "dimensions": "2.0m x 1.25m (Single)"
+    },
+    "careInstructions": [
+      "Hand wash separately in cold water",
+      "Do not bleach",
+      "Dry in shade",
+      "Iron on medium heat",
+      "Do not wring forcefully"
+    ],
+    "longDescription": "Elegant tissue double mundu in off-white shade, ideal for weddings and festivals. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
   },
   {
     "id": "om-002",
@@ -33,7 +81,23 @@
     "price": 600,
     "description": "Soft cream cotton mundu offering superior comfort.",
     "image": "/images/offwhite-mundu-2.jpg",
-    "isFeatured": false
+    "isFeatured": false,
+    "details": {
+      "material": "100% Premium Cotton",
+      "weave": "Handloom",
+      "fit": "Regular Fit",
+      "pattern": "Solid/Plain",
+      "origin": "Aluva, Kerala",
+      "dimensions": "2.0m x 1.25m (Single)"
+    },
+    "careInstructions": [
+      "Hand wash separately in cold water",
+      "Do not bleach",
+      "Dry in shade",
+      "Iron on medium heat",
+      "Do not wring forcefully"
+    ],
+    "longDescription": "Soft cream cotton mundu offering superior comfort. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
   },
   {
     "id": "dm-001",
@@ -42,7 +106,23 @@
     "price": 850,
     "description": "Extra length 4.5m double mundu for a traditional drape.",
     "image": "/images/double-mundu-1.jpg",
-    "isFeatured": true
+    "isFeatured": true,
+    "details": {
+      "material": "100% Premium Cotton",
+      "weave": "Handloom",
+      "fit": "Regular Fit",
+      "pattern": "Solid/Plain",
+      "origin": "Aluva, Kerala",
+      "dimensions": "4.0m x 1.25m (Double)"
+    },
+    "careInstructions": [
+      "Hand wash separately in cold water",
+      "Do not bleach",
+      "Dry in shade",
+      "Iron on medium heat",
+      "Do not wring forcefully"
+    ],
+    "longDescription": "Extra length 4.5m double mundu for a traditional drape. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
   },
   {
     "id": "dm-002",
@@ -51,7 +131,23 @@
     "price": 750,
     "description": "Standard double mundu made from fine cotton threads.",
     "image": "/images/double-mundu-2.jpg",
-    "isFeatured": false
+    "isFeatured": false,
+    "details": {
+      "material": "100% Premium Cotton",
+      "weave": "Handloom",
+      "fit": "Regular Fit",
+      "pattern": "Solid/Plain",
+      "origin": "Aluva, Kerala",
+      "dimensions": "4.0m x 1.25m (Double)"
+    },
+    "careInstructions": [
+      "Hand wash separately in cold water",
+      "Do not bleach",
+      "Dry in shade",
+      "Iron on medium heat",
+      "Do not wring forcefully"
+    ],
+    "longDescription": "Standard double mundu made from fine cotton threads. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
   },
   {
     "id": "pm-001",
@@ -60,7 +156,23 @@
     "price": 950,
     "description": "Artistic hand block printed mundu featuring traditional Kerala motifs.",
     "image": "/images/printed-mundu-1.jpg",
-    "isFeatured": true
+    "isFeatured": true,
+    "details": {
+      "material": "100% Premium Cotton",
+      "weave": "Handloom",
+      "fit": "Regular Fit",
+      "pattern": "Hand Block Print",
+      "origin": "Aluva, Kerala",
+      "dimensions": "2.0m x 1.25m (Single)"
+    },
+    "careInstructions": [
+      "Hand wash separately in cold water",
+      "Do not bleach",
+      "Dry in shade",
+      "Iron on medium heat",
+      "Do not wring forcefully"
+    ],
+    "longDescription": "Artistic hand block printed mundu featuring traditional Kerala motifs. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
   },
   {
     "id": "pm-002",
@@ -69,7 +181,23 @@
     "price": 800,
     "description": "Vibrant floral prints on a soft cotton base.",
     "image": "/images/printed-mundu-2.jpg",
-    "isFeatured": false
+    "isFeatured": false,
+    "details": {
+      "material": "100% Premium Cotton",
+      "weave": "Handloom",
+      "fit": "Regular Fit",
+      "pattern": "Hand Block Print",
+      "origin": "Aluva, Kerala",
+      "dimensions": "2.0m x 1.25m (Single)"
+    },
+    "careInstructions": [
+      "Hand wash separately in cold water",
+      "Do not bleach",
+      "Dry in shade",
+      "Iron on medium heat",
+      "Do not wring forcefully"
+    ],
+    "longDescription": "Vibrant floral prints on a soft cotton base. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
   },
   {
     "id": "ym-001",
@@ -78,7 +206,23 @@
     "price": 1100,
     "description": "Striking yellow double mundu for festive appearances.",
     "image": "/images/yellow-mundu-1.jpg",
-    "isFeatured": true
+    "isFeatured": true,
+    "details": {
+      "material": "100% Premium Cotton",
+      "weave": "Handloom",
+      "fit": "Regular Fit",
+      "pattern": "Solid/Plain",
+      "origin": "Aluva, Kerala",
+      "dimensions": "4.0m x 1.25m (Double)"
+    },
+    "careInstructions": [
+      "Hand wash separately in cold water",
+      "Do not bleach",
+      "Dry in shade",
+      "Iron on medium heat",
+      "Do not wring forcefully"
+    ],
+    "longDescription": "Striking yellow double mundu for festive appearances. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
   },
   {
     "id": "ym-002",
@@ -87,7 +231,23 @@
     "price": 900,
     "description": "Deep mustard yellow shade, perfect for traditional ceremonies.",
     "image": "/images/yellow-mundu-2.jpg",
-    "isFeatured": false
+    "isFeatured": false,
+    "details": {
+      "material": "100% Premium Cotton",
+      "weave": "Handloom",
+      "fit": "Regular Fit",
+      "pattern": "Solid/Plain",
+      "origin": "Aluva, Kerala",
+      "dimensions": "4.0m x 1.25m (Double)"
+    },
+    "careInstructions": [
+      "Hand wash separately in cold water",
+      "Do not bleach",
+      "Dry in shade",
+      "Iron on medium heat",
+      "Do not wring forcefully"
+    ],
+    "longDescription": "Deep mustard yellow shade, perfect for traditional ceremonies. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
   },
   {
     "id": "sm-001",
@@ -96,7 +256,23 @@
     "price": 400,
     "description": "Durable and lightweight single mundu for everyday use.",
     "image": "/images/single-mundu-1.jpg",
-    "isFeatured": false
+    "isFeatured": false,
+    "details": {
+      "material": "100% Premium Cotton",
+      "weave": "Handloom",
+      "fit": "Regular Fit",
+      "pattern": "Solid/Plain",
+      "origin": "Aluva, Kerala",
+      "dimensions": "2.0m x 1.25m (Single)"
+    },
+    "careInstructions": [
+      "Hand wash separately in cold water",
+      "Do not bleach",
+      "Dry in shade",
+      "Iron on medium heat",
+      "Do not wring forcefully"
+    ],
+    "longDescription": "Durable and lightweight single mundu for everyday use. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
   },
   {
     "id": "sm-002",
@@ -105,7 +281,23 @@
     "price": 500,
     "description": "Premium quality single dhoti with fine weaving.",
     "image": "/images/single-mundu-2.jpg",
-    "isFeatured": false
+    "isFeatured": false,
+    "details": {
+      "material": "100% Premium Cotton",
+      "weave": "Handloom",
+      "fit": "Regular Fit",
+      "pattern": "Solid/Plain",
+      "origin": "Aluva, Kerala",
+      "dimensions": "2.0m x 1.25m (Single)"
+    },
+    "careInstructions": [
+      "Hand wash separately in cold water",
+      "Do not bleach",
+      "Dry in shade",
+      "Iron on medium heat",
+      "Do not wring forcefully"
+    ],
+    "longDescription": "Premium quality single dhoti with fine weaving. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
   },
   {
     "id": "km-001",
@@ -114,7 +306,23 @@
     "price": 450,
     "description": "Classic Kavi (saffron) mundu worn for temple visits and rituals.",
     "image": "/images/kavi-mundu-1.jpg",
-    "isFeatured": true
+    "isFeatured": true,
+    "details": {
+      "material": "100% Premium Cotton",
+      "weave": "Handloom",
+      "fit": "Regular Fit",
+      "pattern": "Solid/Plain",
+      "origin": "Aluva, Kerala",
+      "dimensions": "2.0m x 1.25m (Single)"
+    },
+    "careInstructions": [
+      "Hand wash separately in cold water",
+      "Do not bleach",
+      "Dry in shade",
+      "Iron on medium heat",
+      "Do not wring forcefully"
+    ],
+    "longDescription": "Classic Kavi (saffron) mundu worn for temple visits and rituals. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
   },
   {
     "id": "km-002",
@@ -123,7 +331,23 @@
     "price": 420,
     "description": "Pure cotton Kavi dhoti offering breathability and comfort.",
     "image": "/images/kavi-mundu-2.jpg",
-    "isFeatured": false
+    "isFeatured": false,
+    "details": {
+      "material": "100% Premium Cotton",
+      "weave": "Handloom",
+      "fit": "Regular Fit",
+      "pattern": "Solid/Plain",
+      "origin": "Aluva, Kerala",
+      "dimensions": "2.0m x 1.25m (Single)"
+    },
+    "careInstructions": [
+      "Hand wash separately in cold water",
+      "Do not bleach",
+      "Dry in shade",
+      "Iron on medium heat",
+      "Do not wring forcefully"
+    ],
+    "longDescription": "Pure cotton Kavi dhoti offering breathability and comfort. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
   },
   {
     "id": "dm-003",
@@ -132,7 +356,23 @@
     "price": 1300,
     "description": "Exquisite double mundu with silver kasavu border detailing.",
     "image": "/images/double-mundu-3.jpg",
-    "isFeatured": false
+    "isFeatured": false,
+    "details": {
+      "material": "100% Premium Cotton",
+      "weave": "Handloom",
+      "fit": "Regular Fit",
+      "pattern": "Kasavu Border",
+      "origin": "Aluva, Kerala",
+      "dimensions": "4.0m x 1.25m (Double)"
+    },
+    "careInstructions": [
+      "Hand wash separately in cold water",
+      "Do not bleach",
+      "Dry in shade",
+      "Iron on medium heat",
+      "Do not wring forcefully"
+    ],
+    "longDescription": "Exquisite double mundu with silver kasavu border detailing. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
   },
   {
     "id": "pm-003",
@@ -141,15 +381,47 @@
     "price": 880,
     "description": "Contemporary designs meets traditional attire.",
     "image": "/images/printed-mundu-3.jpg",
-    "isFeatured": false
+    "isFeatured": false,
+    "details": {
+      "material": "100% Premium Cotton",
+      "weave": "Handloom",
+      "fit": "Regular Fit",
+      "pattern": "Hand Block Print",
+      "origin": "Aluva, Kerala",
+      "dimensions": "2.0m x 1.25m (Single)"
+    },
+    "careInstructions": [
+      "Hand wash separately in cold water",
+      "Do not bleach",
+      "Dry in shade",
+      "Iron on medium heat",
+      "Do not wring forcefully"
+    ],
+    "longDescription": "Contemporary designs meets traditional attire. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
   },
-   {
+  {
     "id": "wm-003",
     "name": "Wedding Special White Mundu",
     "category": "White Mundus",
     "price": 1500,
     "description": "Luscious fabric and rich border work, designed for grooms.",
     "image": "/images/white-mundu-3.jpg",
-    "isFeatured": true
+    "isFeatured": true,
+    "details": {
+      "material": "100% Premium Cotton",
+      "weave": "Handloom",
+      "fit": "Regular Fit",
+      "pattern": "Solid/Plain",
+      "origin": "Aluva, Kerala",
+      "dimensions": "2.0m x 1.25m (Single)"
+    },
+    "careInstructions": [
+      "Hand wash separately in cold water",
+      "Do not bleach",
+      "Dry in shade",
+      "Iron on medium heat",
+      "Do not wring forcefully"
+    ],
+    "longDescription": "Luscious fabric and rich border work, designed for grooms. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
   }
 ]

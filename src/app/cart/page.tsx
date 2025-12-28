@@ -35,7 +35,7 @@ export default function CartPage() {
     }
 
     return (
-        <div className="container-custom py-12">
+        <div className="container mx-auto px-4 max-w-7xl py-12">
             <h1 className="text-3xl font-bold mb-8 text-primary">Your Shopping Cart</h1>
 
             <div className="grid lg:grid-cols-3 gap-12">

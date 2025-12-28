@@ -21,7 +21,7 @@ export default function ProductsLayout({
     children: React.ReactNode;
 }) {
     return (
-        <div className="container-custom py-12">
+        <div className="container mx-auto px-4 max-w-7xl py-12">
             <div className="flex flex-col md:flex-row gap-8">
                 {/* Sidebar */}
                 <aside className="md:w-64 flex-shrink-0 hidden md:block">

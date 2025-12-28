@@ -12,7 +12,7 @@ export function Header() {
 
     return (
         <header className="sticky top-0 z-50 w-full border-b border-primary/10 bg-secondary/95 backdrop-blur-md">
-            <div className="container-custom flex h-16 items-center justify-between">
+            <div className="container mx-auto px-4 max-w-7xl flex h-16 items-center justify-between">
                 <Link href="/" className="flex items-center space-x-2">
                     <span className="text-2xl font-bold text-primary tracking-tight">Khadi Vasthra</span>
                 </Link>

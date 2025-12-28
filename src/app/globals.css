@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 :root {
   --foreground-rgb: 26, 26, 26;
@@ -13,9 +11,4 @@
     color: rgb(var(--foreground-rgb));
     background: rgb(var(--background-start-rgb));
   }
-}
-
-/* Custom utilities */
-.container-custom {
-  @apply container mx-auto px-4 max-w-7xl;
 }

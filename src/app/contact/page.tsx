@@ -2,7 +2,7 @@ import { MapPin, Phone, Instagram } from "lucide-react";
 
 export default function ContactPage() {
     return (
-        <div className="container-custom py-16">
+        <div className="container mx-auto px-4 max-w-7xl py-16">
             <h1 className="text-4xl font-bold text-center mb-12 text-primary">Get in Touch</h1>
 
             <div className="grid md:grid-cols-2 gap-12 max-w-4xl mx-auto">
