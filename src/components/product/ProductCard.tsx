@@ -20,55 +20,50 @@ export function ProductCard({ product }: ProductCardProps) {
     const { addToCart } = useCart();
 
     // Demo hack: use placeholder service
-    const imageUrl = `https://placehold.co/600x800/800000/FFF?text=${encodeURIComponent(product.name.replace(/ /g, '+'))}`;
+    const imageUrl = `https://placehold.co/600x800/8B1538/FFF?text=${encodeURIComponent(product.name.replace(/ /g, '+'))}`;
 
     return (
-        <div className="group relative bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-gray-100 flex flex-col h-full">
-            <Link href={`/product/${product.id}`} className="block relative aspect-[3/4] overflow-hidden bg-gray-100">
+        <div className="group relative bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-secondary-dark flex flex-col h-full">
+            <Link href={`/product/${product.id}`} className="block relative aspect-[3/4] overflow-hidden bg-secondary">
                 <Image
                     src={imageUrl}
                     alt={product.name}
                     fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="object-cover transition-transform duration-500 group-hover:scale-110"
                     sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                 />
-                {/* Quick Add Overlay - only visible on hover on desktop */}
-                <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity hidden md:flex justify-center bg-gradient-to-t from-black/60 to-transparent">
-                    <Button
-                        size="sm"
-                        className="w-full bg-white text-primary hover:bg-gray-100 border-none"
-                        onClick={(e) => {
+
+                <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <div className="bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-md text-primary hover:text-accent cursor-pointer">
+                        <ShoppingBag className="w-5 h-5" onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
                             addToCart(product);
-                        }}
-                    >
-                        <ShoppingBag className="w-4 h-4 mr-2" />
-                        Add to Cart
-                    </Button>
+                        }} />
+                    </div>
                 </div>
             </Link>
 
-            <div className="p-4 flex flex-col flex-grow">
-                <p className="text-xs text-text-muted mb-1">{product.category}</p>
+            <div className="p-5 flex flex-col flex-grow bg-white group-hover:bg-secondary/20 transition-colors">
+                <p className="text-xs text-primary font-semibold tracking-wider uppercase mb-2">{product.category}</p>
                 <Link href={`/product/${product.id}`} className="flex-grow">
-                    <h3 className="font-medium text-text hover:text-primary transition-colors line-clamp-2" title={product.name}>{product.name}</h3>
+                    <h3 className="font-bold text-lg text-primary-dark font-serif leading-tight hover:text-accent transition-colors line-clamp-2" title={product.name}>{product.name}</h3>
                 </Link>
-                <div className="mt-3 flex items-center justify-between">
-                    <span className="font-bold text-lg text-primary">₹{product.price}</span>
+                <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+                    <span className="font-bold text-xl text-primary font-serif">₹{product.price}</span>
                     <Button
-                        size="icon"
-                        variant="ghost"
-                        className="md:hidden text-primary h-8 w-8"
+                        size="sm"
+                        className="bg-transparent hover:bg-primary text-primary hover:text-white border border-primary rounded-full px-4 transition-all"
                         onClick={(e) => {
                             e.preventDefault();
                             addToCart(product);
                         }}
                     >
-                        <ShoppingBag className="w-5 h-5" />
+                        Add
                     </Button>
                 </div>
             </div>
         </div>
     );
 }
+

@@ -5,7 +5,7 @@
     "category": "White Mundus",
     "price": 550,
     "description": "High-quality pure cotton white mundu perfect for daily wear and special occasions. Features a comfortable texture and breathability.",
-    "image": "/images/white-mundu-1.jpg",
+    "image": "/images/mundu-white.png",
     "isFeatured": true,
     "details": {
       "material": "100% Premium Cotton",
@@ -30,7 +30,7 @@
     "category": "White Mundus",
     "price": 450,
     "description": "Traditional single white mundu adorned with a subtle kasavu border.",
-    "image": "/images/white-mundu-2.jpg",
+    "image": "/images/mundu-gold.png",
     "isFeatured": false,
     "details": {
       "material": "100% Premium Cotton",
@@ -55,7 +55,7 @@
     "category": "Offwhite Mundus",
     "price": 1200,
     "description": "Elegant tissue double mundu in off-white shade, ideal for weddings and festivals.",
-    "image": "/images/offwhite-mundu-1.jpg",
+    "image": "/images/mundu-white.png",
     "isFeatured": true,
     "details": {
       "material": "Tissue Cotton Blend",
@@ -80,7 +80,7 @@
     "category": "Offwhite Mundus",
     "price": 600,
     "description": "Soft cream cotton mundu offering superior comfort.",
-    "image": "/images/offwhite-mundu-2.jpg",
+    "image": "/images/mundu-white.png",
     "isFeatured": false,
     "details": {
       "material": "100% Premium Cotton",
@@ -105,7 +105,7 @@
     "category": "4.5m Double Mundus",
     "price": 850,
     "description": "Extra length 4.5m double mundu for a traditional drape.",
-    "image": "/images/double-mundu-1.jpg",
+    "image": "/images/mundu-white.png",
     "isFeatured": true,
     "details": {
       "material": "100% Premium Cotton",
@@ -130,7 +130,7 @@
     "category": "4.5m Double Mundus",
     "price": 750,
     "description": "Standard double mundu made from fine cotton threads.",
-    "image": "/images/double-mundu-2.jpg",
+    "image": "/images/mundu-white.png",
     "isFeatured": false,
     "details": {
       "material": "100% Premium Cotton",
@@ -155,7 +155,7 @@
     "category": "Printed Mundus",
     "price": 950,
     "description": "Artistic hand block printed mundu featuring traditional Kerala motifs.",
-    "image": "/images/printed-mundu-1.jpg",
+    "image": "/images/mundu-white.png",
     "isFeatured": true,
     "details": {
       "material": "100% Premium Cotton",
@@ -180,7 +180,7 @@
     "category": "Printed Mundus",
     "price": 800,
     "description": "Vibrant floral prints on a soft cotton base.",
-    "image": "/images/printed-mundu-2.jpg",
+    "image": "/images/mundu-white.png",
     "isFeatured": false,
     "details": {
       "material": "100% Premium Cotton",
@@ -205,7 +205,7 @@
     "category": "Yellow Double Mundus",
     "price": 1100,
     "description": "Striking yellow double mundu for festive appearances.",
-    "image": "/images/yellow-mundu-1.jpg",
+    "image": "/images/mundu-gold.png",
     "isFeatured": true,
     "details": {
       "material": "100% Premium Cotton",
@@ -230,7 +230,7 @@
     "category": "Yellow Double Mundus",
     "price": 900,
     "description": "Deep mustard yellow shade, perfect for traditional ceremonies.",
-    "image": "/images/yellow-mundu-2.jpg",
+    "image": "/images/mundu-white.png",
     "isFeatured": false,
     "details": {
       "material": "100% Premium Cotton",
@@ -255,7 +255,7 @@
     "category": "Single Mundus",
     "price": 400,
     "description": "Durable and lightweight single mundu for everyday use.",
-    "image": "/images/single-mundu-1.jpg",
+    "image": "/images/mundu-white.png",
     "isFeatured": false,
     "details": {
       "material": "100% Premium Cotton",
@@ -280,7 +280,7 @@
     "category": "Single Mundus",
     "price": 500,
     "description": "Premium quality single dhoti with fine weaving.",
-    "image": "/images/single-mundu-2.jpg",
+    "image": "/images/mundu-white.png",
     "isFeatured": false,
     "details": {
       "material": "100% Premium Cotton",
@@ -305,7 +305,7 @@
     "category": "Kavi Mundus",
     "price": 450,
     "description": "Classic Kavi (saffron) mundu worn for temple visits and rituals.",
-    "image": "/images/kavi-mundu-1.jpg",
+    "image": "/images/mundu-saffron.png",
     "isFeatured": true,
     "details": {
       "material": "100% Premium Cotton",
@@ -330,7 +330,7 @@
     "category": "Kavi Mundus",
     "price": 420,
     "description": "Pure cotton Kavi dhoti offering breathability and comfort.",
-    "image": "/images/kavi-mundu-2.jpg",
+    "image": "/images/mundu-saffron.png",
     "isFeatured": false,
     "details": {
       "material": "100% Premium Cotton",
@@ -355,7 +355,7 @@
     "category": "4.5m Double Mundus",
     "price": 1300,
     "description": "Exquisite double mundu with silver kasavu border detailing.",
-    "image": "/images/double-mundu-3.jpg",
+    "image": "/images/mundu-gold.png",
     "isFeatured": false,
     "details": {
       "material": "100% Premium Cotton",
@@ -380,7 +380,7 @@
     "category": "Printed Mundus",
     "price": 880,
     "description": "Contemporary designs meets traditional attire.",
-    "image": "/images/printed-mundu-3.jpg",
+    "image": "/images/mundu-white.png",
     "isFeatured": false,
     "details": {
       "material": "100% Premium Cotton",
@@ -405,7 +405,7 @@
     "category": "White Mundus",
     "price": 1500,
     "description": "Luscious fabric and rich border work, designed for grooms.",
-    "image": "/images/white-mundu-3.jpg",
+    "image": "/images/mundu-white.png",
     "isFeatured": true,
     "details": {
       "material": "100% Premium Cotton",
