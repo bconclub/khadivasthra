@@ -34,6 +34,10 @@
 }
 
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     color: var(--color-text-DEFAULT);
     background: var(--color-white);

@@ -19,7 +19,7 @@ export default function Home() {
   return (
     <>
       {/* Hero Section - Fullscreen Cover Image */}
-      <section className="hero-section relative -mt-24 pt-24 h-screen flex items-center justify-center overflow-hidden">
+      <section className="hero-section relative pt-20 h-screen flex items-center justify-center overflow-hidden">
         {/* Background Image */}
         <Image
           src="/Cover KV.webp"
@@ -32,34 +32,30 @@ export default function Home() {
         {/* Dark Overlay for Text Readability */}
         <div className="hero-section__overlay absolute inset-0 bg-black/30 z-0"></div>
         {/* Content */}
-        <div className="hero-section__content container mx-auto px-4 max-w-7xl relative z-20 text-center space-y-3 max-w-4xl">
-          <span className="hero-section__badge inline-block px-4 py-1.5 border border-white/30 rounded-full text-sm tracking-widest uppercase font-medium bg-white/20 backdrop-blur-sm text-white">
-            Est. 1990 • Authentic Kerala Handloom
+        <div className="hero-section__content container mx-auto px-4 max-w-7xl relative z-20 text-center space-y-1.5 max-w-4xl">
+          <span className="hero-section__badge inline-block px-2 py-0.5 border border-white/30 rounded-full text-xs tracking-widest uppercase font-medium bg-white/20 backdrop-blur-sm text-white">
+            Est. 1990
           </span>
           <div className="hero-section__logo-wrapper flex justify-center">
             <Image
+              id="hero-logo"
               src="/Khadi Vasthra White Transparnt.png"
               alt="Khadi Vasthra Logo"
-              width={500}
-              height={200}
-              className="hero-section__logo h-auto w-full max-w-md md:max-w-lg lg:max-w-xl object-contain drop-shadow-2xl"
+              width={300}
+              height={120}
+              className="hero-section__logo h-auto w-full max-w-[200px] md:max-w-[250px] lg:max-w-[300px] object-contain drop-shadow-2xl"
               priority
             />
           </div>
-          <p className="hero-section__description text-xl md:text-2xl text-white/95 max-w-2xl mx-auto font-light leading-relaxed drop-shadow-md">
+          <p className="hero-section__description text-sm md:text-base text-white/95 max-w-[30%] mx-auto font-light leading-relaxed drop-shadow-md">
             Discover the finest collection of handcrafted Mundus and Dhotis, brought to you directly from the artisans of Aluva.
           </p>
-          <div className="hero-section__actions flex flex-col sm:flex-row items-center justify-center gap-6">
+          <div className="hero-section__actions flex flex-col sm:flex-row items-center justify-center gap-3">
             <a href="#featured-collection" className="hero-section__cta-primary">
-              <Button size="lg" variant="secondary" className="font-bold min-w-[200px] h-14 text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-white text-[#EA4C6B] hover:bg-cream">
+              <Button size="lg" variant="secondary" className="font-bold min-w-[100px] h-7 text-sm shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-white text-[#EA4C6B] hover:bg-cream">
                 Shop Now
               </Button>
             </a>
-            <Link href="/contact" className="hero-section__cta-secondary">
-              <Button size="lg" variant="outline" className="border-2 border-white text-white hover:bg-white hover:text-[#EA4C6B] min-w-[200px] h-14 text-lg font-semibold hover:-translate-y-1 transition-all duration-300">
-                Visit Our Store
-              </Button>
-            </Link>
           </div>
         </div>
       </section>
