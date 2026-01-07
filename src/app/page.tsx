@@ -7,6 +7,7 @@ import { ProductCarousel } from "@/components/product/ProductCarousel";
 import { InstagramCarousel } from "@/components/product/InstagramCarousel";
 import products from "@/data/products.json";
 import { ArrowRight, CheckCircle, Truck, ShieldCheck, Star, Instagram } from "lucide-react";
+import { useState, useEffect } from "react";
 
 export default function Home() {
   // Filter single-mundus featured products (price 1999)
@@ -16,10 +17,52 @@ export default function Home() {
     p.price === 1999
   );
 
+  const [logoScale, setLogoScale] = useState(1);
+  const [logoOpacity, setLogoOpacity] = useState(1);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const heroLogo = document.getElementById('hero-logo');
+      if (!heroLogo) return;
+
+      const rect = heroLogo.getBoundingClientRect();
+      const windowHeight = window.innerHeight;
+      const logoTop = rect.top;
+      
+      // Calculate scale based on scroll position
+      // Logo starts at scale 1, grows to 1.5 as it approaches header (80px from top)
+      const headerThreshold = 80;
+      const scrollRange = windowHeight - headerThreshold;
+      const currentScroll = windowHeight - logoTop;
+      
+      if (logoTop <= headerThreshold) {
+        // Logo has reached header position - start fading out
+        const fadeProgress = Math.max(0, 1 - (headerThreshold - logoTop) / 100);
+        setLogoOpacity(fadeProgress);
+        setLogoScale(1.5);
+      } else if (logoTop < windowHeight) {
+        // Logo is in viewport, scale it up as it scrolls
+        const scrollProgress = Math.min(1, currentScroll / scrollRange);
+        const scale = 1 + (scrollProgress * 0.5); // Scale from 1 to 1.5
+        setLogoScale(scale);
+        setLogoOpacity(1);
+      } else {
+        // Logo is below viewport
+        setLogoScale(1);
+        setLogoOpacity(1);
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    handleScroll(); // Initial check
+    
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
     <>
       {/* Hero Section - Fullscreen Cover Image */}
-      <section className="hero-section relative pt-20 h-screen flex items-center justify-center overflow-hidden">
+      <section className="hero-section relative h-screen flex items-center justify-center overflow-hidden">
         {/* Background Image */}
         <Image
           src="/Cover KV.webp"
@@ -32,27 +75,31 @@ export default function Home() {
         {/* Dark Overlay for Text Readability */}
         <div className="hero-section__overlay absolute inset-0 bg-black/30 z-0"></div>
         {/* Content */}
-        <div className="hero-section__content container mx-auto px-4 max-w-7xl relative z-20 text-center space-y-1.5 max-w-4xl">
-          <span className="hero-section__badge inline-block px-2 py-0.5 border border-white/30 rounded-full text-xs tracking-widest uppercase font-medium bg-white/20 backdrop-blur-sm text-white">
+        <div className="hero-section__content container mx-auto px-4 max-w-7xl relative z-20 text-center max-w-4xl">
+          <span className="hero-section__badge inline-block px-2 py-0.5 border border-white/30 rounded-full text-xs tracking-widest uppercase font-medium bg-white/20 backdrop-blur-sm text-white mb-4">
             Est. 1990
           </span>
-          <div className="hero-section__logo-wrapper flex justify-center">
+          <div className="hero-section__logo-wrapper flex justify-center mb-4">
             <Image
               id="hero-logo"
               src="/Khadi Vasthra White Transparnt.png"
               alt="Khadi Vasthra Logo"
               width={300}
               height={120}
-              className="hero-section__logo h-auto w-full max-w-[200px] md:max-w-[250px] lg:max-w-[300px] object-contain drop-shadow-2xl"
+              className="hero-section__logo h-auto w-full max-w-[200px] md:max-w-[250px] lg:max-w-[300px] object-contain drop-shadow-2xl transition-all duration-300 ease-out"
+              style={{
+                transform: `scale(${logoScale})`,
+                opacity: logoOpacity,
+              }}
               priority
             />
           </div>
-          <p className="hero-section__description text-sm md:text-base text-white/95 max-w-[30%] mx-auto font-light leading-relaxed drop-shadow-md">
+          <p className="hero-section__description text-sm md:text-base text-white/95 max-w-[30%] mx-auto font-light leading-relaxed drop-shadow-md mb-4">
             Discover the finest collection of handcrafted Mundus and Dhotis, brought to you directly from the artisans of Aluva.
           </p>
           <div className="hero-section__actions flex flex-col sm:flex-row items-center justify-center gap-3">
             <a href="#featured-collection" className="hero-section__cta-primary">
-              <Button size="lg" variant="secondary" className="font-bold min-w-[100px] h-7 text-sm shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-white text-[#EA4C6B] hover:bg-cream">
+              <Button size="lg" variant="secondary" className="font-bold min-w-[100px] h-7 text-sm shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-coral text-white hover:bg-coral-dark">
                 Shop Now
               </Button>
             </a>
@@ -60,9 +107,9 @@ export default function Home() {
         </div>
       </section>
 
-      <div className="main-content flex flex-col gap-16 pb-16 relative z-10 bg-white">
+      <div className="main-content flex flex-col gap-24 pb-16 relative z-10 bg-white">
       {/* Featured Products - White bg, cream cards */}
-      <section id="featured-collection" className="featured-collection-section bg-white container mx-auto px-4 max-w-7xl py-12 scroll-mt-24">
+      <section id="featured-collection" className="featured-collection-section bg-white container mx-auto px-4 max-w-7xl py-16 scroll-mt-24">
         <div className="featured-collection-section__header flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
           <div className="featured-collection-section__header-content space-y-4">
             <h2 className="featured-collection-section__title text-4xl font-bold text-text font-serif">Featured Collection</h2>
@@ -88,7 +135,7 @@ export default function Home() {
       </section>
 
       {/* About Section - Cream bg, white cards */}
-      <section className="about-section bg-cream py-24 relative overflow-hidden">
+      <section className="about-section bg-cream py-32 relative overflow-hidden">
         <div className="about-section__container container mx-auto px-4 max-w-7xl grid md:grid-cols-2 gap-16 items-center relative z-10">
           <div className="about-section__image-wrapper relative h-[500px] rounded-2xl overflow-hidden shadow-lg border border-cream/50">
             {/* Using a placeholder that looks more like fabric/weaving */}
@@ -149,7 +196,7 @@ export default function Home() {
       </section>
 
       {/* Why Choose Us - White bg */}
-      <section className="why-choose-section bg-white container mx-auto px-4 max-w-7xl py-12">
+      <section className="why-choose-section bg-white container mx-auto px-4 max-w-7xl py-20">
         <div className="why-choose-section__header text-center max-w-2xl mx-auto mb-16 space-y-4">
           <h2 className="why-choose-section__title text-4xl font-bold text-text font-serif">Why Choose Khadi Vasthra?</h2>
           <div className="why-choose-section__divider h-1 w-20 bg-coral mx-auto rounded-full"></div>
@@ -176,7 +223,7 @@ export default function Home() {
       </section>
 
       {/* Promo Banner - Coral pink bg, white text */}
-      <section className="promo-banner-section bg-coral text-white py-20 relative overflow-hidden">
+      <section className="promo-banner-section bg-coral text-white py-24 relative overflow-hidden">
         <div className="promo-banner-section__container container mx-auto px-4 max-w-7xl relative z-10 text-center">
           <h2 className="promo-banner-section__title text-3xl md:text-5xl font-bold font-serif mb-6">Special Offer This Season</h2>
           <p className="promo-banner-section__description text-white/90 max-w-2xl mx-auto text-lg mb-10">
@@ -193,7 +240,7 @@ export default function Home() {
 
 
       {/* Instagram Video Showcase - White bg with 9:16 Phone Mockups */}
-      <section className="instagram-section bg-white container mx-auto px-4 max-w-7xl py-16 rounded-3xl mb-12 shadow-sm border border-cream/30">
+      <section className="instagram-section bg-white container mx-auto px-4 max-w-7xl py-20 rounded-3xl mb-12 shadow-sm border border-cream/30">
         <div className="instagram-section__header text-center mb-12">
           <h2 className="instagram-section__title text-4xl font-bold text-text font-serif mb-4">Trending on Instagram</h2>
           <p className="instagram-section__description text-text-muted text-lg">Follow us @khadivasthra for styling tips and new arrivals</p>
@@ -222,7 +269,7 @@ export default function Home() {
       </section>
 
       {/* Newsletter / CTA Section - Cream bg, orange subscribe button */}
-      <section className="cta-section bg-cream py-20 relative overflow-hidden">
+      <section className="cta-section bg-cream py-24 relative overflow-hidden">
         <div className="cta-section__container container mx-auto px-4 max-w-7xl relative z-10 text-center">
           <h2 className="cta-section__title text-3xl md:text-5xl font-bold font-serif mb-6 text-text">Ready to Experience Tradition?</h2>
           <p className="cta-section__description text-text-muted max-w-2xl mx-auto text-lg mb-10">

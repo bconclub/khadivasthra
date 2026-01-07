@@ -12,14 +12,17 @@ export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [showHeaderLogo, setShowHeaderLogo] = useState(false);
+    const [showHeader, setShowHeader] = useState(false);
 
     useEffect(() => {
         const handleScroll = () => {
             const heroLogo = document.getElementById('hero-logo');
             if (heroLogo) {
                 const rect = heroLogo.getBoundingClientRect();
-                // Show header logo when hero logo scrolls past header height (~80px from top)
-                setShowHeaderLogo(rect.top <= 80);
+                // Show header when hero logo scrolls past header height (~80px from top)
+                const shouldShowHeader = rect.top <= 80;
+                setShowHeader(shouldShowHeader);
+                setShowHeaderLogo(shouldShowHeader);
             }
             setScrolled(window.scrollY > 50);
         };
@@ -33,9 +36,13 @@ export function Header() {
 
     return (
         <header className={`header fixed top-0 z-50 w-full transition-all duration-300 ${
+            showHeader 
+                ? 'opacity-100 translate-y-0 pointer-events-auto' 
+                : 'opacity-0 -translate-y-full pointer-events-none'
+        } ${
             scrolled || showHeaderLogo 
                 ? 'bg-black/80 backdrop-blur-md shadow-md border-b border-white/20' 
-                : 'bg-white/10 backdrop-blur-md border-b border-white/20'
+                : 'bg-black/80 backdrop-blur-md shadow-md border-b border-white/20'
         }`}>
             <div className="header__container container mx-auto px-4 max-w-7xl flex h-20 items-center relative">
                 {/* Desktop Logo - shows after scroll */}

@@ -431,7 +431,7 @@
     "price": 1999,
     "description": "Elegant white mundu with striking black border, perfect for traditional occasions.",
     "image": "/images/single-mundus/Black Border White Mundu.png",
-    "isFeatured": true,
+    "isFeatured": false,
     "details": {
       "material": "100% Premium Cotton",
       "weave": "Handloom",
@@ -481,7 +481,7 @@
     "price": 1999,
     "description": "Beautiful peach-colored mundu with heritage design, ideal for festive celebrations.",
     "image": "/images/single-mundus/Peach Heritage Mundu.png",
-    "isFeatured": true,
+    "isFeatured": false,
     "details": {
       "material": "100% Premium Cotton",
       "weave": "Handloom",
@@ -531,7 +531,7 @@
     "price": 1999,
     "description": "Elegant white mundu with purple accents, combining tradition with contemporary style.",
     "image": "/images/single-mundus/White Purple Mundu.png",
-    "isFeatured": true,
+    "isFeatured": false,
     "details": {
       "material": "100% Premium Cotton",
       "weave": "Handloom",
@@ -573,5 +573,55 @@
       "Do not wring forcefully"
     ],
     "longDescription": "Stunning white mundu with elegant blue border, perfect for special occasions and ceremonies. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
+  },
+  {
+    "id": "sm-009",
+    "name": "Orange Border White Mundu",
+    "category": "Single Mundus",
+    "price": 1999,
+    "description": "Vibrant white mundu with striking orange border, perfect for festive celebrations and special events.",
+    "image": "/images/single-mundus/Orange Border White Mundu.png",
+    "isFeatured": true,
+    "details": {
+      "material": "100% Premium Cotton",
+      "weave": "Handloom",
+      "fit": "Regular Fit",
+      "pattern": "Orange Border",
+      "origin": "Aluva, Kerala",
+      "dimensions": "2.0m x 1.25m (Single)"
+    },
+    "careInstructions": [
+      "Hand wash separately in cold water",
+      "Do not bleach",
+      "Dry in shade",
+      "Iron on medium heat",
+      "Do not wring forcefully"
+    ],
+    "longDescription": "Vibrant white mundu with striking orange border, perfect for festive celebrations and special events. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
+  },
+  {
+    "id": "sm-010",
+    "name": "Litt Rose Mundu",
+    "category": "Single Mundus",
+    "price": 1999,
+    "description": "Elegant light rose-colored mundu with delicate design, perfect for special occasions and traditional ceremonies.",
+    "image": "/images/single-mundus/Litt Rose Mundu.png",
+    "isFeatured": true,
+    "details": {
+      "material": "100% Premium Cotton",
+      "weave": "Handloom",
+      "fit": "Regular Fit",
+      "pattern": "Light Rose",
+      "origin": "Aluva, Kerala",
+      "dimensions": "2.0m x 1.25m (Single)"
+    },
+    "careInstructions": [
+      "Hand wash separately in cold water",
+      "Do not bleach",
+      "Dry in shade",
+      "Iron on medium heat",
+      "Do not wring forcefully"
+    ],
+    "longDescription": "Elegant light rose-colored mundu with delicate design, perfect for special occasions and traditional ceremonies. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
   }
 ]
