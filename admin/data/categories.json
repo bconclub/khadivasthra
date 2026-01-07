@@ -1,0 +1,49 @@
+{
+  "categories": [
+    {
+      "id": "1",
+      "name": "White Mundus",
+      "slug": "white-mundus",
+      "description": "Traditional white mundus"
+    },
+    {
+      "id": "2",
+      "name": "Offwhite Mundus",
+      "slug": "offwhite-mundus",
+      "description": "Off-white and cream colored mundus"
+    },
+    {
+      "id": "3",
+      "name": "4.5m Double Mundus",
+      "slug": "4-5m-double-mundus",
+      "description": "Extra length double mundus"
+    },
+    {
+      "id": "4",
+      "name": "Printed Mundus",
+      "slug": "printed-mundus",
+      "description": "Hand block printed mundus"
+    },
+    {
+      "id": "5",
+      "name": "Yellow Double Mundus",
+      "slug": "yellow-double-mundus",
+      "description": "Yellow and golden colored mundus"
+    },
+    {
+      "id": "6",
+      "name": "Single Mundus",
+      "slug": "single-mundus",
+      "description": "Single length mundus and dhotis"
+    },
+    {
+      "id": "7",
+      "name": "Kavi Mundus",
+      "slug": "kavi-mundus",
+      "description": "Traditional saffron colored mundus"
+    }
+  ]
+}
+
+
+

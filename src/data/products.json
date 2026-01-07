@@ -5,7 +5,7 @@
     "category": "White Mundus",
     "price": 550,
     "description": "High-quality pure cotton white mundu perfect for daily wear and special occasions. Features a comfortable texture and breathability.",
-    "image": "/images/mundu-white.png",
+    "image": "/images/white-mundus/wm-001.jpg",
     "isFeatured": true,
     "details": {
       "material": "100% Premium Cotton",
@@ -30,7 +30,7 @@
     "category": "White Mundus",
     "price": 450,
     "description": "Traditional single white mundu adorned with a subtle kasavu border.",
-    "image": "/images/mundu-gold.png",
+    "image": "/images/white-mundus/wm-002.jpg",
     "isFeatured": false,
     "details": {
       "material": "100% Premium Cotton",
@@ -55,7 +55,7 @@
     "category": "Offwhite Mundus",
     "price": 1200,
     "description": "Elegant tissue double mundu in off-white shade, ideal for weddings and festivals.",
-    "image": "/images/mundu-white.png",
+    "image": "/images/offwhite-mundus/om-001.jpg",
     "isFeatured": true,
     "details": {
       "material": "Tissue Cotton Blend",
@@ -80,7 +80,7 @@
     "category": "Offwhite Mundus",
     "price": 600,
     "description": "Soft cream cotton mundu offering superior comfort.",
-    "image": "/images/mundu-white.png",
+    "image": "/images/offwhite-mundus/om-002.jpg",
     "isFeatured": false,
     "details": {
       "material": "100% Premium Cotton",
@@ -105,7 +105,7 @@
     "category": "4.5m Double Mundus",
     "price": 850,
     "description": "Extra length 4.5m double mundu for a traditional drape.",
-    "image": "/images/mundu-white.png",
+    "image": "/images/double-mundus/dm-001.jpg",
     "isFeatured": true,
     "details": {
       "material": "100% Premium Cotton",
@@ -130,7 +130,7 @@
     "category": "4.5m Double Mundus",
     "price": 750,
     "description": "Standard double mundu made from fine cotton threads.",
-    "image": "/images/mundu-white.png",
+    "image": "/images/double-mundus/dm-002.jpg",
     "isFeatured": false,
     "details": {
       "material": "100% Premium Cotton",
@@ -155,7 +155,7 @@
     "category": "Printed Mundus",
     "price": 950,
     "description": "Artistic hand block printed mundu featuring traditional Kerala motifs.",
-    "image": "/images/mundu-white.png",
+    "image": "/images/printed-mundus/pm-001.jpg",
     "isFeatured": true,
     "details": {
       "material": "100% Premium Cotton",
@@ -180,7 +180,7 @@
     "category": "Printed Mundus",
     "price": 800,
     "description": "Vibrant floral prints on a soft cotton base.",
-    "image": "/images/mundu-white.png",
+    "image": "/images/printed-mundus/pm-002.jpg",
     "isFeatured": false,
     "details": {
       "material": "100% Premium Cotton",
@@ -205,7 +205,7 @@
     "category": "Yellow Double Mundus",
     "price": 1100,
     "description": "Striking yellow double mundu for festive appearances.",
-    "image": "/images/mundu-gold.png",
+    "image": "/images/yellow-double-mundus/ym-001.jpg",
     "isFeatured": true,
     "details": {
       "material": "100% Premium Cotton",
@@ -230,7 +230,7 @@
     "category": "Yellow Double Mundus",
     "price": 900,
     "description": "Deep mustard yellow shade, perfect for traditional ceremonies.",
-    "image": "/images/mundu-white.png",
+    "image": "/images/yellow-double-mundus/ym-002.jpg",
     "isFeatured": false,
     "details": {
       "material": "100% Premium Cotton",
@@ -255,7 +255,7 @@
     "category": "Single Mundus",
     "price": 400,
     "description": "Durable and lightweight single mundu for everyday use.",
-    "image": "/images/mundu-white.png",
+    "image": "/images/single-mundus/sm-001.jpg",
     "isFeatured": false,
     "details": {
       "material": "100% Premium Cotton",
@@ -280,7 +280,7 @@
     "category": "Single Mundus",
     "price": 500,
     "description": "Premium quality single dhoti with fine weaving.",
-    "image": "/images/mundu-white.png",
+    "image": "/images/single-mundus/sm-002.jpg",
     "isFeatured": false,
     "details": {
       "material": "100% Premium Cotton",
@@ -305,7 +305,7 @@
     "category": "Kavi Mundus",
     "price": 450,
     "description": "Classic Kavi (saffron) mundu worn for temple visits and rituals.",
-    "image": "/images/mundu-saffron.png",
+    "image": "/images/kavi-mundus/km-001.jpg",
     "isFeatured": true,
     "details": {
       "material": "100% Premium Cotton",
@@ -330,7 +330,7 @@
     "category": "Kavi Mundus",
     "price": 420,
     "description": "Pure cotton Kavi dhoti offering breathability and comfort.",
-    "image": "/images/mundu-saffron.png",
+    "image": "/images/kavi-mundus/km-002.jpg",
     "isFeatured": false,
     "details": {
       "material": "100% Premium Cotton",
@@ -355,7 +355,7 @@
     "category": "4.5m Double Mundus",
     "price": 1300,
     "description": "Exquisite double mundu with silver kasavu border detailing.",
-    "image": "/images/mundu-gold.png",
+    "image": "/images/double-mundus/dm-003.jpg",
     "isFeatured": false,
     "details": {
       "material": "100% Premium Cotton",
@@ -380,7 +380,7 @@
     "category": "Printed Mundus",
     "price": 880,
     "description": "Contemporary designs meets traditional attire.",
-    "image": "/images/mundu-white.png",
+    "image": "/images/printed-mundus/pm-003.jpg",
     "isFeatured": false,
     "details": {
       "material": "100% Premium Cotton",
@@ -405,7 +405,7 @@
     "category": "White Mundus",
     "price": 1500,
     "description": "Luscious fabric and rich border work, designed for grooms.",
-    "image": "/images/mundu-white.png",
+    "image": "/images/white-mundus/wm-003.jpg",
     "isFeatured": true,
     "details": {
       "material": "100% Premium Cotton",
@@ -423,5 +423,130 @@
       "Do not wring forcefully"
     ],
     "longDescription": "Luscious fabric and rich border work, designed for grooms. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
+  },
+  {
+    "id": "sm-003",
+    "name": "Black Border White Mundu",
+    "category": "Single Mundus",
+    "price": 1999,
+    "description": "Elegant white mundu with striking black border, perfect for traditional occasions.",
+    "image": "/images/single-mundus/Black Border White Mundu.png",
+    "isFeatured": true,
+    "details": {
+      "material": "100% Premium Cotton",
+      "weave": "Handloom",
+      "fit": "Regular Fit",
+      "pattern": "Black Border",
+      "origin": "Aluva, Kerala",
+      "dimensions": "2.0m x 1.25m (Single)"
+    },
+    "careInstructions": [
+      "Hand wash separately in cold water",
+      "Do not bleach",
+      "Dry in shade",
+      "Iron on medium heat",
+      "Do not wring forcefully"
+    ],
+    "longDescription": "Elegant white mundu with striking black border, perfect for traditional occasions. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
+  },
+  {
+    "id": "sm-004",
+    "name": "Charcoal Border Black Mundu",
+    "category": "Single Mundus",
+    "price": 1999,
+    "description": "Sophisticated black mundu with charcoal border detailing for a modern traditional look.",
+    "image": "/images/single-mundus/Charcoal Border BlackMundu.png",
+    "isFeatured": true,
+    "details": {
+      "material": "100% Premium Cotton",
+      "weave": "Handloom",
+      "fit": "Regular Fit",
+      "pattern": "Charcoal Border",
+      "origin": "Aluva, Kerala",
+      "dimensions": "2.0m x 1.25m (Single)"
+    },
+    "careInstructions": [
+      "Hand wash separately in cold water",
+      "Do not bleach",
+      "Dry in shade",
+      "Iron on medium heat",
+      "Do not wring forcefully"
+    ],
+    "longDescription": "Sophisticated black mundu with charcoal border detailing for a modern traditional look. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
+  },
+  {
+    "id": "sm-005",
+    "name": "Peach Heritage Mundu",
+    "category": "Single Mundus",
+    "price": 1999,
+    "description": "Beautiful peach-colored mundu with heritage design, ideal for festive celebrations.",
+    "image": "/images/single-mundus/Peach Heritage Mundu.png",
+    "isFeatured": true,
+    "details": {
+      "material": "100% Premium Cotton",
+      "weave": "Handloom",
+      "fit": "Regular Fit",
+      "pattern": "Heritage Design",
+      "origin": "Aluva, Kerala",
+      "dimensions": "2.0m x 1.25m (Single)"
+    },
+    "careInstructions": [
+      "Hand wash separately in cold water",
+      "Do not bleach",
+      "Dry in shade",
+      "Iron on medium heat",
+      "Do not wring forcefully"
+    ],
+    "longDescription": "Beautiful peach-colored mundu with heritage design, ideal for festive celebrations. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
+  },
+  {
+    "id": "sm-006",
+    "name": "Red Border Black Mundu",
+    "category": "Single Mundus",
+    "price": 1999,
+    "description": "Bold black mundu with vibrant red border, making a statement at any occasion.",
+    "image": "/images/single-mundus/Red Border Balck Mundu.png",
+    "isFeatured": true,
+    "details": {
+      "material": "100% Premium Cotton",
+      "weave": "Handloom",
+      "fit": "Regular Fit",
+      "pattern": "Red Border",
+      "origin": "Aluva, Kerala",
+      "dimensions": "2.0m x 1.25m (Single)"
+    },
+    "careInstructions": [
+      "Hand wash separately in cold water",
+      "Do not bleach",
+      "Dry in shade",
+      "Iron on medium heat",
+      "Do not wring forcefully"
+    ],
+    "longDescription": "Bold black mundu with vibrant red border, making a statement at any occasion. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
+  },
+  {
+    "id": "sm-007",
+    "name": "White Purple Mundu",
+    "category": "Single Mundus",
+    "price": 1999,
+    "description": "Elegant white mundu with purple accents, combining tradition with contemporary style.",
+    "image": "/images/single-mundus/White Purple Mundu.png",
+    "isFeatured": true,
+    "details": {
+      "material": "100% Premium Cotton",
+      "weave": "Handloom",
+      "fit": "Regular Fit",
+      "pattern": "Purple Accents",
+      "origin": "Aluva, Kerala",
+      "dimensions": "2.0m x 1.25m (Single)"
+    },
+    "careInstructions": [
+      "Hand wash separately in cold water",
+      "Do not bleach",
+      "Dry in shade",
+      "Iron on medium heat",
+      "Do not wring forcefully"
+    ],
+    "longDescription": "Elegant white mundu with purple accents, combining tradition with contemporary style. Experience the unmatched comfort and elegance of traditional Kerala handloom. Woven by skilled artisans from Aluva, this mundu represents the rich cultural heritage of God's Own Country. The fabric is breathable, skin-friendly, and durable, making it perfect for our tropical climate."
   }
 ]

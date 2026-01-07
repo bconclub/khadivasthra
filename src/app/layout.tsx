@@ -29,7 +29,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${outfit.variable} ${playfair.variable} font-sans min-h-screen flex flex-col bg-secondary text-text antialiased`}>
+      <body className={`${outfit.variable} ${playfair.variable} font-sans min-h-screen flex flex-col bg-white text-text antialiased`}>
         <CartProvider>
           <Header />
           <main className="flex-grow">

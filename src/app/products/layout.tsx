@@ -26,11 +26,11 @@ export default function ProductsLayout({
                 {/* Sidebar */}
                 <aside className="md:w-64 flex-shrink-0 hidden md:block">
                     <div className="sticky top-24">
-                        <h3 className="font-bold text-lg mb-4 text-primary">Categories</h3>
+                        <h3 className="font-bold text-lg mb-4 text-coral">Categories</h3>
                         <div className="flex flex-col space-y-1">
                             <Link
                                 href="/products"
-                                className="px-3 py-2 rounded-md hover:bg-gray-100 text-sm font-medium text-gray-700 transition-colors"
+                                className="px-3 py-2 rounded-md hover:bg-cream/50 text-sm font-medium text-text transition-colors"
                             >
                                 All Products
                             </Link>
@@ -38,7 +38,7 @@ export default function ProductsLayout({
                                 <Link
                                     key={category}
                                     href={`/products/${slugify(category)}`}
-                                    className="px-3 py-2 rounded-md hover:bg-gray-100 text-sm font-medium text-gray-700 transition-colors"
+                                    className="px-3 py-2 rounded-md hover:bg-cream/50 text-sm font-medium text-text transition-colors"
                                 >
                                     {category}
                                 </Link>
@@ -52,7 +52,7 @@ export default function ProductsLayout({
                     <div className="flex space-x-2">
                         <Link
                             href="/products"
-                            className="flex-shrink-0 px-4 py-2 bg-gray-100 rounded-full text-sm font-medium whitespace-nowrap active:bg-primary active:text-white"
+                            className="flex-shrink-0 px-4 py-2 bg-cream/50 rounded-full text-sm font-medium whitespace-nowrap active:bg-coral active:text-white"
                         >
                             All
                         </Link>
@@ -60,7 +60,7 @@ export default function ProductsLayout({
                             <Link
                                 key={category}
                                 href={`/products/${slugify(category)}`}
-                                className="flex-shrink-0 px-4 py-2 bg-gray-100 rounded-full text-sm font-medium whitespace-nowrap active:bg-primary active:text-white"
+                                className="flex-shrink-0 px-4 py-2 bg-cream/50 rounded-full text-sm font-medium whitespace-nowrap active:bg-coral active:text-white"
                             >
                                 {category}
                             </Link>
