@@ -13,10 +13,12 @@ interface ProductCarouselProps {
     price: number;
     image: string;
     category: string;
+    showHeart?: boolean;
   }>;
+  showHeart?: boolean;
 }
 
-export function ProductCarousel({ products }: ProductCarouselProps) {
+export function ProductCarousel({ products, showHeart = false }: ProductCarouselProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: "start",
     slidesToScroll: 1,
@@ -110,7 +112,7 @@ export function ProductCarousel({ products }: ProductCarouselProps) {
               key={product.id}
               className="product-carousel__slide flex-[0_0_100%] sm:flex-[0_0_calc(50%-12px)] md:flex-[0_0_calc(50%-12px)] lg:flex-[0_0_calc(33.333%-16px)] xl:flex-[0_0_calc(25%-18px)] min-w-0"
             >
-              <ProductCard product={product} />
+              <ProductCard product={product} showHeart={product.showHeart ?? showHeart} />
             </div>
           ))}
         </div>

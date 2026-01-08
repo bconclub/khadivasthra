@@ -11,7 +11,10 @@ $method = $_SERVER['REQUEST_METHOD'];
 // GET - List all categories
 if ($method === 'GET') {
     $data = readJSON(CATEGORIES_FILE);
-    $categories = $data['categories'] ?? [];
+    // Handle both array format and object format
+    $categories = is_array($data) && !isset($data['categories'])
+        ? $data
+        : ($data['categories'] ?? []);
     jsonResponse(['categories' => $categories]);
 }
 

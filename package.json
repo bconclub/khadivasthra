@@ -3,8 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --webpack",
-    "build": "next build",
+    "dev": "concurrently --names \"NEXT,PHP\" --prefix-colors \"blue,green\" \"next dev --webpack\" \"php -S localhost:8080 -t admin || echo 'PHP server failed to start. Install PHP with: sudo apt install php-cli'\"",
+    "dev:next": "next dev --webpack",
+    "dev:php": "php -S localhost:8080 -t admin",
+    "check:php": "php --version || echo 'PHP not installed. Install with: sudo apt install php-cli'",
+    "build": "next build --webpack",
+    "build:static": "next build",
     "start": "next start",
     "lint": "eslint"
   },
@@ -22,6 +26,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^9.2.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
     "tailwindcss": "^4",

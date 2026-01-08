@@ -11,8 +11,13 @@ $csrfToken = generateCSRF();
 // Load data for stats
 $productsData = readJSON(PRODUCTS_FILE);
 $categoriesData = readJSON(CATEGORIES_FILE);
-$products = $productsData['products'] ?? [];
-$categories = $categoriesData['categories'] ?? [];
+// Handle both array format and object format
+$products = is_array($productsData) && !isset($productsData['products']) 
+    ? $productsData 
+    : ($productsData['products'] ?? []);
+$categories = is_array($categoriesData) && !isset($categoriesData['categories'])
+    ? $categoriesData
+    : ($categoriesData['categories'] ?? []);
 $totalProducts = count($products);
 $totalCategories = count($categories);
 $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured'])));
@@ -25,6 +30,19 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
     <title>Admin Dashboard - Khadi Vasthra</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        // Log Alpine.js loading
+        console.log('[DEBUG] Script loaded');
+        window.addEventListener('alpine:init', () => {
+            console.log('[DEBUG] Alpine.js initialized');
+            fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:alpine-init',message:'Alpine.js initialized',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch((e) => console.error('[DEBUG] Log fetch failed:', e));
+        });
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('[DEBUG] DOM content loaded, Alpine defined:', typeof Alpine !== 'undefined');
+            fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:DOMContentLoaded',message:'DOM content loaded',data:{alpineDefined:typeof Alpine !== 'undefined'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch((e) => console.error('[DEBUG] Log fetch failed:', e));
+        });
+        console.log('[DEBUG] Event listeners registered');
+    </script>
     <style>
         [x-cloak] { display: none !important; }
         :root {
@@ -39,8 +57,8 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
 <body class="bg-white" x-data="{ 
     activePage: 'dashboard',
     searchQuery: '',
-    products: <?php echo json_encode($products); ?>,
-    categories: <?php echo json_encode($categories); ?>,
+    products: <?php echo json_encode(is_array($products) ? $products : []); ?>,
+    categories: <?php echo json_encode(is_array($categories) ? $categories : []); ?>,
     csrfToken: '<?php echo $csrfToken; ?>',
     notification: { show: false, message: '', type: 'success' },
     showProductModal: false,
@@ -71,7 +89,13 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
         isActive: true,
         displayOrder: 0
     },
-    featuredProducts: new Set(<?php echo json_encode(array_map(fn($p) => $p['id'], array_filter($products, fn($p) => !empty($p['isFeatured'])))); ?>)
+    featuredProducts: new Set(<?php echo json_encode(array_map(fn($p) => $p['id'], array_filter($products, fn($p) => !empty($p['isFeatured'])))); ?>),
+    loadProducts() { console.log('loadProducts called'); },
+    loadCategories() { console.log('loadCategories called'); },
+    loadDashboard() { console.log('loadDashboard called'); },
+    showProducts() {},
+    showCategories() {},
+    showDashboard() {}
 }">
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
@@ -80,7 +104,7 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                 <!-- Logo -->
                 <div class="mb-8">
                     <div class="flex items-center justify-center mb-3">
-                        <img src="/Khadi Vasthra White Transparnt.png" 
+                        <img src="http://localhost:3000/Khadi%20Vasthra%20White%20Transparnt.png" 
                              alt="Khadi Vasthra Logo" 
                              class="h-16 w-auto object-contain">
                     </div>
@@ -89,17 +113,17 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                 
                 <!-- Navigation -->
                 <nav class="space-y-2">
-                    <button @click="activePage = 'dashboard'; loadDashboard()" 
+                    <button @click="showDashboard()" 
                         :class="activePage === 'dashboard' ? 'bg-[#E8657B] text-white' : 'text-[#1A1A1A] hover:bg-white/50'"
                         class="w-full text-left px-4 py-3 rounded-lg transition font-medium">
                         Dashboard
                     </button>
-                    <button @click="activePage = 'products'; loadProducts()" 
+                    <button @click="showProducts()" 
                         :class="activePage === 'products' ? 'bg-[#E8657B] text-white' : 'text-[#1A1A1A] hover:bg-white/50'"
                         class="w-full text-left px-4 py-3 rounded-lg transition font-medium">
                         Products
                     </button>
-                    <button @click="activePage = 'categories'; loadCategories()" 
+                    <button @click="showCategories()" 
                         :class="activePage === 'categories' ? 'bg-[#E8657B] text-white' : 'text-[#1A1A1A] hover:bg-white/50'"
                         class="w-full text-left px-4 py-3 rounded-lg transition font-medium">
                         Categories
@@ -193,7 +217,7 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                                     <template x-for="product in products.slice(0, 5)" :key="product.id">
                                         <tr>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <img :src="product.image || '/images/placeholder.jpg'" 
+                                                <img :src="getImagePath(product.image)" 
                                                      :alt="product.name"
                                                      class="h-12 w-12 object-cover rounded">
                                             </td>
@@ -245,11 +269,11 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody class="bg-white divide-y divide-gray-200">
-                                    <template x-for="product in filteredProducts" :key="product.id">
+                                <tbody class="bg-white divide-y divide-gray-200" x-effect="console.log('[x-effect] Products array changed:', { productsCount: products.length, productsIsArray: Array.isArray(products), firstProduct: products.length > 0 ? products[0].name : 'none' })">
+                                    <template x-for="product in products.filter(p => !searchQuery || (p.name && p.name.toLowerCase().includes(searchQuery.toLowerCase())) || (p.category && p.category.toLowerCase().includes(searchQuery.toLowerCase())))" :key="product.id">
                                         <tr>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <img :src="product.image || '/images/placeholder.jpg'" 
+                                                <img :src="getImagePath(product.image)" 
                                                      :alt="product.name"
                                                      class="h-16 w-16 object-cover rounded">
                                             </td>
@@ -273,8 +297,11 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                                             </td>
                                         </tr>
                                     </template>
-                                    <tr x-show="filteredProducts.length === 0">
-                                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">No products found</td>
+                                    <tr x-show="products.length === 0 || (searchQuery && products.filter(p => !searchQuery || (p.name && p.name.toLowerCase().includes(searchQuery.toLowerCase())) || (p.category && p.category.toLowerCase().includes(searchQuery.toLowerCase()))).length === 0)">
+                                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                                            <span x-show="products.length === 0">No products found</span>
+                                            <span x-show="products.length > 0 && searchQuery">No products match your search</span>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -307,7 +334,7 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                                     <template x-for="category in categories" :key="category.id">
                                         <tr>
                                             <td class="px-6 py-4 whitespace-nowrap">
-                                                <img :src="category.image || '/images/placeholder.jpg'" 
+                                                <img :src="getImagePath(category.image)" 
                                                      :alt="category.name"
                                                      class="h-16 w-16 object-cover rounded">
                                             </td>
@@ -345,7 +372,7 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         <template x-for="product in products" :key="product.id">
                             <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-                                <img :src="product.image || '/images/placeholder.jpg'" 
+                                <img :src="getImagePath(product.image)" 
                                      :alt="product.name"
                                      class="w-full h-48 object-cover">
                                 <div class="p-4">
@@ -546,7 +573,8 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
 
     <script>
         // Helper functions
-        function generateSlug(str) {
+        window.generateSlug = function(str) {
+            if (!str) return '';
             return str.toLowerCase()
                 .trim()
                 .replace(/[^\w\s-]/g, '')
@@ -556,35 +584,175 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
 
         // Alpine.js methods - attach to existing x-data
         function initDashboardMethods() {
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:initDashboardMethods',message:'initDashboardMethods called',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+            // #endregion
             const dashboardElement = document.querySelector('[x-data]');
             if (!dashboardElement) {
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:initDashboardMethods',message:'Dashboard element not found, retrying',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+                // #endregion
                 setTimeout(initDashboardMethods, 100);
                 return;
             }
             
             if (typeof Alpine === 'undefined' || !Alpine.$data) {
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:initDashboardMethods',message:'Alpine not ready, retrying',data:{alpineDefined:typeof Alpine !== 'undefined',hasAlpineData:typeof Alpine !== 'undefined' && typeof Alpine.$data !== 'undefined'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+                // #endregion
                 setTimeout(initDashboardMethods, 100);
                 return;
             }
             
             const dashboard = Alpine.$data(dashboardElement);
             if (!dashboard) {
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:initDashboardMethods',message:'Dashboard data not found, retrying',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+                // #endregion
                 setTimeout(initDashboardMethods, 100);
                 return;
             }
             
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:initDashboardMethods',message:'Attaching methods to dashboard',data:{hasLoadProducts:typeof dashboard.loadProducts === 'function',hasLoadCategories:typeof dashboard.loadCategories === 'function'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+            // #endregion
+            
+            // Ensure featuredProducts exists and is a Set
+            if (!dashboard.featuredProducts || !(dashboard.featuredProducts instanceof Set)) {
+                dashboard.featuredProducts = new Set();
+            }
+            
+            // Ensure products is an array - convert if needed
+            if (!Array.isArray(dashboard.products)) {
+                if (dashboard.products && typeof dashboard.products === 'object') {
+                    // Try to convert object/other types to array
+                    dashboard.products = Object.values(dashboard.products);
+                } else {
+                    dashboard.products = [];
+                }
+            }
+            
+            // Ensure categoryForm exists
+            if (!dashboard.categoryForm || typeof dashboard.categoryForm !== 'object') {
+                dashboard.categoryForm = {
+                    name: '',
+                    slug: '',
+                    description: '',
+                    image: '',
+                    isActive: true,
+                    displayOrder: 0
+                };
+            }
+            
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:initDashboardMethods',message:'Products initialized',data:{productsIsArray:Array.isArray(dashboard.products),productsCount:dashboard.products.length,featuredProductsIsSet:dashboard.featuredProducts instanceof Set,hasCategoryForm:!!dashboard.categoryForm},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+            // #endregion
+            
             Object.assign(dashboard, {
+            // Helper method to get correct image path for admin panel
+            getImagePath(imagePath) {
+                if (!imagePath) return 'http://localhost:3000/images/mundu-white.png';
+                // If path already has http, return as is
+                if (imagePath.startsWith('http')) {
+                    return imagePath;
+                }
+                // If path starts with /, use Next.js server
+                if (imagePath.startsWith('/')) {
+                    // URL encode only the filename part (last segment) to handle spaces
+                    const parts = imagePath.split('/');
+                    const filename = parts.pop();
+                    const encodedFilename = encodeURIComponent(filename);
+                    const encodedPath = parts.join('/') + '/' + encodedFilename;
+                    return 'http://localhost:3000' + encodedPath;
+                }
+                // Otherwise, assume it's relative to Next.js public directory
+                return 'http://localhost:3000/' + encodeURIComponent(imagePath);
+            },
+            
             get filteredProducts() {
-                if (!this.searchQuery) return this.products;
-                const query = this.searchQuery.toLowerCase();
-                return this.products.filter(p => 
-                    p.name.toLowerCase().includes(query) ||
-                    p.category.toLowerCase().includes(query)
-                );
+                // CRITICAL FIX: Access Alpine data DYNAMICALLY to get the current reactive state
+                const el = document.querySelector('[x-data]');
+                if (!el) {
+                    console.warn('[filteredProducts] No x-data element found');
+                    return [];
+                }
+                
+                const currentData = Alpine.$data(el);
+                if (!currentData) {
+                    console.warn('[filteredProducts] No Alpine data found');
+                    return [];
+                }
+                
+                // Get products with null check
+                const products = currentData.products;
+                const searchQuery = currentData.searchQuery || '';
+                
+                console.log('[filteredProducts] GETTER CALLED:', {
+                    'products exists': products !== undefined,
+                    'products type': typeof products,
+                    'isArray': Array.isArray(products),
+                    'length': products ? (Array.isArray(products) ? products.length : 'not array') : 0,
+                    'searchQuery': searchQuery
+                });
+                
+                // CRITICAL FIX: Add null check - if products is undefined or null, return empty array
+                if (!products || !Array.isArray(products)) {
+                    console.warn('[filteredProducts] products is not a valid array, returning empty array', {
+                        productsType: typeof products,
+                        productsIsArray: Array.isArray(products),
+                        productsValue: products
+                    });
+                    return [];
+                }
+                
+                // Create a copy of the array to ensure reactivity
+                const productsArray = [...products];
+                
+                console.log('[filteredProducts] Products array prepared:', {
+                    length: productsArray.length,
+                    searchQuery: searchQuery
+                });
+                
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:filteredProducts',message:'filteredProducts getter called',data:{productsIsArray:Array.isArray(products),productsCount:productsArray.length,searchQuery:searchQuery,hasSearchQuery:!!searchQuery},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+                // #endregion
+                
+                // Always return all products if no search query
+                if (!searchQuery || searchQuery.trim() === '') {
+                    console.log('[filteredProducts] Returning all products:', productsArray.length);
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:filteredProducts',message:'filteredProducts returning all products',data:{resultCount:productsArray.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+                    // #endregion
+                    return productsArray;
+                }
+                
+                // Filter products based on search query
+                const query = searchQuery.toLowerCase();
+                const result = productsArray.filter(p => {
+                    if (!p) return false;
+                    const nameMatch = p.name && typeof p.name === 'string' && p.name.toLowerCase().includes(query);
+                    const categoryMatch = p.category && typeof p.category === 'string' && p.category.toLowerCase().includes(query);
+                    return nameMatch || categoryMatch;
+                });
+                
+                console.log('[filteredProducts] Returning filtered results:', {
+                    query: query,
+                    resultCount: result.length,
+                    totalProducts: productsArray.length
+                });
+                
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:filteredProducts',message:'filteredProducts returning filtered results',data:{resultCount:result.length,query:query},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
+                // #endregion
+                return result;
             },
             
             getProductCount(categoryName) {
-                return this.products.filter(p => p.category === categoryName).length;
+                // Access Alpine data dynamically
+                const el = document.querySelector('[x-data]');
+                const currentData = Alpine.$data(el);
+                const products = currentData.products || [];
+                return products.filter(p => p.category === categoryName).length;
             },
             
             loadDashboard() {
@@ -601,22 +769,172 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
             },
             
             async loadProducts() {
+                console.log('[loadProducts] Called, fetching from /api/products.php');
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadProducts',message:'loadProducts called',data:{url:'/api/products.php'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+                // #endregion
                 try {
-                    const response = await fetch('/api/admin/products.php');
+                    const response = await fetch('/api/products.php', {
+                        credentials: 'include'
+                    });
+                    
+                    console.log('[loadProducts] Fetch response:', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        ok: response.ok,
+                        url: response.url
+                    });
+                    
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadProducts',message:'Fetch response received',data:{status:response.status,statusText:response.statusText,ok:response.ok,url:response.url},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+                    // #endregion
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
                     const data = await response.json();
-                    this.products = data.products || [];
+                    
+                    console.log('[loadProducts] Data parsed:', {
+                        hasProducts: !!data.products,
+                        productsIsArray: Array.isArray(data.products),
+                        productsCount: Array.isArray(data.products) ? data.products.length : 0,
+                        dataIsArray: Array.isArray(data)
+                    });
+                    
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadProducts',message:'Products data parsed',data:{hasProducts:!!data.products,productsIsArray:Array.isArray(data.products),productsCount:Array.isArray(data.products) ? data.products.length : 0,dataIsArray:Array.isArray(data)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+                    // #endregion
+                    // Ensure we get all products
+                    const productsArray = Array.isArray(data.products) ? data.products : (Array.isArray(data) ? data : []);
+                    
+                    console.log('[loadProducts] Products array prepared:', {
+                        productsCount: productsArray.length,
+                        productsIsArray: Array.isArray(productsArray),
+                        firstProduct: productsArray.length > 0 ? productsArray[0].name : 'none'
+                    });
+                    
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadProducts',message:'Products array prepared',data:{productsCount:productsArray.length,productsIsArray:Array.isArray(productsArray)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+                    // #endregion
+                    // Ensure products is an array before assignment
+                    // CRITICAL: Initialize as empty array if undefined/null or not an array
+                    if (!this.products || !Array.isArray(this.products)) {
+                        console.warn('[loadProducts] Products is not an array, resetting:', {
+                            productsType: typeof this.products,
+                            productsIsArray: Array.isArray(this.products),
+                            productsValue: this.products ? JSON.stringify(this.products).substring(0, 100) : 'null/undefined'
+                        });
+                        // #region agent log
+                        fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadProducts',message:'Products is not array, resetting',data:{productsType:typeof this.products,productsIsArray:Array.isArray(this.products),productsValue:this.products ? JSON.stringify(this.products).substring(0,100) : 'null/undefined'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+                        // #endregion
+                        this.products = [];
+                    }
+                    
+                    console.log('[loadProducts] Before assignment:', {
+                        currentProductsCount: this.products.length,
+                        currentProductsIsArray: Array.isArray(this.products),
+                        newProductsCount: productsArray.length
+                    });
+                    
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadProducts',message:'Before assignment',data:{productsCount:this.products.length,productsIsArray:Array.isArray(this.products),productsArrayLength:productsArray.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+                    // #endregion
+                    
+                    // CRITICAL FIX: Use splice() to maintain Alpine.js reactivity
+                    // Direct array assignment doesn't always trigger reactivity properly
+                    // Clear existing array and replace with new products using splice
+                    // This ensures Alpine.js detects the change and updates computed properties
+                    this.products.splice(0, this.products.length, ...productsArray);
+                    
+                    console.log('[loadProducts] After assignment:', {
+                        productsCount: this.products.length,
+                        productsIsArray: Array.isArray(this.products),
+                        productsFirstItem: this.products.length > 0 ? this.products[0].name : 'none',
+                        productsReference: this.products
+                    });
+                    
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadProducts',message:'After assignment',data:{productsCount:this.products.length,productsIsArray:Array.isArray(this.products)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+                    // #endregion
+                    
+                    // Update featuredProducts Set based on loaded products
+                    if (!this.featuredProducts || !(this.featuredProducts instanceof Set)) {
+                        this.featuredProducts = new Set();
+                    }
+                    // Sync featuredProducts with product isFeatured flags
+                    productsArray.forEach(product => {
+                        if (product.isFeatured) {
+                            this.featuredProducts.add(product.id);
+                        }
+                    });
+                    
+                    // Force Alpine.js to recognize the change by using $nextTick
+                    // This ensures Alpine.js has updated its reactivity tracking
+                    if (this.$nextTick) {
+                        this.$nextTick(() => {
+                            const filtered = this.filteredProducts;
+                            console.log('[loadProducts] Final state (after nextTick):', {
+                                productsCount: this.products.length,
+                                filteredProductsCount: filtered.length,
+                                featuredProductsSize: this.featuredProducts ? this.featuredProducts.size : 'N/A'
+                            });
+                        });
+                    } else {
+                        // Fallback: use setTimeout if $nextTick is not available
+                        setTimeout(() => {
+                            const filtered = this.filteredProducts;
+                            console.log('[loadProducts] Final state (after setTimeout):', {
+                                productsCount: this.products.length,
+                                filteredProductsCount: filtered.length,
+                                featuredProductsSize: this.featuredProducts ? this.featuredProducts.size : 'N/A'
+                            });
+                        }, 0);
+                    }
+                    
+                    // Also log immediately to see current state
+                    const filtered = this.filteredProducts;
+                    console.log('[loadProducts] Final state (immediate):', {
+                        productsCount: this.products.length,
+                        filteredProductsCount: filtered.length,
+                        featuredProductsSize: this.featuredProducts ? this.featuredProducts.size : 'N/A'
+                    });
+                    
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadProducts',message:'Products assigned via splice for reactivity',data:{productsCount:this.products.length,productsIsArray:Array.isArray(this.products),filteredProductsCount:filtered.length,featuredProductsSize:this.featuredProducts ? this.featuredProducts.size : 'N/A'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+                    // #endregion
                 } catch (error) {
-                    this.showNotification('Failed to load products', 'error');
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadProducts',message:'Load products error',data:{errorMessage:error.message,errorName:error.name,errorStack:error.stack},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+                    // #endregion
+                    console.error('Load products error:', error);
+                    this.showNotification('Failed to load products: ' + error.message, 'error');
                 }
             },
             
             async loadCategories() {
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadCategories',message:'loadCategories called',data:{url:'/api/categories.php'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+                // #endregion
                 try {
-                    const response = await fetch('/api/admin/categories.php');
+                    const response = await fetch('/api/categories.php', {
+                        credentials: 'include'
+                    });
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadCategories',message:'Fetch response received',data:{status:response.status,statusText:response.statusText,ok:response.ok},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+                    // #endregion
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
                     const data = await response.json();
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadCategories',message:'Categories data parsed',data:{hasCategories:!!data.categories,categoriesCount:Array.isArray(data.categories) ? data.categories.length : 0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+                    // #endregion
                     this.categories = data.categories || [];
                 } catch (error) {
-                    this.showNotification('Failed to load categories', 'error');
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadCategories',message:'Load categories error',data:{errorMessage:error.message,errorName:error.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
+                    // #endregion
+                    console.error('Load categories error:', error);
+                    this.showNotification('Failed to load categories: ' + error.message, 'error');
                 }
             },
             
@@ -681,7 +999,7 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                     formData.append('image', file);
                     
                     try {
-                        const response = await fetch('/api/admin/upload.php', {
+                        const response = await fetch('/api/upload.php', {
                             method: 'POST',
                             body: formData
                         });
@@ -724,7 +1042,7 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                 }
                 
                 try {
-                        const response = await fetch('/api/admin/products.php', {
+                        const response = await fetch('/api/products.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
@@ -756,7 +1074,7 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                         csrf_token: this.csrfToken
                     });
                     
-                        const response = await fetch('/api/admin/products.php', {
+                        const response = await fetch('/api/products.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
@@ -821,7 +1139,7 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                 formData.append('image', file);
                 
                 try {
-                    const response = await fetch('api/upload.php', {
+                    const response = await fetch('/api/upload.php', {
                         method: 'POST',
                         body: formData
                     });
@@ -854,7 +1172,7 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                 }
                 
                 try {
-                        const response = await fetch('/api/admin/categories.php', {
+                        const response = await fetch('/api/categories.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
@@ -886,7 +1204,7 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                         csrf_token: this.csrfToken
                     });
                     
-                        const response = await fetch('/api/admin/categories.php', {
+                        const response = await fetch('/api/categories.php', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/x-www-form-urlencoded',
@@ -938,7 +1256,7 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                                 csrf_token: this.csrfToken
                             });
                             
-                            await fetch('api/products.php', {
+                            await fetch('/api/products.php', {
                                 method: 'POST',
                                 headers: {
                                     'Content-Type': 'application/x-www-form-urlencoded',
@@ -953,26 +1271,124 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                 } catch (error) {
                     this.showNotification('Failed to save featured products', 'error');
                 }
+            },
+            
+            showProducts() {
+                console.log('[showProducts] Called');
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:showProducts',message:'showProducts called',data:{currentPage:this.activePage,hasLoadProducts:typeof this.loadProducts === 'function'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+                // #endregion
+                this.activePage = 'products';
+                console.log('[showProducts] Active page set to:', this.activePage);
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:showProducts',message:'activePage set to products',data:{activePage:this.activePage},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+                // #endregion
+                setTimeout(() => {
+                    if (typeof this.loadProducts === 'function') {
+                        console.log('[showProducts] Calling loadProducts');
+                        this.loadProducts();
+                    } else {
+                        console.error('[showProducts] loadProducts is not a function');
+                    }
+                }, 50);
+            },
+            
+            showCategories() {
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:showCategories',message:'showCategories called',data:{currentPage:this.activePage,hasLoadCategories:typeof this.loadCategories === 'function'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+                // #endregion
+                this.activePage = 'categories';
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:showCategories',message:'activePage set to categories',data:{activePage:this.activePage},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+                // #endregion
+                setTimeout(() => {
+                    if (typeof this.loadCategories === 'function') {
+                        this.loadCategories();
+                    } else {
+                        console.error('loadCategories not a function');
+                    }
+                }, 50);
+            },
+            
+            showDashboard() {
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:showDashboard',message:'showDashboard called',data:{currentPage:this.activePage},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
+                // #endregion
+                this.activePage = 'dashboard';
+                if (typeof this.loadDashboard === 'function') {
+                    this.loadDashboard();
+                }
             }
             });
             
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:initDashboardMethods',message:'Methods attached successfully',data:{hasLoadProducts:typeof dashboard.loadProducts === 'function',hasLoadCategories:typeof dashboard.loadCategories === 'function',hasLoadDashboard:typeof dashboard.loadDashboard === 'function',hasShowProducts:typeof dashboard.showProducts === 'function',hasShowCategories:typeof dashboard.showCategories === 'function',hasShowDashboard:typeof dashboard.showDashboard === 'function',activePage:dashboard.activePage},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+            // #endregion
+            
             // Load initial data
-            if (dashboard.activePage === 'dashboard') {
-                dashboard.loadDashboard();
+            try {
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:initDashboardMethods',message:'Attempting to load dashboard',data:{activePage:dashboard.activePage},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+                // #endregion
+                if (dashboard.activePage === 'dashboard' && typeof dashboard.loadDashboard === 'function') {
+                    dashboard.loadDashboard();
+                }
+            } catch (error) {
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:initDashboardMethods',message:'Error loading dashboard',data:{errorMessage:error.message,errorName:error.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
+                // #endregion
+                console.error('Error loading dashboard:', error);
             }
         }
         
         // Initialize when DOM is ready
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initDashboardMethods);
-        } else {
-            // DOM already loaded, wait for Alpine
-            document.addEventListener('alpine:init', () => {
-                setTimeout(initDashboardMethods, 50);
-            });
-            // Also try immediately
-            setTimeout(initDashboardMethods, 100);
+        function initializeDashboard() {
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:initializeDashboard',message:'initializeDashboard called',data:{alpineDefined:typeof Alpine !== 'undefined',readyState:document.readyState},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+            // #endregion
+            if (typeof Alpine === 'undefined') {
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:initializeDashboard',message:'Alpine not defined, retrying',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+                // #endregion
+                setTimeout(initializeDashboard, 50);
+                return;
+            }
+            
+            // Wait for Alpine to be ready
+            if (document.readyState === 'loading') {
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:initializeDashboard',message:'DOM loading, waiting for DOMContentLoaded',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+                // #endregion
+                document.addEventListener('DOMContentLoaded', () => {
+                    setTimeout(initDashboardMethods, 100);
+                });
+            } else {
+                // Try multiple times to ensure Alpine is ready
+                let attempts = 0;
+                const tryInit = () => {
+                    attempts++;
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:tryInit',message:'tryInit attempt',data:{attempt:attempts,alpineDefined:typeof Alpine !== 'undefined',hasAlpineData:typeof Alpine !== 'undefined' && typeof Alpine.$data !== 'undefined'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+                    // #endregion
+                    if (typeof Alpine !== 'undefined' && Alpine.$data) {
+                        // #region agent log
+                        fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:tryInit',message:'Alpine ready, calling initDashboardMethods',data:{attempts:attempts},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+                        // #endregion
+                        initDashboardMethods();
+                    } else if (attempts < 20) {
+                        setTimeout(tryInit, 100);
+                    } else {
+                        // #region agent log
+                        fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:tryInit',message:'Failed to initialize after 20 attempts',data:{attempts:attempts},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
+                        // #endregion
+                        console.error('Failed to initialize dashboard methods');
+                    }
+                };
+                tryInit();
+            }
         }
+        
+        initializeDashboard();
     </script>
 </body>
 </html>

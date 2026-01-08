@@ -4,6 +4,20 @@ import path from "path";
 const projectRoot = __dirname;
 
 const nextConfig: NextConfig = {
+  output: 'export',
+  trailingSlash: true,
+  turbopack: {},
+  // Exclude admin routes from static export (they require server-side rendering)
+  // Admin panel should be accessed directly via PHP server
+  images: {
+    unoptimized: true,
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'placehold.co',
+      },
+    ],
+  },
   webpack: (config) => {
     // Explicitly set the project root for module resolution
     // This ensures PostCSS can resolve tailwindcss correctly
@@ -19,7 +33,7 @@ const nextConfig: NextConfig = {
       const existingModules = Array.isArray(config.resolve.modules) ? config.resolve.modules : [];
       config.resolve.modules = [
         projectNodeModules,
-        ...existingModules.filter(m => typeof m === 'string' && m !== 'node_modules' && !m.includes(projectRoot)),
+        ...existingModules.filter((m: any) => typeof m === 'string' && m !== 'node_modules' && !m.includes(projectRoot)),
         'node_modules'
       ];
       // Also set resolveLoader
@@ -32,19 +46,11 @@ const nextConfig: NextConfig = {
       const existingLoaderModules = Array.isArray(config.resolveLoader.modules) ? config.resolveLoader.modules : [];
       config.resolveLoader.modules = [
         projectNodeModules,
-        ...existingLoaderModules.filter(m => typeof m === 'string' && m !== 'node_modules' && !m.includes(projectRoot)),
+        ...existingLoaderModules.filter((m: any) => typeof m === 'string' && m !== 'node_modules' && !m.includes(projectRoot)),
         'node_modules'
       ];
     }
     return config;
-  },
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'placehold.co',
-      },
-    ],
   },
   // Admin is handled by Next.js page component at src/app/admin/[[...path]]/page.tsx
   // This allows admin to work on same port (3000) as Next.js app

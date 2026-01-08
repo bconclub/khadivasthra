@@ -50,7 +50,7 @@ export function Header() {
                 <Button
                     variant="ghost"
                     size="icon"
-                    className="header__menu-toggle md:hidden text-white hover:text-cream hover:bg-white/20 transition-colors z-10"
+                    className="header__menu-toggle md:hidden text-white hover:text-coral hover:bg-white/20 transition-colors z-10"
                     onClick={() => setIsMenuOpen(!isMenuOpen)}
                 >
                     {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -96,25 +96,25 @@ export function Header() {
                 <nav className="header__nav header__nav--desktop hidden md:flex items-center space-x-8 transition-all duration-300 absolute left-1/2 -translate-x-1/2">
                     <Link 
                         href="/products" 
-                        className="header__nav-link text-sm font-medium text-white hover:text-cream transition-colors"
+                        className="header__nav-link text-sm font-medium text-white hover:text-coral transition-colors"
                     >
                         Shop
                     </Link>
                     <Link 
                         href="/products" 
-                        className="header__nav-link text-sm font-medium text-white hover:text-cream transition-colors"
+                        className="header__nav-link text-sm font-medium text-white hover:text-coral transition-colors"
                     >
                         Collections
                     </Link>
                     <Link 
                         href="/contact" 
-                        className="header__nav-link text-sm font-medium text-white hover:text-cream transition-colors"
+                        className="header__nav-link text-sm font-medium text-white hover:text-coral transition-colors"
                     >
                         About
                     </Link>
                     <Link 
                         href="/contact" 
-                        className="header__nav-link text-sm font-medium text-white hover:text-cream transition-colors"
+                        className="header__nav-link text-sm font-medium text-white hover:text-coral transition-colors"
                     >
                         Contact
                     </Link>
@@ -125,7 +125,7 @@ export function Header() {
                     <Button 
                         variant="ghost" 
                         size="icon" 
-                        className="header__search-button text-white hover:text-cream hover:bg-white/20"
+                        className="header__search-button text-white hover:text-coral hover:bg-white/20"
                         aria-label="Search"
                     >
                         <Search className="h-5 w-5" />
@@ -134,7 +134,7 @@ export function Header() {
                         <Button 
                             variant="ghost" 
                             size="icon" 
-                            className="header__cart-button relative text-white hover:text-cream hover:bg-white/20"
+                            className="header__cart-button relative text-white hover:text-coral hover:bg-white/20"
                         >
                             <ShoppingBag className="h-5 w-5" />
                             {cartCount > 0 && (
@@ -153,28 +153,28 @@ export function Header() {
                     <nav className="header__nav header__nav--mobile flex flex-col space-y-4">
                         <Link
                             href="/products"
-                            className="header__nav-link text-sm font-medium text-white hover:text-cream transition-colors"
+                            className="header__nav-link text-sm font-medium text-white hover:text-coral transition-colors"
                             onClick={() => setIsMenuOpen(false)}
                         >
                             Shop
                         </Link>
                         <Link
                             href="/products"
-                            className="header__nav-link text-sm font-medium text-white hover:text-cream transition-colors"
+                            className="header__nav-link text-sm font-medium text-white hover:text-coral transition-colors"
                             onClick={() => setIsMenuOpen(false)}
                         >
                             Collections
                         </Link>
                         <Link
                             href="/contact"
-                            className="header__nav-link text-sm font-medium text-white hover:text-cream transition-colors"
+                            className="header__nav-link text-sm font-medium text-white hover:text-coral transition-colors"
                             onClick={() => setIsMenuOpen(false)}
                         >
                             About
                         </Link>
                         <Link
                             href="/contact"
-                            className="header__nav-link text-sm font-medium text-white hover:text-cream transition-colors"
+                            className="header__nav-link text-sm font-medium text-white hover:text-coral transition-colors"
                             onClick={() => setIsMenuOpen(false)}
                         >
                             Contact

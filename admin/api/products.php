@@ -11,7 +11,10 @@ $method = $_SERVER['REQUEST_METHOD'];
 // GET - List all products
 if ($method === 'GET') {
     $data = readJSON(PRODUCTS_FILE);
-    $products = $data['products'] ?? [];
+    // Handle both array format and object format
+    $products = is_array($data) && !isset($data['products']) 
+        ? $data 
+        : ($data['products'] ?? []);
     jsonResponse(['products' => $products]);
 }
 
