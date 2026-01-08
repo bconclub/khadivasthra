@@ -1,0 +1,82 @@
+# Apache VirtualHost Configuration Example
+# For serving Next.js + PHP Admin on same domain
+# Place in: /etc/apache2/sites-available/khadivasthra.conf
+
+<VirtualHost *:80>
+    ServerName yourdomain.com
+    ServerAlias www.yourdomain.com
+    
+    # Redirect HTTP to HTTPS
+    Redirect permanent / https://yourdomain.com/
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName yourdomain.com
+    ServerAlias www.yourdomain.com
+    
+    DocumentRoot /var/www/khadivasthra
+    
+    # SSL Configuration
+    SSLEngine on
+    SSLCertificateFile /etc/letsencrypt/live/yourdomain.com/fullchain.pem
+    SSLCertificateKeyFile /etc/letsencrypt/live/yourdomain.com/privkey.pem
+    SSLProtocol all -SSLv3 -TLSv1 -TLSv1.1
+    
+    # ============================================
+    # ADMIN PANEL - PHP Routes
+    # ============================================
+    <Directory "/var/www/khadivasthra/admin">
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+        
+        # PHP processing
+        <FilesMatch \.php$>
+            SetHandler "proxy:unix:/var/run/php/php8.2-fpm.sock|fcgi://localhost"
+        </FilesMatch>
+        
+        # Security: Deny access to sensitive files
+        <FilesMatch "\.(json|log|md)$">
+            Require all denied
+        </FilesMatch>
+    </Directory>
+    
+    # Admin .htaccess rules
+    <DirectoryMatch "^/var/www/khadivasthra/admin">
+        AllowOverride All
+    </DirectoryMatch>
+    
+    # ============================================
+    # NEXT.JS APP - All Other Routes
+    # ============================================
+    <Directory "/var/www/khadivasthra">
+        Options -Indexes +FollowSymLinks
+        AllowOverride All
+        Require all granted
+        
+        # Rewrite rules for Next.js
+        RewriteEngine On
+        RewriteBase /
+        
+        # Don't rewrite admin routes
+        RewriteCond %{REQUEST_URI} ^/admin [NC]
+        RewriteRule ^ - [L]
+        
+        # Don't rewrite existing files
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        
+        # Rewrite to Next.js
+        RewriteRule . /index.html [L]
+    </Directory>
+    
+    # Proxy Next.js if running separately
+    ProxyPreserveHost On
+    ProxyPass /api http://localhost:3000/api
+    ProxyPassReverse /api http://localhost:3000/api
+    
+    # Logging
+    ErrorLog ${APACHE_LOG_DIR}/khadivasthra_error.log
+    CustomLog ${APACHE_LOG_DIR}/khadivasthra_access.log combined
+</VirtualHost>
+

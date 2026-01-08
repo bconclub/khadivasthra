@@ -1,28 +1,27 @@
 <?php
 /**
- * Admin Configuration
- * Khadi Vasthra Admin Panel
+ * Production Configuration Template
+ * Copy this to config.php and update for production
  */
 
-// Session configuration
+// Session configuration for HTTPS
 ini_set('session.cookie_httponly', 1);
 ini_set('session.use_only_cookies', 1);
-ini_set('session.cookie_secure', 0); // Set to 1 in production with HTTPS
+ini_set('session.cookie_secure', 1); // ✅ ENABLED for HTTPS in production
 
 // Start session
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-// Admin password (change this!)
-// Default password: admin123
-// Generate hash: password_hash('your_password', PASSWORD_DEFAULT)
-define('ADMIN_PASSWORD_HASH', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi'); // admin123
+// ⚠️ CHANGE THIS PASSWORD!
+// Generate hash: php -r "echo password_hash('your_strong_password', PASSWORD_DEFAULT);"
+define('ADMIN_PASSWORD_HASH', 'YOUR_PASSWORD_HASH_HERE');
 
 // Session timeout (30 minutes)
 define('SESSION_TIMEOUT', 1800);
 
-// File paths
+// File paths (relative paths work fine)
 define('DATA_DIR', __DIR__ . '/../data/');
 define('UPLOADS_DIR', __DIR__ . '/../uploads/');
 define('PRODUCTS_FILE', DATA_DIR . 'products.json');
@@ -33,18 +32,14 @@ define('SETTINGS_FILE', DATA_DIR . 'settings.json');
 define('MAX_FILE_SIZE', 2 * 1024 * 1024); // 2MB
 define('ALLOWED_EXTENSIONS', ['jpg', 'jpeg', 'png', 'webp', 'gif']);
 
-// CORS headers for Next.js frontend
-// For same-domain setup, use specific origin instead of *
-$is_https = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
-$protocol = $is_https ? 'https://' : 'http://';
-$allowed_origin = $_SERVER['HTTP_ORIGIN'] ?? $protocol . ($_SERVER['HTTP_HOST'] ?? 'localhost');
-header('Access-Control-Allow-Origin: ' . $allowed_origin);
+// CORS headers - Update with your Next.js domain
+header('Access-Control-Allow-Origin: https://yourdomain.com');
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-CSRF-Token');
 header('Access-Control-Allow-Credentials: true');
 
 // Handle preflight requests
-if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
@@ -52,6 +47,4 @@ if (isset($_SERVER['REQUEST_METHOD']) && $_SERVER['REQUEST_METHOD'] === 'OPTIONS
 // Timezone
 date_default_timezone_set('Asia/Kolkata');
 ?>
-
-
 

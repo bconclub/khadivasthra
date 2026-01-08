@@ -4,18 +4,18 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { ProductCarousel } from "@/components/product/ProductCarousel";
-import { InstagramCarousel } from "@/components/product/InstagramCarousel";
+import { ProductCard } from "@/components/product/ProductCard";
 import products from "@/data/products.json";
-import { ArrowRight, CheckCircle, Truck, ShieldCheck, Star, Instagram } from "lucide-react";
-import { useState, useEffect } from "react";
+import { ArrowRight, Heart, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState, useCallback, useEffect } from "react";
+import useEmblaCarousel from "embla-carousel-react";
 
 export default function Home() {
-  // Filter single-mundus featured products (price 1999)
-  const featuredSingleMundus = products.filter(p => 
-    p.isFeatured && 
-    p.category === "Single Mundus" && 
-    p.price === 1999
-  );
+  // Get trending products (featured products)
+  const trendingProducts = products.filter(p => p.isFeatured).slice(0, 8);
+  
+  // Get best selling products
+  const bestSelling = products.slice(0, 7);
 
   const [logoScale, setLogoScale] = useState(1);
   const [logoOpacity, setLogoOpacity] = useState(1);
@@ -28,6 +28,14 @@ export default function Home() {
       const rect = heroLogo.getBoundingClientRect();
       const windowHeight = window.innerHeight;
       const logoTop = rect.top;
+      const scrollY = window.scrollY;
+      
+      // Only start scaling when user has scrolled
+      if (scrollY === 0) {
+        setLogoScale(1);
+        setLogoOpacity(1);
+        return;
+      }
       
       // Calculate scale based on scroll position
       // Logo starts at scale 1, grows to 1.5 as it approaches header (80px from top)
@@ -40,29 +48,29 @@ export default function Home() {
         const fadeProgress = Math.max(0, 1 - (headerThreshold - logoTop) / 100);
         setLogoOpacity(fadeProgress);
         setLogoScale(1.5);
-      } else if (logoTop < windowHeight) {
-        // Logo is in viewport, scale it up as it scrolls
+      } else if (logoTop < windowHeight && scrollY > 0) {
+        // Logo is in viewport and user has scrolled, scale it up as it scrolls
         const scrollProgress = Math.min(1, currentScroll / scrollRange);
         const scale = 1 + (scrollProgress * 0.5); // Scale from 1 to 1.5
         setLogoScale(scale);
         setLogoOpacity(1);
       } else {
-        // Logo is below viewport
+        // Logo is below viewport or no scroll yet
         setLogoScale(1);
         setLogoOpacity(1);
       }
     };
 
     window.addEventListener('scroll', handleScroll);
-    handleScroll(); // Initial check
+    // Don't call handleScroll on initial load - let it stay at scale 1
     
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
     <>
-      {/* Hero Section - Fullscreen Cover Image */}
-      <section className="hero-section relative h-screen flex items-center justify-center overflow-hidden">
+      {/* 1. HERO SECTION - Fullscreen Cover Image with Logo in Middle */}
+      <section className="hero-section relative -mt-20 pt-20 h-screen flex items-center justify-center overflow-hidden">
         {/* Background Image */}
         <Image
           src="/Cover KV.webp"
@@ -76,17 +84,17 @@ export default function Home() {
         <div className="hero-section__overlay absolute inset-0 bg-black/30 z-0"></div>
         {/* Content */}
         <div className="hero-section__content container mx-auto px-4 max-w-7xl relative z-20 text-center max-w-4xl">
-          <span className="hero-section__badge inline-block px-2 py-0.5 border border-white/30 rounded-full text-xs tracking-widest uppercase font-medium bg-white/20 backdrop-blur-sm text-white mb-4">
-            Est. 1990
+          <span className="hero-section__badge inline-block px-4 py-1.5 border border-white/30 rounded-full text-sm tracking-widest uppercase font-medium bg-white/20 backdrop-blur-sm text-white mb-4">
+            Authentic Kerala Handloom
           </span>
           <div className="hero-section__logo-wrapper flex justify-center mb-4">
             <Image
               id="hero-logo"
               src="/Khadi Vasthra White Transparnt.png"
               alt="Khadi Vasthra Logo"
-              width={300}
-              height={120}
-              className="hero-section__logo h-auto w-full max-w-[200px] md:max-w-[250px] lg:max-w-[300px] object-contain drop-shadow-2xl transition-all duration-300 ease-out"
+              width={500}
+              height={200}
+              className="hero-section__logo h-auto w-full max-w-md md:max-w-lg lg:max-w-xl object-contain drop-shadow-2xl transition-all duration-300 ease-out"
               style={{
                 transform: `scale(${logoScale})`,
                 opacity: logoOpacity,
@@ -94,207 +102,265 @@ export default function Home() {
               priority
             />
           </div>
-          <p className="hero-section__description text-sm md:text-base text-white/95 max-w-[30%] mx-auto font-light leading-relaxed drop-shadow-md mb-4">
+          <p className="hero-section__description text-xl md:text-2xl text-white/95 max-w-2xl mx-auto font-light leading-relaxed drop-shadow-md mb-6">
             Discover the finest collection of handcrafted Mundus and Dhotis, brought to you directly from the artisans of Aluva.
           </p>
-          <div className="hero-section__actions flex flex-col sm:flex-row items-center justify-center gap-3">
-            <a href="#featured-collection" className="hero-section__cta-primary">
-              <Button size="lg" variant="secondary" className="font-bold min-w-[100px] h-7 text-sm shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300 bg-coral text-white hover:bg-coral-dark">
+          <div className="hero-section__actions flex flex-col sm:flex-row items-center justify-center gap-6">
+            <Link href="/products" className="hero-section__cta-primary">
+              <Button size="lg" className="bg-orange hover:bg-orange-dark text-white font-bold min-w-[200px] h-14 text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                 Shop Now
               </Button>
-            </a>
+            </Link>
           </div>
         </div>
       </section>
 
-      <div className="main-content flex flex-col gap-24 pb-16 relative z-10 bg-white">
-      {/* Featured Products - White bg, cream cards */}
-      <section id="featured-collection" className="featured-collection-section bg-white container mx-auto px-4 max-w-7xl py-16 scroll-mt-24">
-        <div className="featured-collection-section__header flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
-          <div className="featured-collection-section__header-content space-y-4">
-            <h2 className="featured-collection-section__title text-4xl font-bold text-text font-serif">Featured Collection</h2>
-            <div className="featured-collection-section__divider h-1 w-20 bg-coral rounded-full"></div>
-            <p className="featured-collection-section__description text-text-muted text-lg max-w-xl">Handpicked favorites that represent the pinnacle of our craftsmanship. Perfect for weddings, festivals, and daily elegance.</p>
+      {/* 2. TRENDING PRODUCTS - Cream bg, carousel */}
+      <section className="trending-section bg-cream py-20">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <h2 className="trending-section__title text-4xl font-bold text-text font-serif text-center mb-12">
+            Trending Products
+          </h2>
+          <div className="trending-section__carousel">
+            <TrendingCarousel products={trendingProducts} />
           </div>
-          <Link href="/products" className="featured-collection-section__view-all-link hidden md:block">
-            <Button variant="ghost" className="text-text hover:text-coral group text-lg font-medium hover:bg-cream/50">
-              View All Collection <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
-            </Button>
-          </Link>
-        </div>
-
-        <div className="featured-collection-section__carousel">
-          <ProductCarousel products={featuredSingleMundus} />
-        </div>
-
-        <div className="featured-collection-section__footer mt-12 text-center">
-          <Link href="/products" className="featured-collection-section__cta-link">
-            <Button variant="outline" className="w-full md:w-auto h-12 text-lg px-8">View All Products</Button>
-          </Link>
         </div>
       </section>
 
-      {/* About Section - Cream bg, white cards */}
-      <section className="about-section bg-cream py-32 relative overflow-hidden">
-        <div className="about-section__container container mx-auto px-4 max-w-7xl grid md:grid-cols-2 gap-16 items-center relative z-10">
-          <div className="about-section__image-wrapper relative h-[500px] rounded-2xl overflow-hidden shadow-lg border border-cream/50">
-            {/* Using a placeholder that looks more like fabric/weaving */}
-            <Image
-              src="https://placehold.co/800x1000/F5E6D3/1A1A1A?text=Our+Heritage"
-              alt="Handloom weaving heritage"
-              fill
-              className="about-section__image object-cover hover:scale-105 transition-transform duration-700"
+      {/* 3. THREE BANNERS - White bg */}
+      <section className="banners-section bg-white py-16">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="banners-section__grid grid md:grid-cols-3 gap-6">
+            <BannerCard 
+              title="Festival Collection"
+              overlay="coral"
+              image="/images/single-mundus/Peach Heritage Mundu.png"
             />
-            <div className="about-section__badge absolute bottom-6 left-6 right-6 bg-white/95 backdrop-blur-md p-6 rounded-xl shadow-lg border border-cream/50">
-              <div className="about-section__badge-content flex items-center gap-4">
-                <div className="about-section__badge-icon bg-coral p-3 rounded-full">
-                  <Star className="h-6 w-6 text-white fill-current" />
-                </div>
-                <div className="about-section__badge-text">
-                  <p className="text-sm text-coral uppercase tracking-wider font-bold">Trusted Legacy</p>
-                  <p className="text-text font-serif text-lg">Over 30 Years of Excellence</p>
-                </div>
-              </div>
-            </div>
+            <BannerCard 
+              title="25% Off"
+              overlay="orange"
+              image="/images/single-mundus/Red Border Balck Mundu.png"
+            />
+            <BannerCard 
+              title="New Arrivals"
+              overlay="cream"
+              image="/images/single-mundus/White Purple Mundu.png"
+            />
           </div>
+        </div>
+      </section>
 
-          <div className="about-section__content space-y-8">
-            <span className="about-section__label text-coral font-bold tracking-widest text-sm uppercase flex items-center gap-2">
-              <span className="w-8 h-px bg-coral"></span> Our Story
-            </span>
-            <h2 className="about-section__title text-5xl font-bold text-text font-serif leading-tight">Preserving the Art <br /> of <span className="text-coral italic">Kerala Handloom</span></h2>
-            <p className="about-section__description text-text-muted leading-loose text-lg">
-              Khadi Vasthra is more than just a store; it's a celebration of Kerala's rich textile heritage.
-              Located in the heart of Aluva, we have been bridging the gap between traditional weavers and modern lifestyles since 1990.
-            </p>
-            <p className="about-section__description-secondary text-text-muted leading-loose text-lg">
-              Every thread in our mundus tells a story of patience, skill, and dedication. We take pride in sourcing directly
-              from master weavers, ensuring that the art form thrives while you get the most authentic quality.
-            </p>
+      {/* 4. TOP CATEGORY - White bg, 4 circular images */}
+      <section className="categories-section bg-white py-20">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <h2 className="categories-section__title text-4xl font-bold text-text font-serif text-center mb-12">
+            Top Category
+          </h2>
+          <div className="categories-section__grid grid grid-cols-2 md:grid-cols-4 gap-8">
+            <CategoryCircle name="White Mundus" image="/images/mundu-white.png" />
+            <CategoryCircle name="Kavi" image="/images/mundu-gold.png" />
+            <CategoryCircle name="Printed" image="/images/mundu-pink.png" />
+            <CategoryCircle name="Double" image="/images/mundu-saffron.png" />
+          </div>
+        </div>
+      </section>
 
-            <div className="about-section__features pt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {[
-                "100% Pure Cotton",
-                "Authentic Khadi Mark",
-                "Direct Weaver Support",
-                "Traditional Techniques"
-              ].map((item, i) => (
-                <div key={i} className="about-section__feature-item flex items-center gap-3 bg-white p-4 rounded-lg border border-cream/50">
-                  <CheckCircle className="h-5 w-5 text-coral" />
-                  <span className="font-medium text-text">{item}</span>
-                </div>
+      {/* 5. BEST SELLING - Cream bg, masonry grid */}
+      <section className="bestselling-section bg-cream py-20">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <h2 className="bestselling-section__title text-4xl font-bold text-text font-serif text-center mb-12">
+            Best Selling
+          </h2>
+          <div className="bestselling-section__grid grid md:grid-cols-3 gap-6">
+            {/* Large left card */}
+            <div className="md:col-span-1">
+              <ProductCard product={bestSelling[0]} variant="white" />
+            </div>
+            {/* 4 small right cards */}
+            <div className="md:col-span-2 grid grid-cols-2 gap-6">
+              {bestSelling.slice(1, 5).map((product) => (
+                <ProductCard key={product.id} product={product} variant="white" />
               ))}
             </div>
+            {/* 3 below */}
+            <div className="md:col-span-3 grid md:grid-cols-3 gap-6">
+              {bestSelling.slice(5, 8).map((product) => (
+                <ProductCard key={product.id} product={product} variant="white" />
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
 
-            <div className="about-section__cta pt-4">
-              <Link href="/contact">
-                <Button variant="outline" className="h-12 px-8 font-semibold">Read More About Us</Button>
+      {/* 6. MARQUEE - Coral pink bg, infinite scroll */}
+      <section className="marquee-section bg-coral py-6 overflow-hidden">
+        <div className="marquee-section__content flex animate-scroll whitespace-nowrap">
+          <span className="marquee-section__text text-white text-xl font-semibold mx-8">
+            Welcome to our store
+          </span>
+          <span className="marquee-section__text text-white text-xl font-semibold mx-8">
+            Welcome to our store
+          </span>
+          <span className="marquee-section__text text-white text-xl font-semibold mx-8">
+            Welcome to our store
+          </span>
+          <span className="marquee-section__text text-white text-xl font-semibold mx-8">
+            Welcome to our store
+          </span>
+        </div>
+      </section>
+
+      {/* 7. ABOUT SECTION - White bg, image left, text right */}
+      <section className="about-section bg-white py-20">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <div className="about-section__content grid md:grid-cols-2 gap-12 items-center">
+            {/* Left: Image */}
+            <div className="about-section__image-wrapper relative aspect-[4/5] rounded-2xl overflow-hidden shadow-lg">
+              <Image
+                src="https://placehold.co/600x750/F5E6D3/1A1A1A?text=Our+Heritage"
+                alt="Khadi Vasthra Heritage"
+                fill
+                className="object-cover"
+              />
+            </div>
+
+            {/* Right: Text */}
+            <div className="about-section__text space-y-6">
+              <span className="about-section__badge inline-block px-4 py-2 bg-orange text-white text-sm font-semibold uppercase tracking-wider rounded-full">
+                Since 1990
+              </span>
+              <h2 className="about-section__title text-4xl md:text-5xl font-bold text-text font-serif leading-tight">
+                Preserving Kerala's Handloom Heritage
+              </h2>
+              <p className="about-section__description text-lg text-text-muted leading-relaxed">
+                Khadi Vasthra is more than just a store; it's a celebration of Kerala's rich textile heritage.
+                Located in the heart of Aluva, we have been bridging the gap between traditional weavers and modern lifestyles since 1990.
+              </p>
+              <p className="about-section__description text-lg text-text-muted leading-relaxed">
+                Every thread in our mundus tells a story of patience, skill, and dedication. We take pride in sourcing directly
+                from master weavers, ensuring that the art form thrives while you get the most authentic quality.
+              </p>
+              <Link href="/contact" className="about-section__cta inline-block">
+                <Button size="lg" className="bg-coral hover:bg-coral-dark text-white font-semibold px-8 py-6">
+                  Learn More
+                </Button>
               </Link>
             </div>
           </div>
         </div>
       </section>
-
-      {/* Why Choose Us - White bg */}
-      <section className="why-choose-section bg-white container mx-auto px-4 max-w-7xl py-20">
-        <div className="why-choose-section__header text-center max-w-2xl mx-auto mb-16 space-y-4">
-          <h2 className="why-choose-section__title text-4xl font-bold text-text font-serif">Why Choose Khadi Vasthra?</h2>
-          <div className="why-choose-section__divider h-1 w-20 bg-coral mx-auto rounded-full"></div>
-          <p className="why-choose-section__description text-text-muted">We promise not just a product, but an experience of tradition and quality.</p>
-        </div>
-
-        <div className="why-choose-section__features grid md:grid-cols-3 gap-8">
-          <FeatureCard
-            icon={<ShieldCheck className="h-8 w-8 text-white" />}
-            title="Premium Quality"
-            description="Every piece undergoes rigorous quality checks to ensure you receive flawless fabric with superior texture and durability."
-          />
-          <FeatureCard
-            icon={<Truck className="h-8 w-8 text-white" />}
-            title="Fast Delivery"
-            description="We dispatch orders within 24 hours, ensuring your traditional attire reaches you well before your special occasion."
-          />
-          <FeatureCard
-            icon={<CheckCircle className="h-8 w-8 text-white" />}
-            title="Authentic Sourcing"
-            description="We eliminate middlemen by sourcing directly from traditional weaver societies, ensuring fair prices for you and them."
-          />
-        </div>
-      </section>
-
-      {/* Promo Banner - Coral pink bg, white text */}
-      <section className="promo-banner-section bg-coral text-white py-24 relative overflow-hidden">
-        <div className="promo-banner-section__container container mx-auto px-4 max-w-7xl relative z-10 text-center">
-          <h2 className="promo-banner-section__title text-3xl md:text-5xl font-bold font-serif mb-6">Special Offer This Season</h2>
-          <p className="promo-banner-section__description text-white/90 max-w-2xl mx-auto text-lg mb-10">
-            Get 10% off on all orders above ₹2000. Use code TRADITION10 at checkout.
-          </p>
-          <Link href="/products" className="promo-banner-section__cta">
-            <Button size="lg" variant="secondary" className="font-bold h-14 px-10 text-lg shadow-lg">
-              Shop Now
-            </Button>
-          </Link>
-        </div>
-      </section>
-
-
-
-      {/* Instagram Video Showcase - White bg with 9:16 Phone Mockups */}
-      <section className="instagram-section bg-white container mx-auto px-4 max-w-7xl py-20 rounded-3xl mb-12 shadow-sm border border-cream/30">
-        <div className="instagram-section__header text-center mb-12">
-          <h2 className="instagram-section__title text-4xl font-bold text-text font-serif mb-4">Trending on Instagram</h2>
-          <p className="instagram-section__description text-text-muted text-lg">Follow us @khadivasthra for styling tips and new arrivals</p>
-        </div>
-
-        <div className="instagram-section__carousel">
-          <InstagramCarousel 
-            posts={[
-              { id: 'DSLG5swkxMZ', type: 'embed' },
-              { id: 'DRxcwWFE-69', type: 'embed' },
-              { id: 'DRho1QQj4ca', type: 'embed' },
-              { id: 'DRXsHKxE4FV', type: 'embed' },
-              { id: 'DQ9quGyj4Ez', type: 'embed' }
-            ]}
-            autoplayInterval={5000}
-          />
-        </div>
-
-        <div className="instagram-section__footer mt-10 text-center">
-          <a href="https://instagram.com/khadivasthra" target="_blank" rel="noopener noreferrer" className="instagram-section__follow-link">
-            <Button variant="outline" className="gap-2 font-bold h-12 px-8">
-              <Instagram className="h-5 w-5" /> Follow Us on Instagram
-            </Button>
-          </a>
-        </div>
-      </section>
-
-      {/* Newsletter / CTA Section - Cream bg, orange subscribe button */}
-      <section className="cta-section bg-cream py-24 relative overflow-hidden">
-        <div className="cta-section__container container mx-auto px-4 max-w-7xl relative z-10 text-center">
-          <h2 className="cta-section__title text-3xl md:text-5xl font-bold font-serif mb-6 text-text">Ready to Experience Tradition?</h2>
-          <p className="cta-section__description text-text-muted max-w-2xl mx-auto text-lg mb-10">
-            Explore our exclusive collection of white, off-white, and colored mundus. Perfect for weddings, festivals, and daily wear.
-          </p>
-          <Link href="/products" className="cta-section__link">
-            <Button size="lg" variant="secondary" className="font-bold h-14 px-10 text-lg shadow-lg">
-              Shop Now
-            </Button>
-          </Link>
-        </div>
-      </section>
-      </div>
     </>
   );
 }
 
-function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
+// Banner Card Component
+function BannerCard({ title, overlay, image }: { title: string; overlay: string; image: string }) {
+  const overlayClass = overlay === "coral" ? "bg-coral/80" : overlay === "orange" ? "bg-orange/80" : "bg-cream/80";
+  
   return (
-    <div className="feature-card group bg-white p-8 rounded-2xl shadow-sm border border-cream/30 text-center hover:shadow-md hover:border-coral/30 transition-all duration-300 transform hover:-translate-y-2">
-      <div className="feature-card__icon-wrapper flex justify-center mb-6 bg-coral group-hover:bg-coral-dark p-5 rounded-full w-20 h-20 mx-auto items-center transition-colors shadow-lg shadow-coral/20">
-        {icon}
+    <div className="banner-card relative aspect-[16/9] rounded-2xl overflow-hidden shadow-lg group cursor-pointer">
+      <Image
+        src={image}
+        alt={title}
+        fill
+        className="object-cover group-hover:scale-110 transition-transform duration-500"
+      />
+      <div className={`absolute inset-0 ${overlayClass} flex items-center justify-center`}>
+        <h3 className="banner-card__title text-2xl md:text-3xl font-bold text-white text-center">
+          {title}
+        </h3>
       </div>
-      <h3 className="feature-card__title text-xl font-bold mb-4 text-text font-serif">{title}</h3>
-      <p className="feature-card__description text-text-muted leading-relaxed">{description}</p>
     </div>
-  )
+  );
+}
+
+// Category Circle Component
+function CategoryCircle({ name, image }: { name: string; image: string }) {
+  return (
+    <div className="category-circle text-center">
+      <div className="category-circle__image-wrapper relative w-32 h-32 md:w-40 md:h-40 mx-auto mb-4 rounded-full overflow-hidden shadow-lg border-4 border-white">
+        <Image
+          src={image}
+          alt={name}
+          fill
+          className="object-cover"
+        />
+      </div>
+      <h3 className="category-circle__name text-lg font-semibold text-text">{name}</h3>
+    </div>
+  );
+}
+
+// Trending Carousel Component with Heart Icons
+function TrendingCarousel({ products }: { products: Array<{ id: string; name: string; price: number; image: string; category: string }> }) {
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    align: "start",
+    slidesToScroll: 1,
+    loop: false,
+  });
+
+  const [prevBtnDisabled, setPrevBtnDisabled] = useState(true);
+  const [nextBtnDisabled, setNextBtnDisabled] = useState(true);
+
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
+
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
+
+  const onSelect = useCallback((emblaApi: any) => {
+    setPrevBtnDisabled(!emblaApi.canScrollPrev());
+    setNextBtnDisabled(!emblaApi.canScrollNext());
+  }, []);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    onSelect(emblaApi);
+    emblaApi.on("reInit", onSelect);
+    emblaApi.on("select", onSelect);
+  }, [emblaApi, onSelect]);
+
+  return (
+    <div className="trending-carousel relative">
+      <div className="trending-carousel__viewport overflow-hidden" ref={emblaRef}>
+        <div className="trending-carousel__container flex gap-6">
+          {products.map((product) => (
+            <div
+              key={product.id}
+              className="trending-carousel__slide flex-[0_0_100%] sm:flex-[0_0_calc(50%-12px)] md:flex-[0_0_calc(50%-12px)] lg:flex-[0_0_calc(33.333%-16px)] xl:flex-[0_0_calc(25%-18px)] min-w-0"
+            >
+              <ProductCard product={product} showHeart={true} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {products.length > 4 && (
+        <div className="trending-carousel__navigation flex items-center justify-center gap-4 mt-8">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={scrollPrev}
+            disabled={prevBtnDisabled}
+            className="rounded-full w-12 h-12 border-2 border-coral text-coral hover:bg-coral hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            aria-label="Previous products"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={scrollNext}
+            disabled={nextBtnDisabled}
+            className="rounded-full w-12 h-12 border-2 border-coral text-coral hover:bg-coral hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            aria-label="Next products"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </Button>
+        </div>
+      )}
+    </div>
+  );
 }

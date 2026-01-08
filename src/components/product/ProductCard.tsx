@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Heart } from "lucide-react";
 
 interface ProductCardProps {
     product: {
@@ -15,9 +15,10 @@ interface ProductCardProps {
         category: string;
     };
     variant?: "white" | "cream"; // Context-aware background
+    showHeart?: boolean; // Show heart icon for favorites
 }
 
-export function ProductCard({ product, variant = "white" }: ProductCardProps) {
+export function ProductCard({ product, variant = "white", showHeart = false }: ProductCardProps) {
     const { addToCart } = useCart();
 
     // Use product image path, fallback to placeholder if not found
@@ -37,7 +38,12 @@ export function ProductCard({ product, variant = "white" }: ProductCardProps) {
                     sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                 />
 
-                <div className="product-card__quick-add absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                <div className="product-card__quick-add absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    {showHeart && (
+                        <div className="product-card__heart-button bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-md text-coral hover:text-coral-dark cursor-pointer">
+                            <Heart className="w-5 h-5" />
+                        </div>
+                    )}
                     <div className="product-card__quick-add-button bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-md text-coral hover:text-coral-dark cursor-pointer">
                         <ShoppingBag className="w-5 h-5" onClick={(e) => {
                             e.preventDefault();

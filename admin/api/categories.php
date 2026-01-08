@@ -20,7 +20,11 @@ if ($method === 'POST') {
     validateCSRF($_POST['csrf_token'] ?? '');
     
     $name = sanitize($_POST['name'] ?? '');
+    $slug = sanitize($_POST['slug'] ?? '');
     $description = sanitize($_POST['description'] ?? '');
+    $image = sanitize($_POST['image'] ?? '');
+    $isActive = isset($_POST['isActive']) && $_POST['isActive'] !== 'false';
+    $displayOrder = isset($_POST['displayOrder']) ? intval($_POST['displayOrder']) : 0;
     
     if (empty($name)) {
         jsonError('Category name is required');
@@ -29,7 +33,9 @@ if ($method === 'POST') {
     $data = readJSON(CATEGORIES_FILE);
     $categories = $data['categories'] ?? [];
     
-    $slug = generateSlug($name);
+    if (empty($slug)) {
+        $slug = generateSlug($name);
+    }
     // Ensure unique slug
     $baseSlug = $slug;
     $counter = 1;
@@ -42,7 +48,10 @@ if ($method === 'POST') {
         'id' => getNextId($categories),
         'name' => $name,
         'slug' => $slug,
-        'description' => $description
+        'description' => $description,
+        'image' => $image,
+        'isActive' => $isActive,
+        'displayOrder' => $displayOrder
     ];
     
     $categories[] = $newCategory;
@@ -81,10 +90,23 @@ if ($method === 'PUT' || ($method === 'POST' && isset($_POST['_method']) && $_PO
             
             if (isset($putData['name'])) {
                 $categories[$index]['name'] = sanitize($putData['name']);
+            }
+            if (isset($putData['slug'])) {
+                $categories[$index]['slug'] = sanitize($putData['slug']);
+            } elseif (isset($putData['name'])) {
                 $categories[$index]['slug'] = generateSlug($categories[$index]['name']);
             }
             if (isset($putData['description'])) {
                 $categories[$index]['description'] = sanitize($putData['description']);
+            }
+            if (isset($putData['image'])) {
+                $categories[$index]['image'] = sanitize($putData['image']);
+            }
+            if (isset($putData['isActive'])) {
+                $categories[$index]['isActive'] = $putData['isActive'] !== 'false' && $putData['isActive'] !== false;
+            }
+            if (isset($putData['displayOrder'])) {
+                $categories[$index]['displayOrder'] = intval($putData['displayOrder']);
             }
             
             break;

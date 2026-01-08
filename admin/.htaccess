@@ -1,0 +1,27 @@
+# Apache configuration for admin folder
+# This ensures PHP files are processed correctly
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /admin/
+    
+    # Don't rewrite if file exists
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    
+    # Redirect to index.php if accessing admin folder
+    RewriteRule ^$ index.php [L]
+</IfModule>
+
+# Security: Prevent direct access to sensitive files
+<FilesMatch "\.(json|log)$">
+    Order allow,deny
+    Deny from all
+</FilesMatch>
+
+# Allow access to PHP files
+<FilesMatch "\.php$">
+    Order allow,deny
+    Allow from all
+</FilesMatch>
+
