@@ -62,6 +62,15 @@
       "image": "/images/mundu-gold.png",
       "displayOrder": 7,
       "isActive": true
+    },
+    {
+      "id": "cat_008",
+      "name": "Festive Collection",
+      "slug": "festive-collection",
+      "description": "Special collection for festivals and celebrations",
+      "image": "/images/card covers/festival collection.png",
+      "displayOrder": 8,
+      "isActive": true
     }
   ]
 }

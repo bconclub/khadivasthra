@@ -31,17 +31,7 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
     <script src="https://cdn.tailwindcss.com"></script>
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <script>
-        // Log Alpine.js loading
-        console.log('[DEBUG] Script loaded');
-        window.addEventListener('alpine:init', () => {
-            console.log('[DEBUG] Alpine.js initialized');
-            fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:alpine-init',message:'Alpine.js initialized',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch((e) => console.error('[DEBUG] Log fetch failed:', e));
-        });
-        window.addEventListener('DOMContentLoaded', () => {
-            console.log('[DEBUG] DOM content loaded, Alpine defined:', typeof Alpine !== 'undefined');
-            fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:DOMContentLoaded',message:'DOM content loaded',data:{alpineDefined:typeof Alpine !== 'undefined'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch((e) => console.error('[DEBUG] Log fetch failed:', e));
-        });
-        console.log('[DEBUG] Event listeners registered');
+        // Alpine.js will be loaded from CDN
     </script>
     <style>
         [x-cloak] { display: none !important; }
@@ -61,6 +51,10 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
     categories: <?php echo json_encode(is_array($categories) ? $categories : []); ?>,
     csrfToken: '<?php echo $csrfToken; ?>',
     notification: { show: false, message: '', type: 'success' },
+    loadingProducts: false,
+    loadingCategories: false,
+    loadingDashboard: false,
+    dashboardInitialized: false,
     showProductModal: false,
     showCategoryModal: false,
     editingProduct: null,
@@ -362,13 +356,63 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                 <!-- Featured Page -->
                 <div x-show="activePage === 'featured'" x-cloak>
                     <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-3xl font-bold text-[#1A1A1A]">Featured Products</h2>
+                        <div>
+                            <h2 class="text-3xl font-bold text-[#1A1A1A]">Featured Products</h2>
+                            <p class="text-sm text-gray-600 mt-1">Products currently shown in the featured section (<span x-text="products.filter(p => p.isFeatured).length"></span> products)</p>
+                            <p class="text-xs text-gray-500 mt-1">To add/remove featured products, edit the product in the Products page or use the checkboxes below</p>
+                        </div>
                         <button @click="saveFeatured()" 
                             class="bg-[#E8657B] hover:bg-[#d8556b] text-white px-4 py-2 rounded-lg transition font-medium">
                             Save Featured
                         </button>
                     </div>
                     
+                    <!-- Table showing ONLY featured products -->
+                    <div class="bg-white border border-gray-200 rounded-lg shadow-sm overflow-hidden mb-8">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Image</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product Name</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Category</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Price</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    <template x-for="product in products.filter(p => p.isFeatured)" :key="product.id">
+                                        <tr>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <img :src="getImagePath(product.image)" 
+                                                     :alt="product.name"
+                                                     class="h-16 w-16 object-cover rounded">
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm font-medium text-[#1A1A1A]" x-text="product.name"></div>
+                                                <div class="text-xs text-gray-500" x-text="product.slug || product.id"></div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="px-2 py-1 text-xs rounded bg-orange-100 text-orange-800" x-text="product.category"></span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-sm font-medium text-orange-600">₹<span x-text="product.price"></span></div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="text-2xl">⭐</span>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                    <tr x-show="products.filter(p => p.isFeatured).length === 0">
+                                        <td colspan="5" class="px-6 py-4 text-center text-gray-500">No featured products found. Mark products as featured using the checkboxes below.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- All products with checkboxes to mark as featured -->
+                    <h3 class="text-xl font-bold text-[#1A1A1A] mb-4">All Products - Mark as Featured</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         <template x-for="product in products" :key="product.id">
                             <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
@@ -584,38 +628,32 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
 
         // Alpine.js methods - attach to existing x-data
         function initDashboardMethods() {
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:initDashboardMethods',message:'initDashboardMethods called',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-            // #endregion
+            // Prevent infinite loops
+            if (initAttempts >= MAX_INIT_ATTEMPTS) {
+                console.error('[initDashboardMethods] Max attempts reached, stopping');
+                return;
+            }
+            initAttempts++;
+            
             const dashboardElement = document.querySelector('[x-data]');
             if (!dashboardElement) {
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:initDashboardMethods',message:'Dashboard element not found, retrying',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-                // #endregion
                 setTimeout(initDashboardMethods, 100);
                 return;
             }
             
             if (typeof Alpine === 'undefined' || !Alpine.$data) {
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:initDashboardMethods',message:'Alpine not ready, retrying',data:{alpineDefined:typeof Alpine !== 'undefined',hasAlpineData:typeof Alpine !== 'undefined' && typeof Alpine.$data !== 'undefined'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-                // #endregion
                 setTimeout(initDashboardMethods, 100);
                 return;
             }
+            
+            // Reset counter on success
+            initAttempts = 0;
             
             const dashboard = Alpine.$data(dashboardElement);
             if (!dashboard) {
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:initDashboardMethods',message:'Dashboard data not found, retrying',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-                // #endregion
                 setTimeout(initDashboardMethods, 100);
                 return;
             }
-            
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:initDashboardMethods',message:'Attaching methods to dashboard',data:{hasLoadProducts:typeof dashboard.loadProducts === 'function',hasLoadCategories:typeof dashboard.loadCategories === 'function'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-            // #endregion
             
             // Ensure featuredProducts exists and is a Set
             if (!dashboard.featuredProducts || !(dashboard.featuredProducts instanceof Set)) {
@@ -643,10 +681,6 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                     displayOrder: 0
                 };
             }
-            
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:initDashboardMethods',message:'Products initialized',data:{productsIsArray:Array.isArray(dashboard.products),productsCount:dashboard.products.length,featuredProductsIsSet:dashboard.featuredProducts instanceof Set,hasCategoryForm:!!dashboard.categoryForm},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-            // #endregion
             
             Object.assign(dashboard, {
             // Helper method to get correct image path for admin panel
@@ -708,21 +742,8 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                 // Create a copy of the array to ensure reactivity
                 const productsArray = [...products];
                 
-                console.log('[filteredProducts] Products array prepared:', {
-                    length: productsArray.length,
-                    searchQuery: searchQuery
-                });
-                
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:filteredProducts',message:'filteredProducts getter called',data:{productsIsArray:Array.isArray(products),productsCount:productsArray.length,searchQuery:searchQuery,hasSearchQuery:!!searchQuery},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-                // #endregion
-                
                 // Always return all products if no search query
                 if (!searchQuery || searchQuery.trim() === '') {
-                    console.log('[filteredProducts] Returning all products:', productsArray.length);
-                    // #region agent log
-                    fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:filteredProducts',message:'filteredProducts returning all products',data:{resultCount:productsArray.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-                    // #endregion
                     return productsArray;
                 }
                 
@@ -735,15 +756,6 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                     return nameMatch || categoryMatch;
                 });
                 
-                console.log('[filteredProducts] Returning filtered results:', {
-                    query: query,
-                    resultCount: result.length,
-                    totalProducts: productsArray.length
-                });
-                
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:filteredProducts',message:'filteredProducts returning filtered results',data:{resultCount:result.length,query:query},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'F'})}).catch(()=>{});
-                // #endregion
                 return result;
             },
             
@@ -755,10 +767,22 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                 return products.filter(p => p.category === categoryName).length;
             },
             
+            loadingDashboard: false,
             loadDashboard() {
+                // Prevent concurrent calls
+                if (this.loadingDashboard) {
+                    console.log('[loadDashboard] Already loading, skipping');
+                    return;
+                }
+                this.loadingDashboard = true;
+                
                 // Refresh data for dashboard stats
-                this.loadProducts();
-                this.loadCategories();
+                Promise.all([
+                    this.loadProducts(),
+                    this.loadCategories()
+                ]).finally(() => {
+                    this.loadingDashboard = false;
+                });
             },
             
             showNotification(message, type = 'success') {
@@ -768,53 +792,28 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                 }, 3000);
             },
             
+            loadingProducts: false,
             async loadProducts() {
-                console.log('[loadProducts] Called, fetching from /api/products.php');
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadProducts',message:'loadProducts called',data:{url:'/api/products.php'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-                // #endregion
+                // Prevent concurrent calls
+                if (this.loadingProducts) {
+                    console.log('[loadProducts] Already loading, skipping');
+                    return;
+                }
+                this.loadingProducts = true;
+                
                 try {
                     const response = await fetch('/api/products.php', {
                         credentials: 'include'
                     });
                     
-                    console.log('[loadProducts] Fetch response:', {
-                        status: response.status,
-                        statusText: response.statusText,
-                        ok: response.ok,
-                        url: response.url
-                    });
-                    
-                    // #region agent log
-                    fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadProducts',message:'Fetch response received',data:{status:response.status,statusText:response.statusText,ok:response.ok,url:response.url},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-                    // #endregion
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const data = await response.json();
                     
-                    console.log('[loadProducts] Data parsed:', {
-                        hasProducts: !!data.products,
-                        productsIsArray: Array.isArray(data.products),
-                        productsCount: Array.isArray(data.products) ? data.products.length : 0,
-                        dataIsArray: Array.isArray(data)
-                    });
-                    
-                    // #region agent log
-                    fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadProducts',message:'Products data parsed',data:{hasProducts:!!data.products,productsIsArray:Array.isArray(data.products),productsCount:Array.isArray(data.products) ? data.products.length : 0,dataIsArray:Array.isArray(data)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-                    // #endregion
                     // Ensure we get all products
                     const productsArray = Array.isArray(data.products) ? data.products : (Array.isArray(data) ? data : []);
                     
-                    console.log('[loadProducts] Products array prepared:', {
-                        productsCount: productsArray.length,
-                        productsIsArray: Array.isArray(productsArray),
-                        firstProduct: productsArray.length > 0 ? productsArray[0].name : 'none'
-                    });
-                    
-                    // #region agent log
-                    fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadProducts',message:'Products array prepared',data:{productsCount:productsArray.length,productsIsArray:Array.isArray(productsArray)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-                    // #endregion
                     // Ensure products is an array before assignment
                     // CRITICAL: Initialize as empty array if undefined/null or not an array
                     if (!this.products || !Array.isArray(this.products)) {
@@ -823,9 +822,6 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                             productsIsArray: Array.isArray(this.products),
                             productsValue: this.products ? JSON.stringify(this.products).substring(0, 100) : 'null/undefined'
                         });
-                        // #region agent log
-                        fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadProducts',message:'Products is not array, resetting',data:{productsType:typeof this.products,productsIsArray:Array.isArray(this.products),productsValue:this.products ? JSON.stringify(this.products).substring(0,100) : 'null/undefined'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-                        // #endregion
                         this.products = [];
                     }
                     
@@ -834,10 +830,6 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                         currentProductsIsArray: Array.isArray(this.products),
                         newProductsCount: productsArray.length
                     });
-                    
-                    // #region agent log
-                    fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadProducts',message:'Before assignment',data:{productsCount:this.products.length,productsIsArray:Array.isArray(this.products),productsArrayLength:productsArray.length},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-                    // #endregion
                     
                     // CRITICAL FIX: Use splice() to maintain Alpine.js reactivity
                     // Direct array assignment doesn't always trigger reactivity properly
@@ -851,10 +843,6 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                         productsFirstItem: this.products.length > 0 ? this.products[0].name : 'none',
                         productsReference: this.products
                     });
-                    
-                    // #region agent log
-                    fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadProducts',message:'After assignment',data:{productsCount:this.products.length,productsIsArray:Array.isArray(this.products)},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-                    // #endregion
                     
                     // Update featuredProducts Set based on loaded products
                     if (!this.featuredProducts || !(this.featuredProducts instanceof Set)) {
@@ -897,44 +885,36 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                         filteredProductsCount: filtered.length,
                         featuredProductsSize: this.featuredProducts ? this.featuredProducts.size : 'N/A'
                     });
-                    
-                    // #region agent log
-                    fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadProducts',message:'Products assigned via splice for reactivity',data:{productsCount:this.products.length,productsIsArray:Array.isArray(this.products),filteredProductsCount:filtered.length,featuredProductsSize:this.featuredProducts ? this.featuredProducts.size : 'N/A'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-                    // #endregion
                 } catch (error) {
-                    // #region agent log
-                    fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadProducts',message:'Load products error',data:{errorMessage:error.message,errorName:error.name,errorStack:error.stack},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-                    // #endregion
                     console.error('Load products error:', error);
                     this.showNotification('Failed to load products: ' + error.message, 'error');
+                } finally {
+                    this.loadingProducts = false;
                 }
             },
             
             async loadCategories() {
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadCategories',message:'loadCategories called',data:{url:'/api/categories.php'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-                // #endregion
+                // Prevent concurrent calls
+                if (this.loadingCategories) {
+                    console.log('[loadCategories] Already loading, skipping');
+                    return;
+                }
+                this.loadingCategories = true;
+                
                 try {
                     const response = await fetch('/api/categories.php', {
                         credentials: 'include'
                     });
-                    // #region agent log
-                    fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadCategories',message:'Fetch response received',data:{status:response.status,statusText:response.statusText,ok:response.ok},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-                    // #endregion
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     const data = await response.json();
-                    // #region agent log
-                    fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadCategories',message:'Categories data parsed',data:{hasCategories:!!data.categories,categoriesCount:Array.isArray(data.categories) ? data.categories.length : 0},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-                    // #endregion
                     this.categories = data.categories || [];
                 } catch (error) {
-                    // #region agent log
-                    fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:loadCategories',message:'Load categories error',data:{errorMessage:error.message,errorName:error.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'C'})}).catch(()=>{});
-                    // #endregion
                     console.error('Load categories error:', error);
                     this.showNotification('Failed to load categories: ' + error.message, 'error');
+                } finally {
+                    this.loadingCategories = false;
                 }
             },
             
@@ -998,17 +978,32 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                     const formData = new FormData();
                     formData.append('image', file);
                     
+                    
                     try {
                         const response = await fetch('/api/upload.php', {
                             method: 'POST',
-                            body: formData
+                            body: formData,
+                            credentials: 'include'
                         });
+                        
+                        
+                        if (!response.ok) {
+                            const errorText = await response.text();
+                            this.showNotification('Upload failed: ' + (errorText || response.statusText), 'error');
+                            continue;
+                        }
+                        
                         const data = await response.json();
+                        
+                        
                         if (data.success) {
                             this.productForm.images.push(data.data.path);
+                            this.showNotification('Image uploaded successfully: ' + file.name, 'success');
+                        } else {
+                            this.showNotification(data.error || 'Upload failed. Please use the Image URL input field to enter the image path manually.', 'error');
                         }
                     } catch (error) {
-                        this.showNotification('Failed to upload image', 'error');
+                        this.showNotification('Failed to upload image: ' + error.message, 'error');
                     }
                 }
                 if (files.length > 0) {
@@ -1141,17 +1136,25 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                 try {
                     const response = await fetch('/api/upload.php', {
                         method: 'POST',
-                        body: formData
+                        body: formData,
+                        credentials: 'include'
                     });
+                    
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        this.showNotification('Upload failed: ' + (errorText || response.statusText), 'error');
+                        return;
+                    }
+                    
                     const data = await response.json();
                     if (data.success) {
                         this.categoryForm.image = data.data.path;
                         this.showNotification('Image uploaded successfully');
                     } else {
-                        this.showNotification(data.error || 'Upload failed', 'error');
+                        this.showNotification(data.error || 'Upload failed. Please use the Image URL input field to enter the image path manually.', 'error');
                     }
                 } catch (error) {
-                    this.showNotification('Failed to upload image', 'error');
+                    this.showNotification('Failed to upload image: ' + error.message, 'error');
                 }
             },
             
@@ -1275,14 +1278,8 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
             
             showProducts() {
                 console.log('[showProducts] Called');
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:showProducts',message:'showProducts called',data:{currentPage:this.activePage,hasLoadProducts:typeof this.loadProducts === 'function'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-                // #endregion
                 this.activePage = 'products';
                 console.log('[showProducts] Active page set to:', this.activePage);
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:showProducts',message:'activePage set to products',data:{activePage:this.activePage},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-                // #endregion
                 setTimeout(() => {
                     if (typeof this.loadProducts === 'function') {
                         console.log('[showProducts] Calling loadProducts');
@@ -1294,13 +1291,7 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
             },
             
             showCategories() {
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:showCategories',message:'showCategories called',data:{currentPage:this.activePage,hasLoadCategories:typeof this.loadCategories === 'function'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-                // #endregion
                 this.activePage = 'categories';
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:showCategories',message:'activePage set to categories',data:{activePage:this.activePage},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-                // #endregion
                 setTimeout(() => {
                     if (typeof this.loadCategories === 'function') {
                         this.loadCategories();
@@ -1311,9 +1302,6 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
             },
             
             showDashboard() {
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:showDashboard',message:'showDashboard called',data:{currentPage:this.activePage},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'D'})}).catch(()=>{});
-                // #endregion
                 this.activePage = 'dashboard';
                 if (typeof this.loadDashboard === 'function') {
                     this.loadDashboard();
@@ -1321,44 +1309,41 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
             }
             });
             
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:initDashboardMethods',message:'Methods attached successfully',data:{hasLoadProducts:typeof dashboard.loadProducts === 'function',hasLoadCategories:typeof dashboard.loadCategories === 'function',hasLoadDashboard:typeof dashboard.loadDashboard === 'function',hasShowProducts:typeof dashboard.showProducts === 'function',hasShowCategories:typeof dashboard.showCategories === 'function',hasShowDashboard:typeof dashboard.showDashboard === 'function',activePage:dashboard.activePage},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-            // #endregion
             
             // Load initial data
             try {
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:initDashboardMethods',message:'Attempting to load dashboard',data:{activePage:dashboard.activePage},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-                // #endregion
-                if (dashboard.activePage === 'dashboard' && typeof dashboard.loadDashboard === 'function') {
+                // Only call loadDashboard once on initial load, not on every render
+                if (dashboard.activePage === 'dashboard' && typeof dashboard.loadDashboard === 'function' && !dashboard.dashboardInitialized) {
+                    dashboard.dashboardInitialized = true;
                     dashboard.loadDashboard();
                 }
             } catch (error) {
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:initDashboardMethods',message:'Error loading dashboard',data:{errorMessage:error.message,errorName:error.name},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'B'})}).catch(()=>{});
-                // #endregion
                 console.error('Error loading dashboard:', error);
             }
         }
         
         // Initialize when DOM is ready
+        let initDashboardAttempts = 0;
+        const MAX_INIT_DASHBOARD_ATTEMPTS = 100;
+        
         function initializeDashboard() {
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:initializeDashboard',message:'initializeDashboard called',data:{alpineDefined:typeof Alpine !== 'undefined',readyState:document.readyState},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-            // #endregion
+            // Prevent infinite loops
+            if (initDashboardAttempts >= MAX_INIT_DASHBOARD_ATTEMPTS) {
+                console.error('[initializeDashboard] Max attempts reached, stopping');
+                return;
+            }
+            initDashboardAttempts++;
+            
             if (typeof Alpine === 'undefined') {
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:initializeDashboard',message:'Alpine not defined, retrying',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-                // #endregion
                 setTimeout(initializeDashboard, 50);
                 return;
             }
             
+            // Reset counter on success
+            initDashboardAttempts = 0;
+            
             // Wait for Alpine to be ready
             if (document.readyState === 'loading') {
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:initializeDashboard',message:'DOM loading, waiting for DOMContentLoaded',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-                // #endregion
                 document.addEventListener('DOMContentLoaded', () => {
                     setTimeout(initDashboardMethods, 100);
                 });
@@ -1367,20 +1352,11 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
                 let attempts = 0;
                 const tryInit = () => {
                     attempts++;
-                    // #region agent log
-                    fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:tryInit',message:'tryInit attempt',data:{attempt:attempts,alpineDefined:typeof Alpine !== 'undefined',hasAlpineData:typeof Alpine !== 'undefined' && typeof Alpine.$data !== 'undefined'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-                    // #endregion
                     if (typeof Alpine !== 'undefined' && Alpine.$data) {
-                        // #region agent log
-                        fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:tryInit',message:'Alpine ready, calling initDashboardMethods',data:{attempts:attempts},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-                        // #endregion
                         initDashboardMethods();
                     } else if (attempts < 20) {
                         setTimeout(tryInit, 100);
                     } else {
-                        // #region agent log
-                        fetch('http://127.0.0.1:7242/ingest/dd06f679-21e7-4353-bf9b-14555d932367',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'dashboard.php:tryInit',message:'Failed to initialize after 20 attempts',data:{attempts:attempts},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'A'})}).catch(()=>{});
-                        // #endregion
                         console.error('Failed to initialize dashboard methods');
                     }
                 };

@@ -41,6 +41,13 @@
       "name": "Kavi Mundus",
       "slug": "kavi-mundus",
       "description": "Traditional saffron colored mundus"
+    },
+    {
+      "id": "8",
+      "name": "Festive Collection",
+      "slug": "festive-collection",
+      "description": "Special collection for festivals and celebrations",
+      "image": "/images/card covers/festival collection.png"
     }
   ]
 }

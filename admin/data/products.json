@@ -7,7 +7,7 @@
       "category": "White Mundus",
       "price": 550,
       "description": "High-quality pure cotton white mundu perfect for daily wear and special occasions. Features a comfortable texture and breathability.",
-      "image": "/images/mundu-white.png",
+      "image": "/images/white-mundus/blur-border-white.png",
       "isFeatured": true,
       "inStock": true,
       "createdAt": "2024-01-01"
@@ -31,7 +31,7 @@
       "category": "Offwhite Mundus",
       "price": 1200,
       "description": "Elegant tissue double mundu in off-white shade, ideal for weddings and festivals.",
-      "image": "/images/mundu-white.png",
+      "image": "/images/white-mundus/goldern border white.png",
       "isFeatured": true,
       "inStock": true,
       "createdAt": "2024-01-01"
@@ -55,7 +55,7 @@
       "category": "4.5m Double Mundus",
       "price": 850,
       "description": "Extra length 4.5m double mundu for a traditional drape.",
-      "image": "/images/mundu-white.png",
+      "image": "/images/white-mundus/grey-border-white.png",
       "isFeatured": true,
       "inStock": true,
       "createdAt": "2024-01-01"
@@ -79,7 +79,7 @@
       "category": "Printed Mundus",
       "price": 950,
       "description": "Artistic hand block printed mundu featuring traditional Kerala motifs.",
-      "image": "/images/mundu-white.png",
+      "image": "/images/white-mundus/purple borde sitiing.png",
       "isFeatured": true,
       "inStock": true,
       "createdAt": "2024-01-01"
@@ -103,7 +103,7 @@
       "category": "Yellow Double Mundus",
       "price": 1100,
       "description": "Striking yellow double mundu for festive appearances.",
-      "image": "/images/mundu-gold.png",
+      "image": "/images/white-mundus/purple borde sitiing.png",
       "isFeatured": true,
       "inStock": true,
       "createdAt": "2024-01-01"
@@ -151,7 +151,7 @@
       "category": "Kavi Mundus",
       "price": 450,
       "description": "Classic Kavi (saffron) mundu worn for temple visits and rituals.",
-      "image": "/images/mundu-saffron.png",
+      "image": "/images/white-mundus/blur-border-white.png",
       "isFeatured": true,
       "inStock": true,
       "createdAt": "2024-01-01"
@@ -199,7 +199,7 @@
       "category": "White Mundus",
       "price": 1500,
       "description": "Luscious fabric and rich border work, designed for grooms.",
-      "image": "/images/mundu-white.png",
+      "image": "/images/white-mundus/goldern border white.png",
       "isFeatured": true,
       "inStock": true,
       "createdAt": "2024-01-01"

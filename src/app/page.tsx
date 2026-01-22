@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ProductCarousel } from "@/components/product/ProductCarousel";
 import { ProductCard } from "@/components/product/ProductCard";
 import products from "@/data/products.json";
-import { ArrowRight, Heart, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
+import { ArrowRight, Heart, ChevronLeft, ChevronRight, Loader2, ImageOff } from "lucide-react";
 import { useState, useCallback, useEffect } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 
@@ -30,7 +30,7 @@ interface Category {
 }
 
 export default function Home() {
-  // State for trending products (featured products from API)
+  // State for featured products (from API)
   const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
   const [isLoadingTrending, setIsLoadingTrending] = useState(true);
   
@@ -49,21 +49,47 @@ export default function Home() {
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       try {
-        // Try to fetch from API first
-        // #region agent log
-        fetch('http://127.0.0.1:7243/ingest/1d9d7084-ad08-4495-b45b-b9319b470dd4',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'src/app/page.tsx:fetchFeaturedProducts','message':'Starting fetch','data':{url:'/api/products.php?featured=true'},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-        // #endregion
-        // Try PHP API server first (port 8080), then fallback to static JSON
+        // Priority order: Production API → Local Dev API → Static JSON
         let response: Response | null = null;
-        try {
-          response = await fetch('http://localhost:8080/api/products.php?featured=true', {
-            mode: 'cors',
-          });
-        } catch (apiError) {
-          // PHP API not available, will use static JSON fallback
+        
+        // 1. Try production API first (khadivasthra.com)
+        // Try multiple possible API paths
+        const productionApiUrls = [
+          'https://khadivasthra.com/api/products.php?featured=true',
+          'https://khadivasthra.com/public/api/products.php?featured=true',
+          'https://khadivasthra.com/admin/api/products.php?featured=true',
+        ];
+        
+        for (const apiUrl of productionApiUrls) {
+          try {
+            response = await fetch(apiUrl, {
+              mode: 'cors',
+            });
+            if (response.ok) {
+              // Production API succeeded, skip to processing
+              break;
+            } else {
+              response = null; // Try next URL
+            }
+          } catch (prodError) {
+            // This URL failed, try next one
+            response = null;
+          }
         }
         
-        // If PHP API not available, try static JSON file
+        // 2. If production API failed, try local dev API (port 8080)
+        if (!response || !response.ok) {
+          try {
+            response = await fetch('http://localhost:8080/api/products.php?featured=true', {
+              mode: 'cors',
+            });
+          } catch (apiError) {
+            // Local dev API not available, will try static JSON fallback
+            response = null;
+          }
+        }
+        
+        // 3. If both APIs failed, try static JSON file
         if (!response || !response.ok) {
           try {
             response = await fetch('/data/products.json');
@@ -75,81 +101,107 @@ export default function Home() {
         if (!response) {
           throw new Error('No response from API or static JSON');
         }
-        // #region agent log
-        fetch('http://127.0.0.1:7243/ingest/1d9d7084-ad08-4495-b45b-b9319b470dd4',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'src/app/page.tsx:fetchFeaturedProducts','message':'Response received','data':{ok:response.ok,status:response.status,statusText:response.statusText},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-        // #endregion
         
         if (response.ok) {
-          // #region agent log
           const contentType = response.headers.get('content-type');
-          fetch('http://127.0.0.1:7243/ingest/1d9d7084-ad08-4495-b45b-b9319b470dd4',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'src/app/page.tsx:fetchFeaturedProducts','message':'Before json parse','data':{contentType:contentType},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-          // #endregion
           
           // Only parse as JSON if content-type is correct (prevents parsing PHP code as JSON)
           if (contentType && contentType.includes('application/json')) {
-            let data;
-            try {
-              data = await response.json();
-              // #region agent log
-              fetch('http://127.0.0.1:7243/ingest/1d9d7084-ad08-4495-b45b-b9319b470dd4',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'src/app/page.tsx:fetchFeaturedProducts','message':'Data parsed','data':{hasSuccess:data.success,hasProducts:!!data.products,productsIsArray:Array.isArray(data.products),productCount:data.products?.length ?? 0,dataKeys:Object.keys(data),sampleProduct:data.products?.[0] || null},timestamp:Date.now(),sessionId:'debug-session',runId:'run1',hypothesisId:'E'})}).catch(()=>{});
-              // #endregion
-              
-              let featuredProductsList: Product[] = [];
-              
-              // Handle API response format (with success flag)
-              if (data.success && data.products && Array.isArray(data.products)) {
-                featuredProductsList = data.products;
-              } 
-              // Handle static JSON format (direct products array or wrapped in products key)
-              else if (data.products && Array.isArray(data.products)) {
-                featuredProductsList = data.products;
-              } else if (Array.isArray(data)) {
-                featuredProductsList = data;
-              }
-              
-              // Filter for featured products
-              const filteredFeatured = featuredProductsList.filter((p: Product) => {
-                const isFeatured = p.isFeatured;
-                return isFeatured === true || isFeatured === 'true' || isFeatured === 1 || isFeatured === '1';
-              });
-              
-              // #region agent log
-              fetch('http://127.0.0.1:7243/ingest/1d9d7084-ad08-4495-b45b-b9319b470dd4',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'src/app/page.tsx:fetchFeaturedProducts','message':'After filtering','data':{totalFromSource:featuredProductsList.length,filteredCount:filteredFeatured.length},timestamp:Date.now(),sessionId:'debug-session','runId':'run1','hypothesisId':'E'})}).catch(()=>{});
-              // #endregion
-              
-              // Take first 8 featured products
-              if (filteredFeatured.length > 0) {
-                setTrendingProducts(filteredFeatured.slice(0, 8));
-                // #region agent log
-                fetch('http://127.0.0.1:7243/ingest/1d9d7084-ad08-4495-b45b-b9319b470dd4',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'src/app/page.tsx:fetchFeaturedProducts','message':'Set trending products from API/JSON','data':{count:filteredFeatured.slice(0,8).length},timestamp:Date.now(),sessionId:'debug-session','runId':'run1','hypothesisId':'E'})}).catch(()=>{});
-                // #endregion
-                setIsLoadingTrending(false);
-                return;
-              }
+              let data;
+              try {
+                data = await response.json();
+                
+                let featuredProductsList: Product[] = [];
+                
+                // Handle API response format (with success flag)
+                if (data.success && data.products && Array.isArray(data.products)) {
+                  featuredProductsList = data.products;
+                } 
+                // Handle static JSON format (direct products array or wrapped in products key)
+                else if (data.products && Array.isArray(data.products)) {
+                  featuredProductsList = data.products;
+                } else if (Array.isArray(data)) {
+                  featuredProductsList = data;
+                }
+                
+                 // Filter for featured products - ONLY show products marked as featured
+                 const filteredFeatured = featuredProductsList.filter((p: Product) => {
+                   const isFeatured: any = p.isFeatured;
+                   
+                   // Handle boolean, string, and numeric values for isFeatured
+                   // Only return true if isFeatured is explicitly true/1/'true'/'1'
+                   // Handle runtime type checking (API might return string/number despite TypeScript type)
+                   let result = false;
+                   if (isFeatured === true) {
+                     result = true;
+                   } else if (typeof isFeatured === 'number' && isFeatured === 1) {
+                     result = true;
+                   } else if (typeof isFeatured === 'string') {
+                     const lowerStr = isFeatured.toLowerCase().trim();
+                     result = (lowerStr === 'true' || lowerStr === '1');
+                   }
+                   
+                   // If isFeatured is false, undefined, null, or any other value, exclude it
+                   return result;
+                 });
+                
+                // Take first 8 featured products
+                if (filteredFeatured.length > 0) {
+                  setTrendingProducts(filteredFeatured.slice(0, 8));
+                  setIsLoadingTrending(false);
+                  return;
+                }
             } catch (parseError: any) {
-              // #region agent log
-              fetch('http://127.0.0.1:7243/ingest/1d9d7084-ad08-4495-b45b-b9319b470dd4',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'src/app/page.tsx:fetchFeaturedProducts','message':'JSON parse error','data':{error:parseError?.message || String(parseError),errorName:parseError?.name || 'Unknown'},timestamp:Date.now(),sessionId:'debug-session','runId':'run1','hypothesisId':'E'})}).catch(()=>{});
-              // #endregion
               // Continue to fallback instead of throwing
             }
           } else {
             // Content-type is not JSON (likely PHP being served as static), skip and use fallback
-            // #region agent log
-            fetch('http://127.0.0.1:7243/ingest/1d9d7084-ad08-4495-b45b-b9319b470dd4',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'src/app/page.tsx:fetchFeaturedProducts','message':'Content-type not JSON, using fallback','data':{contentType:contentType},timestamp:Date.now(),sessionId:'debug-session','runId':'run1','hypothesisId':'E'})}).catch(()=>{});
-            // #endregion
           }
         }
         
-        // Fallback to static imported products if API/JSON fails
-        const fallbackProducts = products.filter(p => p.isFeatured === true || p.isFeatured === 'true' || p.isFeatured === 1).slice(0, 8);
-        // #region agent log
-        fetch('http://127.0.0.1:7243/ingest/1d9d7084-ad08-4495-b45b-b9319b470dd4',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'src/app/page.tsx:fetchFeaturedProducts','message':'Using fallback imported products','data':{count:fallbackProducts.length},timestamp:Date.now(),sessionId:'debug-session','runId':'run1','hypothesisId':'E'})}).catch(()=>{});
-        // #endregion
+        // Fallback to static imported products if API/JSON fails - ONLY show featured
+        const fallbackProducts = products.filter(p => {
+          const isFeatured = p.isFeatured;
+          // Only return true if isFeatured is explicitly true/1/'true'/'1'
+          // Handle runtime type checking (JSON might have string/number despite TypeScript type)
+          const featuredValue: any = isFeatured;
+          if (featuredValue === true) {
+            return true;
+          }
+          if (typeof featuredValue === 'number' && featuredValue === 1) {
+            return true;
+          }
+          if (typeof featuredValue === 'string') {
+            const lowerStr = featuredValue.toLowerCase().trim();
+            return lowerStr === 'true' || lowerStr === '1';
+          }
+          // Exclude if false, undefined, null, or any other value
+          return false;
+        }).slice(0, 8);
+        
         setTrendingProducts(fallbackProducts);
       } catch (error) {
         console.error('Failed to fetch featured products from API:', error);
-        // Fallback to static JSON on error
-        const fallbackProducts = products.filter(p => p.isFeatured === true || p.isFeatured === 'true' || p.isFeatured === 1).slice(0, 8);
+        // Fallback to static JSON on error - ONLY show featured
+        const fallbackProducts = products.filter(p => {
+          const isFeatured = p.isFeatured;
+          // Only return true if isFeatured is explicitly true/1/'true'/'1'
+          // Handle runtime type checking (JSON might have string/number despite TypeScript type)
+          const featuredValue: any = isFeatured;
+          if (featuredValue === true) {
+            return true;
+          }
+          if (typeof featuredValue === 'number' && featuredValue === 1) {
+            return true;
+          }
+          if (typeof featuredValue === 'string') {
+            const lowerStr = featuredValue.toLowerCase().trim();
+            return lowerStr === 'true' || lowerStr === '1';
+          }
+          // Exclude if false, undefined, null, or any other value
+          return false;
+        }).slice(0, 8);
+        
         setTrendingProducts(fallbackProducts);
       } finally {
         setIsLoadingTrending(false);
@@ -163,34 +215,47 @@ export default function Home() {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        // Try to fetch from PHP API server first (port 8080)
-        try {
-          const response = await fetch('http://localhost:8080/api/categories.php?active=true', {
-            mode: 'cors',
-          });
-          
-          if (response.ok) {
-            const data = await response.json();
-            if (data.success && data.categories && Array.isArray(data.categories)) {
-              // Sort by displayOrder and filter active
-              const activeCategories = data.categories
-                .filter((cat: Category) => cat.isActive !== false)
-                .sort((a: Category, b: Category) => (a.displayOrder || 999) - (b.displayOrder || 999));
-              setCategories(activeCategories);
-              setIsLoadingCategories(false);
-              return;
-            }
+        // Priority order: Production API → Local Dev API → Static JSON
+        let response: Response | null = null;
+        
+        // 1. Try production API first (khadivasthra.com)
+        const productionApiUrls = [
+          'https://khadivasthra.com/api/categories.php?active=true',
+          'https://khadivasthra.com/public/api/categories.php?active=true',
+          'https://khadivasthra.com/admin/api/categories.php?active=true',
+        ];
+        
+        for (const apiUrl of productionApiUrls) {
+          try {
+            response = await fetch(apiUrl, { mode: 'cors' });
+            if (response.ok) break;
+            else response = null;
+          } catch (prodError) {
+            response = null;
           }
-        } catch (apiError) {
-          // API failed, try static JSON
-          console.log('PHP API not available, using static JSON');
         }
         
-        // Fallback to static JSON
-        const fallbackResponse = await fetch('/data/categories.json');
-        if (fallbackResponse.ok) {
-          const fallbackData = await fallbackResponse.json();
-          const activeCategories = (fallbackData.categories || [])
+        // 2. If production API failed, try local dev API (port 8080)
+        if (!response || !response.ok) {
+          try {
+            response = await fetch('http://localhost:8080/api/categories.php?active=true', {
+              mode: 'cors',
+            });
+          } catch (apiError) {
+            response = null;
+          }
+        }
+        
+        // 3. If both APIs failed, try static JSON
+        if (!response || !response.ok) {
+          response = await fetch('/data/categories.json');
+        }
+        
+        if (response && response.ok) {
+          const data = await response.json();
+          const categoriesList = data.categories || (Array.isArray(data) ? data : []);
+          // Sort by displayOrder and filter active
+          const activeCategories = categoriesList
             .filter((cat: Category) => cat.isActive !== false)
             .sort((a: Category, b: Category) => (a.displayOrder || 999) - (b.displayOrder || 999));
           setCategories(activeCategories);
@@ -213,26 +278,54 @@ export default function Home() {
     const fetchProductsByCategory = async () => {
       try {
         let allProducts: Product[] = [];
+        let response: Response | null = null;
         
-        // Try to fetch from PHP API server first (port 8080)
-        try {
-          const response = await fetch('http://localhost:8080/api/products.php', {
-            mode: 'cors',
-          });
-          
-          if (response.ok) {
+        // Priority order: Production API → Local Dev API → Static Products
+        // 1. Try production API first (khadivasthra.com)
+        const productionApiUrls = [
+          'https://khadivasthra.com/api/products.php',
+          'https://khadivasthra.com/public/api/products.php',
+          'https://khadivasthra.com/admin/api/products.php',
+        ];
+        
+        for (const apiUrl of productionApiUrls) {
+          try {
+            response = await fetch(apiUrl, { mode: 'cors' });
+            if (response.ok) break;
+            else response = null;
+          } catch (prodError) {
+            response = null;
+          }
+        }
+        
+        // 2. If production API failed, try local dev API (port 8080)
+        if (!response || !response.ok) {
+          try {
+            response = await fetch('http://localhost:8080/api/products.php', {
+              mode: 'cors',
+            });
+          } catch (apiError) {
+            response = null;
+          }
+        }
+        
+        // 3. If API succeeded, parse products
+        if (response && response.ok) {
+          try {
             const data = await response.json();
             if (data.success && data.products && Array.isArray(data.products)) {
               allProducts = data.products;
+            } else if (Array.isArray(data.products)) {
+              allProducts = data.products;
+            } else if (Array.isArray(data)) {
+              allProducts = data;
             }
+          } catch (parseError) {
+            console.error('Failed to parse products API response:', parseError);
           }
-        } catch (apiError) {
-          // API failed, use static products
-          console.log('PHP API not available, using static products');
-          allProducts = products as Product[];
         }
         
-        // If API didn't return products, use static
+        // 4. If API didn't return products, use static
         if (allProducts.length === 0) {
           allProducts = products as Product[];
         }
@@ -367,9 +460,9 @@ export default function Home() {
       </section>
 
       {/* 2. TRENDING PRODUCTS - Cream bg, carousel */}
-      <section className="trending-section bg-cream py-20">
+      <section className="trending-section bg-cream py-12">
         <div className="container mx-auto px-4 max-w-7xl">
-          <h2 className="trending-section__title text-4xl font-bold text-text font-serif text-center mb-12">
+          <h2 className="trending-section__title text-3xl font-bold text-text font-serif text-center mb-8">
             Trending Products
           </h2>
           {isLoadingTrending ? (
@@ -390,32 +483,32 @@ export default function Home() {
       </section>
 
       {/* 3. THREE BANNERS - White bg */}
-      <section className="banners-section bg-white py-16">
+      <section className="banners-section bg-white py-12">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="banners-section__grid grid md:grid-cols-3 gap-6">
             <BannerCard 
               title="Festival Collection"
               overlay="coral"
-              image="/images/single-mundus/Peach Heritage Mundu.png"
+              image="/images/card covers/festival collection.png"
             />
             <BannerCard 
               title="25% Off"
               overlay="orange"
-              image="/images/single-mundus/Red Border Balck Mundu.png"
+              image="/images/card covers/offer.png"
             />
             <BannerCard 
               title="New Arrivals"
               overlay="cream"
-              image="/images/single-mundus/White Purple Mundu.png"
+              image="/images/card covers/new-arrivals.png"
             />
           </div>
         </div>
       </section>
 
       {/* 4. SHOP BY CATEGORY - White bg, carousel */}
-      <section className="categories-carousel-section bg-white py-20">
+      <section className="categories-carousel-section bg-white py-12">
         <div className="container mx-auto px-4 max-w-7xl">
-          <h2 className="categories-carousel-section__title text-4xl font-bold text-text font-serif text-center mb-12">
+          <h2 className="categories-carousel-section__title text-3xl font-bold text-text font-serif text-center mb-8">
             Shop by Category
           </h2>
           {isLoadingCategories ? (
@@ -433,9 +526,9 @@ export default function Home() {
       </section>
 
       {/* 5. BEST SELLING - Cream bg, carousel */}
-      <section className="bestselling-section bg-cream py-20">
+      <section className="bestselling-section bg-cream py-12">
         <div className="container mx-auto px-4 max-w-7xl">
-          <h2 className="bestselling-section__title text-4xl font-bold text-text font-serif text-center mb-12">
+          <h2 className="bestselling-section__title text-3xl font-bold text-text font-serif text-center mb-8">
             Best Selling
           </h2>
           {bestSelling.length > 0 ? (
@@ -459,8 +552,8 @@ export default function Home() {
         </section>
       ) : (
         Object.keys(productsByCategory).filter((categoryName) => productsByCategory[categoryName].length >= 5).length > 0 && (
-          <section className="products-by-category-section bg-white py-20">
-            <div className="container mx-auto px-4 max-w-7xl space-y-16">
+          <section className="products-by-category-section bg-white py-12">
+            <div className="container mx-auto px-4 max-w-7xl space-y-12">
               {Object.keys(productsByCategory)
                 .filter((categoryName) => productsByCategory[categoryName].length >= 5)
                 .sort((a, b) => {
@@ -480,9 +573,9 @@ export default function Home() {
                   const displayName = matchedCategory?.name || categoryName;
                   
                   return (
-                    <div key={categoryName} className="category-products-row">
-                      <div className="category-products-row__header flex items-center justify-between mb-8">
-                        <h3 className="category-products-row__title text-3xl font-bold text-text font-serif">
+                      <div key={categoryName} className="category-products-row">
+                      <div className="category-products-row__header flex items-center justify-between mb-6">
+                        <h3 className="category-products-row__title text-2xl font-bold text-text font-serif">
                           {displayName}
                         </h3>
                         <Link
@@ -521,9 +614,9 @@ export default function Home() {
       </section>
 
       {/* 7. ABOUT SECTION - White bg, image left, text right */}
-      <section className="about-section bg-white py-20">
+      <section className="about-section bg-white py-12">
         <div className="container mx-auto px-4 max-w-7xl">
-          <div className="about-section__content grid md:grid-cols-2 gap-12 items-center">
+          <div className="about-section__content grid md:grid-cols-2 gap-10 items-center">
             {/* Left: Image */}
             <div className="about-section__image-wrapper relative aspect-[4/5] rounded-2xl overflow-hidden shadow-lg">
               <Image
@@ -535,18 +628,18 @@ export default function Home() {
             </div>
 
             {/* Right: Text */}
-            <div className="about-section__text space-y-6">
+            <div className="about-section__text space-y-4">
               <span className="about-section__badge inline-block px-4 py-2 bg-orange text-white text-sm font-semibold uppercase tracking-wider rounded-full">
                 Since 1990
               </span>
-              <h2 className="about-section__title text-4xl md:text-5xl font-bold text-text font-serif leading-tight">
+              <h2 className="about-section__title text-3xl md:text-4xl font-bold text-text font-serif leading-tight">
                 Preserving Kerala's Handloom Heritage
               </h2>
-              <p className="about-section__description text-lg text-text-muted leading-relaxed">
+              <p className="about-section__description text-base text-text-muted leading-relaxed">
                 Khadi Vasthra is more than just a store; it's a celebration of Kerala's rich textile heritage.
                 Located in the heart of Aluva, we have been bridging the gap between traditional weavers and modern lifestyles since 1990.
               </p>
-              <p className="about-section__description text-lg text-text-muted leading-relaxed">
+              <p className="about-section__description text-base text-text-muted leading-relaxed">
                 Every thread in our mundus tells a story of patience, skill, and dedication. We take pride in sourcing directly
                 from master weavers, ensuring that the art form thrives while you get the most authentic quality.
               </p>
@@ -565,10 +658,10 @@ export default function Home() {
 
 // Banner Card Component
 function BannerCard({ title, overlay, image }: { title: string; overlay: string; image: string }) {
-  const overlayClass = overlay === "coral" ? "bg-coral/80" : overlay === "orange" ? "bg-orange/80" : "bg-cream/80";
+  const overlayClass = overlay === "coral" ? "bg-coral/40" : overlay === "orange" ? "bg-orange/40" : "bg-cream/40";
   
   return (
-    <div className="banner-card relative aspect-[16/9] rounded-2xl overflow-hidden shadow-lg group cursor-pointer">
+    <div className="banner-card relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg group cursor-pointer">
       <Image
         src={image}
         alt={title}
@@ -618,11 +711,11 @@ function TrendingCarousel({ products }: { products: Array<{ id: string; name: st
   return (
     <div className="trending-carousel relative">
       <div className="trending-carousel__viewport overflow-hidden" ref={emblaRef}>
-        <div className="trending-carousel__container flex gap-6">
+        <div className="trending-carousel__container flex gap-6 items-stretch">
           {products.map((product) => (
             <div
               key={product.id}
-              className="trending-carousel__slide flex-[0_0_100%] sm:flex-[0_0_calc(50%-12px)] md:flex-[0_0_calc(50%-12px)] lg:flex-[0_0_calc(33.333%-16px)] xl:flex-[0_0_calc(25%-18px)] min-w-0"
+              className="trending-carousel__slide flex-[0_0_100%] sm:flex-[0_0_calc(50%-12px)] md:flex-[0_0_calc(50%-12px)] lg:flex-[0_0_calc(33.333%-16px)] xl:flex-[0_0_calc(25%-18px)] min-w-0 h-auto"
             >
               <ProductCard product={product} showHeart={true} />
             </div>
@@ -775,11 +868,11 @@ function CategoryProductsCarousel({ products }: { products: Product[] }) {
   return (
     <div className="category-products-carousel relative">
       <div className="category-products-carousel__viewport overflow-hidden" ref={emblaRef}>
-        <div className="category-products-carousel__container flex gap-6">
+        <div className="category-products-carousel__container flex gap-6 items-stretch">
           {products.map((product) => (
             <div
               key={product.id}
-              className="category-products-carousel__slide flex-[0_0_100%] sm:flex-[0_0_calc(50%-12px)] md:flex-[0_0_calc(33.333%-16px)] lg:flex-[0_0_calc(25%-18px)] xl:flex-[0_0_calc(20%-19px)] min-w-0"
+              className="category-products-carousel__slide flex-[0_0_100%] sm:flex-[0_0_calc(50%-12px)] md:flex-[0_0_calc(33.333%-16px)] lg:flex-[0_0_calc(25%-18px)] xl:flex-[0_0_calc(20%-19px)] min-w-0 h-auto"
             >
               <ProductCard product={product} variant="white" />
             </div>
@@ -860,22 +953,31 @@ function CategoriesCarousel({ categories }: { categories: Category[] }) {
               >
                 <Link 
                   href={`/shop/${categorySlug}`}
-                  className="category-card group block bg-cream rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
+                  className="category-card group aspect-[3/5] flex flex-col bg-cream/30 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
                 >
-                  <div className="category-card__image-wrapper relative aspect-square overflow-hidden bg-white">
-                    <Image
-                      src={category.image}
-                      alt={category.name}
-                      fill
-                      className="object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
+                  <div className="category-card__image-wrapper relative w-full flex-[1.5] min-h-[300px] overflow-hidden bg-white/50 flex-shrink-0">
+                    {category.image ? (
+                      <Image
+                        src={category.image}
+                        alt={category.name}
+                        fill
+                        sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 20vw"
+                        className="object-cover group-hover:scale-110 transition-transform duration-500"
+                        unoptimized
+                        priority={false}
+                      />
+                    ) : (
+                      <div className="absolute inset-0 flex items-center justify-center bg-gray-100/50">
+                        <ImageOff className="w-12 h-12 text-gray-400" />
+                      </div>
+                    )}
                   </div>
-                  <div className="category-card__content p-6 text-center">
-                    <h3 className="category-card__name text-xl font-bold text-text font-serif mb-2 group-hover:text-coral transition-colors">
+                  <div className="category-card__content p-3 text-center flex-shrink-0 bg-cream/20 backdrop-blur-sm">
+                    <h3 className="category-card__name text-base font-bold text-text font-serif mb-1 group-hover:text-coral transition-colors line-clamp-2 leading-tight">
                       {category.name}
                     </h3>
                     {category.description && (
-                      <p className="category-card__description text-sm text-text-muted line-clamp-2">
+                      <p className="category-card__description text-xs text-text-muted line-clamp-1 leading-relaxed mt-0.5">
                         {category.description}
                       </p>
                     )}

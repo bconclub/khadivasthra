@@ -20,6 +20,7 @@ import {
   Eye,
   EyeOff,
   ImageOff,
+  RefreshCw,
 } from "lucide-react";
 
 // Types
@@ -54,7 +55,11 @@ interface Category {
 }
 
 // API base - will work with PHP backend
-const API_BASE = "/api";
+// In development, PHP runs on port 8080, so use absolute URL
+// In production, use relative path (same domain)
+const API_BASE = typeof window !== 'undefined' && (window.location.port === '3000' || window.location.port === '3001')
+  ? 'http://localhost:8080/api'
+  : '/admin/api';
 
 // Check if we're in dev mode (PHP not available)
 let isDevMode = false;
@@ -63,6 +68,7 @@ let isDevMode = false;
 const STORAGE_KEYS = {
   products: "khadi_admin_products",
   categories: "khadi_admin_categories",
+  csrfToken: "khadi_admin_csrf_token",
 };
 
 // Get data from localStorage (dev mode)
@@ -76,6 +82,105 @@ function getLocalData(key: string) {
 function setLocalData(key: string, data: unknown) {
   if (typeof window === "undefined") return;
   localStorage.setItem(key, JSON.stringify(data));
+}
+
+// Get CSRF token from API or localStorage
+async function getCsrfToken(): Promise<string | null> {
+  if (typeof window === "undefined") return null;
+  
+  // Check localStorage first
+  const storedToken = localStorage.getItem(STORAGE_KEYS.csrfToken);
+  if (storedToken) {
+    return storedToken;
+  }
+  
+  // Fetch from API if not in dev mode
+  if (!isDevMode) {
+    try {
+      const res = await fetch(`${API_BASE}/auth.php`, {
+        method: "GET",
+        credentials: 'include'
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const token = data.data?.csrf_token || data.csrf_token;
+        if (token) {
+          localStorage.setItem(STORAGE_KEYS.csrfToken, token);
+          return token;
+        }
+      } else if (res.status === 401) {
+        // Auth is disabled or not logged in - generate a client-side token
+        // This allows operations to continue when auth is disabled
+        const clientToken = 'client-token-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem(STORAGE_KEYS.csrfToken, clientToken);
+        return clientToken;
+      }
+    } catch (error) {
+      console.error("Failed to fetch CSRF token:", error);
+      // Generate a client-side token as fallback
+      const clientToken = 'client-token-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+      localStorage.setItem(STORAGE_KEYS.csrfToken, clientToken);
+      return clientToken;
+    }
+  }
+  
+  // Generate a client-side token if no token found
+  const clientToken = 'client-token-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+  localStorage.setItem(STORAGE_KEYS.csrfToken, clientToken);
+  return clientToken;
+}
+
+// Helper to convert admin upload paths to backend URL
+function getImageUrl(imagePath: string): string {
+  if (!imagePath || typeof imagePath !== 'string') return '';
+  
+  // If it's already a full URL, return as is
+  if (imagePath.startsWith('http://') || imagePath.startsWith('https://') || imagePath.startsWith('data:')) {
+    return imagePath;
+  }
+  
+  // Skip PHP files and invalid paths - don't convert them
+  if (imagePath.includes('.php') || imagePath.includes('dashboard') || imagePath.includes('index.php')) {
+    return '';
+  }
+  
+  // If it's an admin upload path, convert to backend URL in development
+  if (imagePath.startsWith('/admin/uploads/')) {
+    // Validate it's an image file
+    const validExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+    const hasValidExtension = validExtensions.some(ext => imagePath.toLowerCase().endsWith(ext));
+    
+    if (hasValidExtension && typeof window !== 'undefined' && (window.location.port === '3000' || window.location.port === '3001')) {
+      return `http://localhost:8080${imagePath}`;
+    }
+  }
+  
+  return imagePath;
+}
+
+// Helper component for admin product images with error handling
+function AdminProductImage({ src, alt }: { src: string; alt: string }) {
+  const [imageError, setImageError] = useState(false);
+  
+  if (imageError || !src || src.trim() === '') {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center text-red-400" title="Image failed to load">
+        <ImageOff className="w-4 h-4" />
+        <span className="text-[8px] mt-0.5 font-medium">Error</span>
+      </div>
+    );
+  }
+  
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      fill
+      className="object-cover"
+      unoptimized
+      onError={() => setImageError(true)}
+    />
+  );
 }
 
 // Fallback data loader for development mode (when PHP isn't available)
@@ -156,16 +261,62 @@ async function saveProduct(product: Product, isNew: boolean): Promise<{ success:
   
   // Production: use PHP API
   try {
+    const csrfToken = await getCsrfToken();
+    
     const method = isNew ? "POST" : "PUT";
     const url = isNew ? `${API_BASE}/products.php` : `${API_BASE}/products.php?id=${product.id}`;
+    
+    // For both POST and PUT, send as form data (PHP expects $_POST for POST and parse_str for PUT)
+    const formData = new FormData();
+    Object.entries(product).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        formData.append(key, JSON.stringify(value));
+      } else if (value !== null && value !== undefined) {
+        // Convert booleans to strings
+        if (typeof value === 'boolean') {
+          formData.append(key, value ? 'true' : 'false');
+        } else {
+          formData.append(key, String(value));
+        }
+      }
+    });
+    if (csrfToken) formData.append('csrf_token', csrfToken);
+    
+    // For PUT, we need to send as URL-encoded string (not FormData) since PHP uses parse_str
+    const body = method === "PUT"
+      ? (() => {
+          const params = new URLSearchParams();
+          Object.entries(product).forEach(([key, value]) => {
+            if (Array.isArray(value)) {
+              params.append(key, JSON.stringify(value));
+            } else if (value !== null && value !== undefined) {
+              if (typeof value === 'boolean') {
+                params.append(key, value ? 'true' : 'false');
+              } else {
+                params.append(key, String(value));
+              }
+            }
+          });
+          if (csrfToken) params.append('csrf_token', csrfToken);
+          return params.toString();
+        })()
+      : formData;
+    
     const res = await fetch(url, {
       method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(product),
+      headers: method === "PUT" ? { "Content-Type": "application/x-www-form-urlencoded" } : {},
+      body,
+      credentials: 'include'
     });
+    
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+      return { success: false, error: errorData.error || `Failed to save: ${res.status}` };
+    }
+    
     return await res.json();
-  } catch (error) {
-    return { success: false, error: "Failed to save" };
+  } catch (error: any) {
+    return { success: false, error: "Failed to save: " + (error.message || "Network error") };
   }
 }
 
@@ -179,8 +330,18 @@ async function deleteProduct(id: string): Promise<{ success: boolean }> {
   }
   
   try {
-    await fetch(`${API_BASE}/products.php?id=${id}`, { method: "DELETE" });
-    return { success: true };
+    const csrfToken = await getCsrfToken();
+    const res = await fetch(`${API_BASE}/products.php?id=${id}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: csrfToken ? `csrf_token=${encodeURIComponent(csrfToken)}` : '',
+      credentials: 'include'
+    });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+      return { success: false };
+    }
+    return await res.json();
   } catch {
     return { success: false };
   }
@@ -212,16 +373,56 @@ async function saveCategory(category: Category, isNew: boolean): Promise<{ succe
   }
   
   try {
+    const csrfToken = await getCsrfToken();
     const method = isNew ? "POST" : "PUT";
     const url = isNew ? `${API_BASE}/categories.php` : `${API_BASE}/categories.php?id=${category.id}`;
+    
+    // For POST, use FormData; for PUT, use URL-encoded string
+    const body = method === "POST"
+      ? (() => {
+          const formData = new FormData();
+          Object.entries(category).forEach(([key, value]) => {
+            if (value !== null && value !== undefined) {
+              if (typeof value === 'boolean') {
+                formData.append(key, value ? 'true' : 'false');
+              } else {
+                formData.append(key, String(value));
+              }
+            }
+          });
+          if (csrfToken) formData.append('csrf_token', csrfToken);
+          return formData;
+        })()
+      : (() => {
+          const params = new URLSearchParams();
+          Object.entries(category).forEach(([key, value]) => {
+            if (value !== null && value !== undefined) {
+              if (typeof value === 'boolean') {
+                params.append(key, value ? 'true' : 'false');
+              } else {
+                params.append(key, String(value));
+              }
+            }
+          });
+          if (csrfToken) params.append('csrf_token', csrfToken);
+          return params.toString();
+        })();
+    
     const res = await fetch(url, {
       method,
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(category),
+      headers: method === "PUT" ? { "Content-Type": "application/x-www-form-urlencoded" } : {},
+      body,
+      credentials: 'include'
     });
+    
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+      return { success: false, error: errorData.error || `Failed to save: ${res.status}` };
+    }
+    
     return await res.json();
-  } catch (error) {
-    return { success: false, error: "Failed to save" };
+  } catch (error: any) {
+    return { success: false, error: "Failed to save: " + (error.message || "Network error") };
   }
 }
 
@@ -235,8 +436,18 @@ async function deleteCategory(id: string): Promise<{ success: boolean }> {
   }
   
   try {
-    await fetch(`${API_BASE}/categories.php?id=${id}`, { method: "DELETE" });
-    return { success: true };
+    const csrfToken = await getCsrfToken();
+    const res = await fetch(`${API_BASE}/categories.php?id=${id}`, {
+      method: "DELETE",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: csrfToken ? `csrf_token=${encodeURIComponent(csrfToken)}` : '',
+      credentials: 'include'
+    });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ error: `HTTP ${res.status}` }));
+      return { success: false };
+    }
+    return await res.json();
   } catch {
     return { success: false };
   }
@@ -410,21 +621,32 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
     setIsLoading(true);
 
     try {
+      // PHP API expects form data with action=login
+      const formData = new FormData();
+      formData.append('action', 'login');
+      formData.append('password', password);
+
       const res = await fetch(`${API_BASE}/auth.php`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
+        credentials: 'include', // Important for session cookies
+        body: formData,
       });
 
       const data = await res.json();
 
       if (data.success) {
         localStorage.setItem("khadi_admin_token", data.token || "authenticated");
+        // Store CSRF token if provided
+        const csrfToken = data.data?.csrf_token || data.csrf_token;
+        if (csrfToken) {
+          localStorage.setItem(STORAGE_KEYS.csrfToken, csrfToken);
+        }
         onLogin();
       } else {
         setError(data.error || "Invalid password");
       }
-    } catch {
+    } catch (error) {
+      console.error("Login error:", error);
       // Fallback for local development without PHP
       if (password === "admin123") {
         localStorage.setItem("khadi_admin_token", "authenticated");
@@ -497,6 +719,59 @@ function LoginPage({ onLogin }: { onLogin: () => void }) {
   );
 }
 
+// Sync Button Component
+function SyncButton() {
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
+
+  const handleSync = async () => {
+    setIsSyncing(true);
+    setSyncMessage(null);
+    
+    try {
+      const res = await fetch(`${API_BASE}/products.php?sync=true`, {
+        method: 'GET',
+        credentials: 'include'
+      });
+      
+      if (res.ok) {
+        setSyncMessage('Products synced successfully!');
+        setTimeout(() => setSyncMessage(null), 3000);
+        // Trigger refresh
+        window.dispatchEvent(new Event('productUpdated'));
+      } else {
+        setSyncMessage('Sync failed. Please try again.');
+        setTimeout(() => setSyncMessage(null), 3000);
+      }
+    } catch (error) {
+      setSyncMessage('Sync failed. Please try again.');
+      setTimeout(() => setSyncMessage(null), 3000);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  return (
+    <div className="relative">
+      <button
+        onClick={handleSync}
+        disabled={isSyncing}
+        className="flex items-center gap-3 p-4 bg-blue-500/10 rounded-lg hover:bg-blue-500/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed w-full"
+      >
+        <RefreshCw className={`w-5 h-5 text-blue-600 ${isSyncing ? 'animate-spin' : ''}`} />
+        <span className="font-medium text-text">{isSyncing ? 'Syncing...' : 'Sync to Frontend'}</span>
+      </button>
+      {syncMessage && (
+        <div className={`absolute top-full left-0 right-0 mt-2 p-2 rounded text-sm text-center ${
+          syncMessage.includes('success') ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+        }`}>
+          {syncMessage}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // Dashboard Tab
 function DashboardTab() {
   const [stats, setStats] = useState({
@@ -536,16 +811,83 @@ function DashboardTab() {
       const products = productsData.products || [];
       const categories = categoriesData.categories || [];
 
+      // Check for missing images - check if image field is empty OR if image file doesn't exist
+      const missingImagesProducts: Product[] = [];
+      
+      // First, filter products with empty/null/undefined image fields
+      const productsWithEmptyImages = products.filter((p: Product) => {
+        const imageValue = p.image;
+        if (!('image' in p) || imageValue === null || imageValue === undefined) {
+          return true;
+        }
+        if (typeof imageValue !== 'string') {
+          return true;
+        }
+        if (imageValue.trim() === '') {
+          return true;
+        }
+        return false;
+      });
+
+      missingImagesProducts.push(...productsWithEmptyImages);
+
+      // Then, check if image files exist for products with file paths (not data URIs)
+      const productsWithFilePaths = products.filter((p: Product) => {
+        if (!p.image || typeof p.image !== 'string') return false;
+        // Skip base64 data URIs and external URLs
+        if (p.image.startsWith('data:') || p.image.startsWith('http://') || p.image.startsWith('https://')) {
+          return false;
+        }
+        return true;
+      });
+
+      // Check each image file exists by making HTTP requests
+      const imageCheckPromises = productsWithFilePaths.map(async (p: Product) => {
+        const imagePath = p.image;
+        if (!imagePath || imagePath.startsWith('data:') || imagePath.startsWith('http')) {
+          return { product: p, exists: true };
+        }
+        
+        try {
+          // Try to load the image to see if it exists
+          // Use HEAD request first, fallback to GET if HEAD fails
+          let response: Response;
+          try {
+            response = await fetch(imagePath, { method: 'HEAD', cache: 'no-cache' });
+          } catch {
+            // HEAD might not be supported, try GET with small timeout
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000); // 3 second timeout
+            try {
+              response = await fetch(imagePath, { method: 'GET', cache: 'no-cache', signal: controller.signal });
+            } catch {
+              response = new Response(null, { status: 404, statusText: 'Not Found' });
+            } finally {
+              clearTimeout(timeoutId);
+            }
+          }
+          
+          const exists = response.ok && response.status !== 404;
+          return { product: p, exists };
+        } catch (error) {
+          // If we can't check (e.g., network error, timeout), mark as missing
+          return { product: p, exists: false };
+        }
+      });
+
+      const imageCheckResults = await Promise.all(imageCheckPromises);
+      const productsWithMissingFiles = imageCheckResults
+        .filter(result => !result.exists)
+        .map(result => result.product);
+
+      missingImagesProducts.push(...productsWithMissingFiles);
+
       setStats({
         totalProducts: products.length,
         totalCategories: categories.length,
         featuredProducts: products.filter((p: Product) => p.isFeatured).length,
         inStockProducts: products.filter((p: Product) => p.inStock !== false).length,
-        // Check for missing images - empty string, null, undefined, or falsy
-        missingImages: products.filter((p: Product) => {
-          const image = p.image || '';
-          return !image || (typeof image === 'string' && image.trim() === '');
-        }).length,
+        missingImages: missingImagesProducts.length,
       });
     } catch (error) {
       console.error("Failed to load stats:", error);
@@ -590,7 +932,7 @@ function DashboardTab() {
       {/* Quick Actions */}
       <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
         <h3 className="text-lg font-semibold text-text mb-4">Quick Actions</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <button
             onClick={() => window.location.href = "/admin?tab=products&action=add"}
             className="flex items-center gap-3 p-4 bg-coral/10 rounded-lg hover:bg-coral/20 transition-colors"
@@ -605,6 +947,7 @@ function DashboardTab() {
             <FolderTree className="w-5 h-5 text-orange" />
             <span className="font-medium text-text">Add Category</span>
           </button>
+          <SyncButton />
           <a
             href="/"
             target="_blank"
@@ -737,13 +1080,7 @@ function ProductsTab() {
                   <td className="px-6 py-4">
                     <div className={`w-12 h-16 rounded-lg overflow-hidden relative ${product.image ? 'bg-gray-100' : 'bg-red-50 border-2 border-dashed border-red-300'}`}>
                       {product.image ? (
-                        <Image
-                          src={product.image}
-                          alt={product.name}
-                          fill
-                          className="object-cover"
-                          unoptimized
-                        />
+                        <AdminProductImage src={getImageUrl(product.image)} alt={product.name} />
                       ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center text-red-400" title="No image - click to edit">
                           <Upload className="w-4 h-4" />
@@ -910,21 +1247,27 @@ function ProductModal({
       const res = await fetch(`${API_BASE}/upload.php`, {
         method: "POST",
         body: formDataUpload,
+        credentials: 'include'
       });
+      
+      if (!res.ok) {
+        const errorText = await res.text();
+        throw new Error(`Upload failed: ${res.status} ${res.statusText}`);
+      }
 
       const data = await res.json();
 
       if (data.success) {
         // Use the standardized path from API
-        setFormData({ ...formData, image: data.path });
+        setFormData({ ...formData, image: data.data?.path || data.path });
       } else {
-        alert(data.error || "Upload failed");
+        alert(data.error || "Upload failed. Please use the Image URL input field to enter the image path manually.");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Upload error:", error);
       // Fallback: use local preview (but don't save blob URL to formData - it's in browser memory)
       // Instead, alert user to manually upload via URL input
-      alert("Upload failed. Please use the Image URL input field to enter the image path manually.");
+      alert("Upload failed: " + (error.message || "Please use the Image URL input field to enter the image path manually."));
       const reader = new FileReader();
       reader.onloadend = () => {
         // Preview only - don't save blob URL
@@ -1098,7 +1441,7 @@ function ProductModal({
                 <div className={`w-24 h-32 rounded-lg overflow-hidden relative border-2 border-dashed ${formData.image ? 'bg-gray-100 border-gray-300' : 'bg-red-50 border-red-300'}`}>
                   {formData.image ? (
                     <Image
-                      src={formData.image}
+                      src={getImageUrl(formData.image)}
                       alt="Preview"
                       fill
                       className="object-cover"
@@ -1300,13 +1643,7 @@ function CategoriesTab() {
                   <td className="px-4 py-3">
                     <div className={`w-12 h-12 rounded-lg overflow-hidden relative ${category.image ? 'bg-gray-100' : 'bg-amber-50 border border-dashed border-amber-300'}`}>
                       {category.image ? (
-                        <Image
-                          src={category.image}
-                          alt={category.name}
-                          fill
-                          className="object-cover"
-                          unoptimized
-                        />
+                        <AdminProductImage src={getImageUrl(category.image)} alt={category.name} />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-amber-400">
                           <Upload className="w-4 h-4" />
@@ -1669,13 +2006,7 @@ function FeaturedTab() {
                   <td className="px-4 py-3">
                     <div className={`w-10 h-14 rounded-lg overflow-hidden relative ${product.image ? 'bg-gray-100' : 'bg-red-50 border border-dashed border-red-300'}`}>
                       {product.image ? (
-                        <Image
-                          src={product.image}
-                          alt={product.name}
-                          fill
-                          className="object-cover"
-                          unoptimized
-                        />
+                        <AdminProductImage src={getImageUrl(product.image)} alt={product.name} />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-red-400">
                           <Upload className="w-4 h-4" />

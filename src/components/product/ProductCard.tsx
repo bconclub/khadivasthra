@@ -4,8 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
-import { ShoppingBag, Heart } from "lucide-react";
+import { ShoppingBag, Heart, ImageOff } from "lucide-react";
 import { normalizeProductImagePath } from "@/lib/imageUtils";
+import { useState } from "react";
 
 interface ProductCardProps {
     product: {
@@ -21,31 +22,53 @@ interface ProductCardProps {
 
 export function ProductCard({ product, variant = "white", showHeart = false }: ProductCardProps) {
     const { addToCart } = useCart();
+    const [imageError, setImageError] = useState(false);
 
     // Normalize image path using product name for filename (ensures images are in public folder, not browser memory)
     // Reject blob/data URLs - only use paths to public folder
     let imagePath = product.image;
+    
     if (imagePath && (imagePath.startsWith('blob:') || imagePath.startsWith('data:'))) {
       // Skip blob/data URLs - these are in browser memory
-      imagePath = undefined;
+      imagePath = '';
     }
-    const normalizedImagePath = normalizeProductImagePath(product.id, imagePath, product.name);
+    
+    // Convert admin/uploads/ paths to /images/ paths
+    if (imagePath && imagePath.includes('/admin/uploads/')) {
+      // Extract filename and convert to /images/products/ path
+      const filename = imagePath.split('/').pop() || '';
+      imagePath = `/images/products/${filename}`;
+    }
+    
+    const normalizedImagePath = normalizeProductImagePath(product.id, imagePath, product.name, product.category);
+    
     // Use normalized path from public folder, fallback to placeholder if not found
     const imageUrl = normalizedImagePath || `https://placehold.co/600x800/E8657B/FFF?text=${encodeURIComponent(product.name.replace(/ /g, '+'))}`;
 
     const cardBg = variant === "cream" ? "bg-cream" : "bg-white";
     const borderColor = variant === "cream" ? "border-cream/50" : "border-cream/30";
 
+    // Check if we have a valid image URL (not empty)
+    const hasValidImage = !imageError && imageUrl && imageUrl.trim() !== '';
+
     return (
         <div className={`product-card group relative ${cardBg} rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 border ${borderColor} hover:border-coral/30 flex flex-col h-full`}>
             <Link href={`/product/${product.id}`} className="product-card__image-link block relative aspect-[2/3] overflow-hidden bg-cream/30">
-                <Image
-                    src={imageUrl}
-                    alt={product.name}
-                    fill
-                    className="product-card__image object-cover transition-transform duration-500 group-hover:scale-110"
-                    sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                />
+                {hasValidImage ? (
+                    <Image
+                        src={imageUrl}
+                        alt={product.name}
+                        fill
+                        className="product-card__image object-cover transition-transform duration-500 group-hover:scale-110"
+                        sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                        onError={() => setImageError(true)}
+                        unoptimized
+                    />
+                ) : (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+                        <ImageOff className="w-16 h-16 text-gray-400" />
+                    </div>
+                )}
 
                 <div className="product-card__quick-add absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     {showHeart && (

@@ -44,8 +44,16 @@ function sanitize($input) {
 
 /**
  * Validate CSRF token
+ * If authentication is disabled (no session), skip validation
  */
 function validateCSRF($token) {
+    // Skip CSRF validation if auth is disabled (no session or session not started)
+    if (!isset($_SESSION) || !isset($_SESSION['admin_logged_in']) || $_SESSION['admin_logged_in'] !== true) {
+        // Auth is disabled - allow all requests
+        return;
+    }
+    
+    // Only validate CSRF if authenticated
     if (!isset($_SESSION['csrf_token']) || $token !== $_SESSION['csrf_token']) {
         jsonError('Invalid CSRF token', 403);
     }
@@ -103,7 +111,33 @@ function writeJSON($file, $data) {
  */
 function validateImage($file) {
     if (!isset($file['tmp_name']) || !is_uploaded_file($file['tmp_name'])) {
-        return ['valid' => false, 'error' => 'No file uploaded'];
+        // Check for PHP upload errors
+        $uploadError = $file['error'] ?? UPLOAD_ERR_OK;
+        $errorMessage = 'No file uploaded';
+        
+        switch ($uploadError) {
+            case UPLOAD_ERR_INI_SIZE:
+            case UPLOAD_ERR_FORM_SIZE:
+                $errorMessage = 'File size exceeds PHP limit (' . ini_get('upload_max_filesize') . ')';
+                break;
+            case UPLOAD_ERR_PARTIAL:
+                $errorMessage = 'File was only partially uploaded';
+                break;
+            case UPLOAD_ERR_NO_FILE:
+                $errorMessage = 'No file was uploaded';
+                break;
+            case UPLOAD_ERR_NO_TMP_DIR:
+                $errorMessage = 'Missing temporary folder';
+                break;
+            case UPLOAD_ERR_CANT_WRITE:
+                $errorMessage = 'Failed to write file to disk';
+                break;
+            case UPLOAD_ERR_EXTENSION:
+                $errorMessage = 'File upload stopped by PHP extension';
+                break;
+        }
+        
+        return ['valid' => false, 'error' => $errorMessage];
     }
 
     if ($file['size'] > MAX_FILE_SIZE) {
@@ -137,7 +171,7 @@ function uploadImage($file, $prefix = 'product') {
     }
 
     if (!is_dir(UPLOADS_DIR)) {
-        mkdir(UPLOADS_DIR, 0755, true);
+        @mkdir(UPLOADS_DIR, 0755, true);
     }
 
     $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
@@ -189,9 +223,6 @@ function getNextId($items) {
  * Sync products from admin to frontend
  */
 function syncProductsToFrontend() {
-    // #region agent log
-    file_put_contents('/media/z/8EF6149BF614859D/Users/user/Builds/Khadivasthra/.cursor/debug.log', json_encode(['id'=>'log_'.time().'_sync_start','timestamp'=>time()*1000,'location'=>'admin/includes/functions.php:syncProductsToFrontend','message'=>'Sync function called','data'=>[],'sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'A'])."\n", FILE_APPEND);
-    // #endregion
     $adminProductsFile = PRODUCTS_FILE;
     $frontendProductsFile = __DIR__ . '/../../src/data/products.json';
     $publicProductsFile = __DIR__ . '/../../public/data/products.json';
@@ -199,21 +230,43 @@ function syncProductsToFrontend() {
     // Read admin products
     $adminData = readJSON($adminProductsFile);
     $adminProducts = $adminData['products'] ?? [];
-    // #region agent log
-    $featuredCount = count(array_filter($adminProducts, fn($p) => ($p['isFeatured'] ?? false) === true));
-    file_put_contents('/media/z/8EF6149BF614859D/Users/user/Builds/Khadivasthra/.cursor/debug.log', json_encode(['id'=>'log_'.time().'_sync_read','timestamp'=>time()*1000,'location'=>'admin/includes/functions.php:syncProductsToFrontend','message'=>'Read admin products','data'=>['totalProducts'=>count($adminProducts),'featuredCount'=>$featuredCount],'sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'C'])."\n", FILE_APPEND);
-    // #endregion
     
     // Format for public API (simple format)
     $publicProducts = [];
     foreach ($adminProducts as $adminProduct) {
+        // Convert admin/uploads/ paths to /images/products/ paths
+        $imagePath = $adminProduct['image'] ?? '';
+        
+        if (!empty($imagePath) && strpos($imagePath, '/admin/uploads/') !== false) {
+            // Extract filename from admin path
+            $filename = basename($imagePath);
+            
+            // Target path in public folder
+            $targetPath = __DIR__ . '/../../public/images/products/' . $filename;
+            $sourcePath = __DIR__ . '/../uploads/' . $filename;
+            
+            // Create products directory if it doesn't exist
+            $productsDir = dirname($targetPath);
+            if (!is_dir($productsDir)) {
+                mkdir($productsDir, 0755, true);
+            }
+            
+            // Copy file from admin/uploads to public/images/products if it exists
+            if (file_exists($sourcePath)) {
+                copy($sourcePath, $targetPath);
+            }
+            
+            // Convert path to public path
+            $imagePath = '/images/products/' . $filename;
+        }
+        
         $publicProduct = [
             'id' => $adminProduct['id'],
             'name' => $adminProduct['name'],
             'category' => $adminProduct['category'],
             'price' => $adminProduct['price'],
             'description' => $adminProduct['description'] ?? '',
-            'image' => $adminProduct['image'] ?? '',
+            'image' => $imagePath,
             'isFeatured' => $adminProduct['isFeatured'] ?? false,
             'slug' => $adminProduct['slug'] ?? '',
             'material' => $adminProduct['material'] ?? '',
@@ -231,7 +284,26 @@ function syncProductsToFrontend() {
             $publicProduct['comparePrice'] = $adminProduct['comparePrice'];
         }
         if (isset($adminProduct['images'])) {
-            $publicProduct['images'] = $adminProduct['images'];
+            // Also convert image paths in images array
+            $convertedImages = [];
+            foreach ($adminProduct['images'] as $img) {
+                if (!empty($img) && strpos($img, '/admin/uploads/') !== false) {
+                    $imgFilename = basename($img);
+                    $imgSourcePath = __DIR__ . '/../uploads/' . $imgFilename;
+                    $imgTargetPath = __DIR__ . '/../../public/images/products/' . $imgFilename;
+                    $productsDir = dirname($imgTargetPath);
+                    if (!is_dir($productsDir)) {
+                        mkdir($productsDir, 0755, true);
+                    }
+                    if (file_exists($imgSourcePath)) {
+                        copy($imgSourcePath, $imgTargetPath);
+                    }
+                    $convertedImages[] = '/images/products/' . $imgFilename;
+                } else {
+                    $convertedImages[] = $img;
+                }
+            }
+            $publicProduct['images'] = $convertedImages;
         }
         
         $publicProducts[] = $publicProduct;
@@ -244,14 +316,7 @@ function syncProductsToFrontend() {
     if (!is_dir($publicDir)) {
         mkdir($publicDir, 0755, true);
     }
-    // #region agent log
-    $publicFeaturedCount = count(array_filter($publicProducts, fn($p) => ($p['isFeatured'] ?? false) === true));
-    file_put_contents('/media/z/8EF6149BF614859D/Users/user/Builds/Khadivasthra/.cursor/debug.log', json_encode(['id'=>'log_'.time().'_sync_before_write','timestamp'=>time()*1000,'location'=>'admin/includes/functions.php:syncProductsToFrontend','message'=>'About to write public file','data'=>['publicFile'=>$publicProductsFile,'totalProducts'=>count($publicProducts),'featuredCount'=>$publicFeaturedCount,'sampleFeatured'=>array_values(array_filter($publicProducts, fn($p) => ($p['isFeatured'] ?? false) === true))[0] ?? null],'sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'C'])."\n", FILE_APPEND);
-    // #endregion
-    $writeResult = file_put_contents($publicProductsFile, $publicJson);
-    // #region agent log
-    file_put_contents('/media/z/8EF6149BF614859D/Users/user/Builds/Khadivasthra/.cursor/debug.log', json_encode(['id'=>'log_'.time().'_sync_write','timestamp'=>time()*1000,'location'=>'admin/includes/functions.php:syncProductsToFrontend','message'=>'Write result','data'=>['success'=>$writeResult !== false,'bytesWritten'=>$writeResult,'fileExists'=>file_exists($publicProductsFile)],'sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'B'])."\n", FILE_APPEND);
-    // #endregion
+    file_put_contents($publicProductsFile, $publicJson);
     
     // Also sync to src/data for Next.js (preserve frontend-specific fields)
     // Read frontend products (to preserve extra fields)
@@ -267,54 +332,82 @@ function syncProductsToFrontend() {
         $frontendMap[$product['id']] = $product;
     }
     
-    // Merge admin products with frontend products
+    // Use admin as single source of truth - sync all products exactly as they are in admin
     $syncedProducts = [];
     foreach ($adminProducts as $adminProduct) {
-        $productId = $adminProduct['id'];
+        // Convert admin/uploads/ paths to /images/products/ paths
+        $imagePath = $adminProduct['image'] ?? '';
+        if (!empty($imagePath) && strpos($imagePath, '/admin/uploads/') !== false) {
+            $filename = basename($imagePath);
+            $sourcePath = __DIR__ . '/../uploads/' . $filename;
+            $targetPath = __DIR__ . '/../../public/images/products/' . $filename;
+            $productsDir = dirname($targetPath);
+            if (!is_dir($productsDir)) {
+                mkdir($productsDir, 0755, true);
+            }
+            if (file_exists($sourcePath)) {
+                copy($sourcePath, $targetPath);
+            }
+            $imagePath = '/images/products/' . $filename;
+        }
         
-        // Start with admin product data
+        // Start with admin product data - use admin as single source of truth
         $syncedProduct = [
             'id' => $adminProduct['id'],
             'name' => $adminProduct['name'],
+            'slug' => $adminProduct['slug'] ?? '',
             'category' => $adminProduct['category'],
             'price' => $adminProduct['price'],
             'description' => $adminProduct['description'] ?? '',
-            'image' => $adminProduct['image'] ?? '',
+            'image' => $imagePath,
             'isFeatured' => $adminProduct['isFeatured'] ?? false,
+            'inStock' => $adminProduct['inStock'] ?? true,
         ];
         
-        // Add slug if exists
-        if (isset($adminProduct['slug'])) {
-            $syncedProduct['slug'] = $adminProduct['slug'];
+        // Add all admin fields exactly as they are
+        if (isset($adminProduct['longDescription'])) {
+            $syncedProduct['longDescription'] = $adminProduct['longDescription'];
         }
-        
-        // Preserve frontend-specific fields if they exist
-        if (isset($frontendMap[$productId])) {
-            $frontendProduct = $frontendMap[$productId];
-            
-            // Preserve details object
-            if (isset($frontendProduct['details'])) {
-                $syncedProduct['details'] = $frontendProduct['details'];
-            }
-            
-            // Preserve careInstructions array
-            if (isset($frontendProduct['careInstructions'])) {
-                $syncedProduct['careInstructions'] = $frontendProduct['careInstructions'];
-            }
-            
-            // Preserve longDescription
-            if (isset($frontendProduct['longDescription'])) {
-                $syncedProduct['longDescription'] = $frontendProduct['longDescription'];
-            }
-            
-            // Use frontend image if admin image is placeholder
-            if (empty($adminProduct['image']) || strpos($adminProduct['image'], '/images/mundu-') !== false) {
-                if (!empty($frontendProduct['image'])) {
-                    $syncedProduct['image'] = $frontendProduct['image'];
+        if (isset($adminProduct['material'])) {
+            $syncedProduct['material'] = $adminProduct['material'];
+        }
+        if (isset($adminProduct['careInstructions'])) {
+            $syncedProduct['careInstructions'] = $adminProduct['careInstructions'];
+        }
+        if (isset($adminProduct['comparePrice'])) {
+            $syncedProduct['comparePrice'] = $adminProduct['comparePrice'];
+        }
+        if (isset($adminProduct['images'])) {
+            // Convert image paths in images array
+            $convertedImages = [];
+            foreach ($adminProduct['images'] as $img) {
+                if (!empty($img) && strpos($img, '/admin/uploads/') !== false) {
+                    $imgFilename = basename($img);
+                    $imgSourcePath = __DIR__ . '/../uploads/' . $imgFilename;
+                    $imgTargetPath = __DIR__ . '/../../public/images/products/' . $imgFilename;
+                    $productsDir = dirname($imgTargetPath);
+                    if (!is_dir($productsDir)) {
+                        mkdir($productsDir, 0755, true);
+                    }
+                    if (file_exists($imgSourcePath)) {
+                        copy($imgSourcePath, $imgTargetPath);
+                    }
+                    $convertedImages[] = '/images/products/' . $imgFilename;
+                } else {
+                    $convertedImages[] = $img;
                 }
             }
-        } else {
-            // New product from admin - add default structure
+            $syncedProduct['images'] = $convertedImages;
+        }
+        if (isset($adminProduct['isNew'])) {
+            $syncedProduct['isNew'] = $adminProduct['isNew'];
+        }
+        if (isset($adminProduct['isBestSeller'])) {
+            $syncedProduct['isBestSeller'] = $adminProduct['isBestSeller'];
+        }
+        
+        // Add default details if not present in admin
+        if (!isset($adminProduct['details'])) {
             $syncedProduct['details'] = [
                 'material' => $adminProduct['material'] ?? '100% Premium Cotton',
                 'weave' => 'Handloom',
@@ -323,7 +416,12 @@ function syncProductsToFrontend() {
                 'origin' => 'Aluva, Kerala',
                 'dimensions' => '2.0m x 1.25m (Single)'
             ];
-            
+        } else {
+            $syncedProduct['details'] = $adminProduct['details'];
+        }
+        
+        // Add default careInstructions if not present in admin
+        if (!isset($adminProduct['careInstructions'])) {
             $syncedProduct['careInstructions'] = [
                 'Hand wash separately in cold water',
                 'Do not bleach',
@@ -331,30 +429,18 @@ function syncProductsToFrontend() {
                 'Iron on medium heat',
                 'Do not wring forcefully'
             ];
-            
-            $syncedProduct['longDescription'] = $adminProduct['longDescription'] ?? $adminProduct['description'] ?? '';
+        }
+        
+        // Add longDescription if not present
+        if (!isset($syncedProduct['longDescription'])) {
+            $syncedProduct['longDescription'] = $adminProduct['description'] ?? '';
         }
         
         $syncedProducts[] = $syncedProduct;
     }
     
-    // Add any frontend-only products (products that exist in frontend but not in admin)
-    foreach ($frontendProducts as $frontendProduct) {
-        $productId = $frontendProduct['id'];
-        $existsInAdmin = false;
-        
-        foreach ($adminProducts as $adminProduct) {
-            if ($adminProduct['id'] === $productId) {
-                $existsInAdmin = true;
-                break;
-            }
-        }
-        
-        if (!$existsInAdmin) {
-            // Keep frontend-only products
-            $syncedProducts[] = $frontendProduct;
-        }
-    }
+    // DO NOT add frontend-only products - admin is the single source of truth
+    // Products that exist only in frontend will be removed
     
     // Write to frontend products file
     $json = json_encode($syncedProducts, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

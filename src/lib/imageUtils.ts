@@ -20,6 +20,30 @@ export function categoryToSlug(category: string): string {
 }
 
 /**
+ * Maps product IDs to actual image filenames in category folders
+ * This handles cases where filenames don't match product IDs
+ */
+export function getProductImageFilename(productId: string, category: string): string | null {
+  // Mapping of product IDs to actual image filenames in category folders
+  const imageMap: Record<string, string> = {
+    // White Mundus
+    "wm-001": "blur-border-white.png",
+    "wm-002": "grey-border-white.png",
+    "wm-003": "purple borde sitiing.png",
+    // Offwhite Mundus
+    "om-001": "goldern border white.png",
+    // Add more mappings as needed
+  };
+  
+  if (imageMap[productId]) {
+    const categorySlug = categoryToSlug(category);
+    return `/images/${categorySlug}/${imageMap[productId]}`;
+  }
+  
+  return null;
+}
+
+/**
  * Creates a URL-friendly slug from product name/title
  * Converts to lowercase, replaces spaces with hyphens, removes special chars
  */
@@ -95,23 +119,39 @@ export function getProductImagePaths(productId: string, category: string): strin
 
 /**
  * Normalizes product image path to use standardized location
+ * Preserves valid existing paths, only converts when necessary
  * Uses product name to generate filename, falls back to product ID if name not available
- * Converts legacy paths to new format when possible
+ * Also tries category folder images as fallback
  */
-export function normalizeProductImagePath(productId: string, imagePath?: string, productName?: string): string {
-  // If image path already exists and is in public folder, use it
-  if (imagePath && imagePath.startsWith('/images/') && !imagePath.startsWith('blob:') && !imagePath.startsWith('data:')) {
-    // If already in new format, return as is
-    if (imagePath.startsWith('/images/products/') && !imagePath.includes('/gallery/')) {
-      return imagePath;
-    }
-    // Convert legacy paths to new format
-    const ext = imagePath.split('.').pop() || 'jpg';
-    const slug = productName ? productNameToSlug(productName) : productId;
-    return `/images/products/${slug}.${ext}`;
+export function normalizeProductImagePath(productId: string, imagePath?: string, productName?: string, category?: string): string {
+  // Reject blob/data URLs - these are in browser memory
+  if (imagePath && (imagePath.startsWith('blob:') || imagePath.startsWith('data:'))) {
+    imagePath = '';
   }
   
-  // Generate new path using product name if available, otherwise use product ID
+  // First, try to get mapped image filename if available (handles cases where filenames don't match product IDs)
+  if (category) {
+    const mappedImage = getProductImageFilename(productId, category);
+    if (mappedImage) {
+      return mappedImage;
+    }
+  }
+  
+  // If image path already exists and is in public folder, use it as-is
+  // This preserves existing valid paths from products.json (e.g., /images/white-mundus/blur-border-white.png)
+  if (imagePath && imagePath.startsWith('/images/') && !imagePath.includes('..')) {
+    return imagePath;
+  }
+  
+  // Only generate new path if no valid path was provided or imagePath is empty
+  // Try category folder first with product ID (e.g., /images/white-mundus/{productId}.png)
+  if (category && (!imagePath || imagePath === '' || imagePath.trim() === '')) {
+    const categorySlug = categoryToSlug(category);
+    // Try common extensions in category folder - start with png as most images in white-mundus are png
+    return `/images/${categorySlug}/${productId}.png`;
+  }
+  
+  // Try new standardized location (product name slug)
   if (productName) {
     const slug = productNameToSlug(productName);
     return `/images/products/${slug}.jpg`;

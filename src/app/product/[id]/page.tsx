@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { ProductCard } from "@/components/product/ProductCard";
 import products from "@/data/products.json";
-import { Minus, Plus, ShoppingBag, Truck, ShieldCheck, Ruler, Droplets, Info } from "lucide-react";
+import { Minus, Plus, ShoppingBag, Truck, ShieldCheck, Ruler, Droplets, Info, ImageOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { normalizeProductImagePath } from "@/lib/imageUtils";
 
@@ -17,6 +17,7 @@ export default function ProductDetailPage() {
     const product = products.find(p => p.id === id);
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState<"details" | "specs" | "care">("details");
+    const [imageError, setImageError] = useState(false);
     const { addToCart } = useCart();
 
     if (!product) {
@@ -36,7 +37,7 @@ export default function ProductDetailPage() {
     let imagePath = product.image;
     if (imagePath && (imagePath.startsWith('blob:') || imagePath.startsWith('data:'))) {
       // Skip blob/data URLs - these are in browser memory
-      imagePath = undefined;
+      imagePath = '';
     }
     const normalizedImagePath = normalizeProductImagePath(product.id, imagePath, product.name);
     // Use normalized path from public folder, fallback to placeholder if not found
@@ -47,13 +48,22 @@ export default function ProductDetailPage() {
             <div className="product-detail-page__main grid md:grid-cols-2 gap-12 lg:gap-16 mb-20">
                 {/* Gallery / Image */}
                 <div className="product-detail-page__image-wrapper relative aspect-[3/4] bg-cream/30 rounded-2xl overflow-hidden shadow-lg border border-cream/30">
-                    <Image
-                        src={imageUrl}
-                        alt={product.name}
-                        fill
-                        className="product-detail-page__image object-cover"
-                        priority
-                    />
+                    {!imageError && imageUrl && imageUrl.trim() !== '' ? (
+                        <Image
+                            src={imageUrl}
+                            alt={product.name}
+                            fill
+                            className="product-detail-page__image object-cover"
+                            priority
+                            onError={() => setImageError(true)}
+                            unoptimized
+                        />
+                    ) : (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-gray-100 text-gray-400">
+                            <ImageOff className="w-24 h-24 mb-4" />
+                            <p className="text-sm text-center px-4">No image available</p>
+                        </div>
+                    )}
                 </div>
 
                 {/* Product Info */}

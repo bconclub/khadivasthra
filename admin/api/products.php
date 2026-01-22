@@ -8,13 +8,77 @@ require_once __DIR__ . '/../includes/auth-check.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 
-// GET - List all products
+// GET - List all products or sync
 if ($method === 'GET') {
+    // Check if sync is requested
+    if (isset($_GET['sync']) && $_GET['sync'] === 'true') {
+        syncProductsToFrontend();
+        jsonSuccess('Products synced to frontend successfully', [
+            'synced' => true
+        ]);
+    }
+    
+    $featuredParam = $_GET['featured'] ?? null;
+    
     $data = readJSON(PRODUCTS_FILE);
     // Handle both array format and object format
     $products = is_array($data) && !isset($data['products']) 
         ? $data 
         : ($data['products'] ?? []);
+    
+    // Convert admin/uploads/ paths to /images/products/ paths
+    // Only do file operations if needed and safely
+    $productsDir = __DIR__ . '/../../public/images/products';
+    if (!is_dir($productsDir)) {
+        @mkdir($productsDir, 0755, true);
+    }
+    
+    foreach ($products as &$product) {
+        if (!empty($product['image']) && strpos($product['image'], '/admin/uploads/') !== false) {
+            $filename = basename($product['image']);
+            
+            // Convert path immediately
+            $product['image'] = '/images/products/' . $filename;
+            
+            // Copy file only if source exists and target doesn't (avoid repeated copies)
+            $sourcePath = __DIR__ . '/../uploads/' . $filename;
+            $targetPath = $productsDir . '/' . $filename;
+            
+            if (file_exists($sourcePath) && !file_exists($targetPath)) {
+                @copy($sourcePath, $targetPath); // Suppress errors to avoid breaking API response
+            }
+        }
+        // Also convert images array if it exists
+        if (!empty($product['images']) && is_array($product['images'])) {
+            foreach ($product['images'] as &$img) {
+                if (!empty($img) && strpos($img, '/admin/uploads/') !== false) {
+                    $imgFilename = basename($img);
+                    
+                    // Convert path immediately
+                    $img = '/images/products/' . $imgFilename;
+                    
+                    // Copy file only if source exists and target doesn't
+                    $imgSourcePath = __DIR__ . '/../uploads/' . $imgFilename;
+                    $imgTargetPath = $productsDir . '/' . $imgFilename;
+                    
+                    if (file_exists($imgSourcePath) && !file_exists($imgTargetPath)) {
+                        @copy($imgSourcePath, $imgTargetPath); // Suppress errors
+                    }
+                }
+            }
+        }
+    }
+    unset($product, $img); // Break reference
+    
+    // Filter by featured if requested
+    if ($featuredParam === 'true') {
+        $products = array_filter($products, function($p) {
+            $isFeatured = $p['isFeatured'] ?? false;
+            return ($isFeatured === true || $isFeatured === 1 || $isFeatured === '1' || $isFeatured === 'true');
+        });
+        $products = array_values($products); // Re-index array
+    }
+    
     jsonResponse(['products' => $products]);
 }
 
@@ -84,14 +148,8 @@ if ($method === 'POST') {
     $data['products'] = $products;
     
     if (writeJSON(PRODUCTS_FILE, $data)) {
-        // #region agent log
-        file_put_contents('/media/z/8EF6149BF614859D/Users/user/Builds/Khadivasthra/.cursor/debug.log', json_encode(['id'=>'log_'.time().'_add','timestamp'=>time()*1000,'location'=>'admin/api/products.php:POST','message'=>'About to sync products after add','data'=>['productId'=>$newProduct['id'],'isFeatured'=>$newProduct['isFeatured']],'sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'A'])."\n", FILE_APPEND);
-        // #endregion
         // Sync to frontend
         syncProductsToFrontend();
-        // #region agent log
-        file_put_contents('/media/z/8EF6149BF614859D/Users/user/Builds/Khadivasthra/.cursor/debug.log', json_encode(['id'=>'log_'.time().'_add2','timestamp'=>time()*1000,'location'=>'admin/api/products.php:POST','message'=>'Sync completed after add','data'=>['productId'=>$newProduct['id']],'sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'A'])."\n", FILE_APPEND);
-        // #endregion
         jsonSuccess('Product added successfully', $newProduct);
     } else {
         jsonError('Failed to save product');
@@ -186,14 +244,8 @@ if ($method === 'PUT' || ($method === 'POST' && isset($_POST['_method']) && $_PO
     $data['products'] = $products;
     
     if (writeJSON(PRODUCTS_FILE, $data)) {
-        // #region agent log
-        file_put_contents('/media/z/8EF6149BF614859D/Users/user/Builds/Khadivasthra/.cursor/debug.log', json_encode(['id'=>'log_'.time().'_update','timestamp'=>time()*1000,'location'=>'admin/api/products.php:PUT','message'=>'About to sync products after update','data'=>['productId'=>$id,'isFeatured'=>$products[$index]['isFeatured']??false],'sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'A'])."\n", FILE_APPEND);
-        // #endregion
         // Sync to frontend
         syncProductsToFrontend();
-        // #region agent log
-        file_put_contents('/media/z/8EF6149BF614859D/Users/user/Builds/Khadivasthra/.cursor/debug.log', json_encode(['id'=>'log_'.time().'_update2','timestamp'=>time()*1000,'location'=>'admin/api/products.php:PUT','message'=>'Sync completed after update','data'=>['productId'=>$id],'sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'A'])."\n", FILE_APPEND);
-        // #endregion
         jsonSuccess('Product updated successfully', $products[$index]);
     } else {
         jsonError('Failed to update product');

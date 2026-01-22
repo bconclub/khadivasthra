@@ -1,9 +1,26 @@
+import Image from "next/image";
 import { MapPin, Phone, Instagram } from "lucide-react";
 
 export default function ContactPage() {
     return (
         <div className="contact-page container mx-auto px-4 max-w-7xl py-16">
-            <h1 className="contact-page__title text-4xl font-bold text-center mb-12 text-text">Get in Touch</h1>
+            {/* Logo Section - Same as Homepage */}
+            <div className="contact-page__header text-center mb-12">
+                <div className="contact-page__logo-wrapper flex justify-center mb-6">
+                    <Image
+                        src="/Khadi Vasthra White Transparnt.png"
+                        alt="Khadi Vasthra Logo"
+                        width={400}
+                        height={160}
+                        className="contact-page__logo h-auto w-full max-w-xs md:max-w-md object-contain"
+                        priority
+                    />
+                </div>
+                <h1 className="contact-page__title text-4xl font-bold mb-4 text-text">Get in Touch</h1>
+                <p className="contact-page__subtitle text-lg text-text-muted max-w-2xl mx-auto">
+                    We'd love to hear from you. Reach out to us for any inquiries about our handcrafted Mundus and Dhotis.
+                </p>
+            </div>
 
             <div className="contact-page__content grid md:grid-cols-2 gap-12 max-w-4xl mx-auto">
                 {/* Contact Info */}
