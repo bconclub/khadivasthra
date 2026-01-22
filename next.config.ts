@@ -52,8 +52,6 @@ const nextConfig: NextConfig = {
     }
     return config;
   },
-  // Admin is handled by Next.js page component at src/app/admin/[[...path]]/page.tsx
-  // This allows admin to work on same port (3000) as Next.js app
 };
 
 export default nextConfig;

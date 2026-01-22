@@ -317,9 +317,9 @@ export default function AdminPanel() {
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-<div className="p-6 border-b border-cream/50">
+          <div className="p-6 border-b border-cream/50">
             <Image
-              src="/KV Logo Colour.webp"
+              src="/Khadi Vasthra White Transparnt.png"
               alt="Khadi Vasthra"
               width={160}
               height={50}
@@ -387,7 +387,7 @@ export default function AdminPanel() {
 
         {/* Content */}
         <div className="p-6">
-          {activeTab === "dashboard" && <DashboardTab />}
+          {activeTab === "dashboard" && <DashboardTab key={activeTab} />}
           {activeTab === "products" && <ProductsTab />}
           {activeTab === "categories" && <CategoriesTab />}
           {activeTab === "featured" && <FeaturedTab />}
@@ -510,9 +510,23 @@ function DashboardTab() {
 
   useEffect(() => {
     loadStats();
+    
+    // Listen for product updates from other tabs
+    const handleProductUpdate = () => {
+      loadStats();
+    };
+    
+    window.addEventListener('productUpdated', handleProductUpdate);
+    window.addEventListener('categoryUpdated', handleProductUpdate);
+    
+    return () => {
+      window.removeEventListener('productUpdated', handleProductUpdate);
+      window.removeEventListener('categoryUpdated', handleProductUpdate);
+    };
   }, []);
 
   const loadStats = async () => {
+    setIsLoading(true);
     try {
       const [productsData, categoriesData] = await Promise.all([
         fetchWithFallback("products"),
@@ -527,7 +541,11 @@ function DashboardTab() {
         totalCategories: categories.length,
         featuredProducts: products.filter((p: Product) => p.isFeatured).length,
         inStockProducts: products.filter((p: Product) => p.inStock !== false).length,
-        missingImages: products.filter((p: Product) => !p.image).length,
+        // Check for missing images - empty string, null, undefined, or falsy
+        missingImages: products.filter((p: Product) => {
+          const image = p.image || '';
+          return !image || (typeof image === 'string' && image.trim() === '');
+        }).length,
       });
     } catch (error) {
       console.error("Failed to load stats:", error);
@@ -637,6 +655,8 @@ function ProductsTab() {
     const result = await deleteProduct(id);
     if (result.success) {
       setProducts(products.filter((p) => p.id !== id));
+      // Trigger event to refresh dashboard stats
+      window.dispatchEvent(new Event('productUpdated'));
     } else {
       alert("Failed to delete product");
     }
@@ -810,6 +830,8 @@ function ProductsTab() {
             loadData();
             setShowModal(false);
             setEditingProduct(null);
+            // Trigger event to refresh dashboard stats
+            window.dispatchEvent(new Event('productUpdated'));
           }}
         />
       )}
@@ -873,6 +895,17 @@ function ProductModal({
     try {
       const formDataUpload = new FormData();
       formDataUpload.append("image", file);
+      formDataUpload.append("type", "main"); // Main product image
+      
+      // Use product ID if editing, or generate one from slug if new
+      const productId = product?.id || (formData.slug ? formData.slug.replace(/-/g, '_') : `prod_${Date.now()}`);
+      formDataUpload.append("productId", productId);
+      
+      // Pass product name for filename (preferred over product ID)
+      const productName = formData.name || product?.name;
+      if (productName) {
+        formDataUpload.append("productName", productName);
+      }
 
       const res = await fetch(`${API_BASE}/upload.php`, {
         method: "POST",
@@ -882,16 +915,20 @@ function ProductModal({
       const data = await res.json();
 
       if (data.success) {
+        // Use the standardized path from API
         setFormData({ ...formData, image: data.path });
       } else {
         alert(data.error || "Upload failed");
       }
     } catch (error) {
       console.error("Upload error:", error);
-      // Fallback: use local preview
+      // Fallback: use local preview (but don't save blob URL to formData - it's in browser memory)
+      // Instead, alert user to manually upload via URL input
+      alert("Upload failed. Please use the Image URL input field to enter the image path manually.");
       const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData({ ...formData, image: reader.result as string });
+        // Preview only - don't save blob URL
+        // setFormData({ ...formData, image: reader.result as string });
       };
       reader.readAsDataURL(file);
     } finally {
@@ -1102,7 +1139,7 @@ function ProductModal({
                     value={formData.image}
                     onChange={(e) => setFormData({ ...formData, image: e.target.value })}
                     className="w-full mt-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-coral focus:border-transparent text-sm"
-                    placeholder="/images/products/..."
+                    placeholder="/images/products/{productId}.jpg"
                   />
                 </div>
               </div>
@@ -1208,6 +1245,8 @@ function CategoriesTab() {
     const result = await deleteCategory(id);
     if (result.success) {
       setCategories(categories.filter((c) => c.id !== id));
+      // Trigger event to refresh dashboard stats
+      window.dispatchEvent(new Event('categoryUpdated'));
     } else {
       alert("Failed to delete category");
     }
@@ -1348,6 +1387,8 @@ function CategoriesTab() {
             loadCategories();
             setShowModal(false);
             setEditingCategory(null);
+            // Trigger event to refresh dashboard stats
+            window.dispatchEvent(new Event('categoryUpdated'));
           }}
         />
       )}

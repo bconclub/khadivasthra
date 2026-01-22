@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { ShoppingBag, Heart } from "lucide-react";
+import { normalizeProductImagePath } from "@/lib/imageUtils";
 
 interface ProductCardProps {
     product: {
@@ -21,8 +22,16 @@ interface ProductCardProps {
 export function ProductCard({ product, variant = "white", showHeart = false }: ProductCardProps) {
     const { addToCart } = useCart();
 
-    // Use product image path, fallback to placeholder if not found
-    const imageUrl = product.image || `https://placehold.co/600x800/E8657B/FFF?text=${encodeURIComponent(product.name.replace(/ /g, '+'))}`;
+    // Normalize image path using product name for filename (ensures images are in public folder, not browser memory)
+    // Reject blob/data URLs - only use paths to public folder
+    let imagePath = product.image;
+    if (imagePath && (imagePath.startsWith('blob:') || imagePath.startsWith('data:'))) {
+      // Skip blob/data URLs - these are in browser memory
+      imagePath = undefined;
+    }
+    const normalizedImagePath = normalizeProductImagePath(product.id, imagePath, product.name);
+    // Use normalized path from public folder, fallback to placeholder if not found
+    const imageUrl = normalizedImagePath || `https://placehold.co/600x800/E8657B/FFF?text=${encodeURIComponent(product.name.replace(/ /g, '+'))}`;
 
     const cardBg = variant === "cream" ? "bg-cream" : "bg-white";
     const borderColor = variant === "cream" ? "border-cream/50" : "border-cream/30";

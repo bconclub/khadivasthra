@@ -21,7 +21,17 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$uploadDir = __DIR__ . '/../images/products/';
+// Determine upload type: 'main' for product images, 'gallery' for gallery images
+$uploadType = $_POST['type'] ?? 'main'; // 'main' or 'gallery'
+$productId = $_POST['productId'] ?? null; // Product ID for organized naming
+$productName = $_POST['productName'] ?? null; // Product name/title for filename
+
+// Set upload directory based on type
+if ($uploadType === 'gallery') {
+    $uploadDir = __DIR__ . '/../images/products/gallery/';
+} else {
+    $uploadDir = __DIR__ . '/../images/products/';
+}
 
 // Create directory if it doesn't exist
 if (!is_dir($uploadDir)) {
@@ -76,17 +86,49 @@ if (!in_array($ext, ['jpg', 'jpeg', 'png', 'webp', 'gif'])) {
     $ext = 'jpg'; // Default
 }
 
-// Generate unique filename
-$filename = uniqid() . '-' . preg_replace('/[^a-z0-9.]/', '-', strtolower(pathinfo($file['name'], PATHINFO_FILENAME))) . '.' . $ext;
+// Generate filename based on product name (preferred) or product ID
+$slug = null;
+if ($productName) {
+    // Create slug from product name: convert to lowercase, replace spaces with hyphens, remove special chars
+    $slug = strtolower(trim($productName));
+    $slug = preg_replace('/[^\w\s-]/', '', $slug); // Remove special characters
+    $slug = preg_replace('/\s+/', '-', $slug); // Replace spaces with hyphens
+    $slug = preg_replace('/-+/', '-', $slug); // Replace multiple hyphens with single
+    $slug = trim($slug, '-'); // Remove leading/trailing hyphens
+}
+
+// Generate filename based on upload type
+if ($uploadType === 'gallery' && ($slug || $productId)) {
+    // Gallery images: product-name-slug_1.jpg or productId_1.jpg
+    $prefix = $slug ?: $productId;
+    $existingFiles = glob($uploadDir . $prefix . '_*.' . $ext);
+    $index = count($existingFiles) + 1;
+    $filename = $prefix . '_' . $index . '.' . $ext;
+} elseif ($slug) {
+    // Main product image: product-name-slug.jpg (preferred)
+    $filename = $slug . '.' . $ext;
+} elseif ($productId) {
+    // Fallback: productId.jpg
+    $filename = $productId . '.' . $ext;
+} else {
+    // Final fallback: unique filename
+    $filename = uniqid() . '-' . preg_replace('/[^a-z0-9.]/', '-', strtolower(pathinfo($file['name'], PATHINFO_FILENAME))) . '.' . $ext;
+}
+
 $filepath = $uploadDir . $filename;
 
 // Move uploaded file
 if (move_uploaded_file($file['tmp_name'], $filepath)) {
-    $publicPath = '/images/products/' . $filename;
+    if ($uploadType === 'gallery') {
+        $publicPath = '/images/products/gallery/' . $filename;
+    } else {
+        $publicPath = '/images/products/' . $filename;
+    }
     echo json_encode([
         'success' => true,
         'path' => $publicPath,
-        'filename' => $filename
+        'filename' => $filename,
+        'type' => $uploadType
     ]);
 } else {
     http_response_code(500);

@@ -84,8 +84,14 @@ if ($method === 'POST') {
     $data['products'] = $products;
     
     if (writeJSON(PRODUCTS_FILE, $data)) {
+        // #region agent log
+        file_put_contents('/media/z/8EF6149BF614859D/Users/user/Builds/Khadivasthra/.cursor/debug.log', json_encode(['id'=>'log_'.time().'_add','timestamp'=>time()*1000,'location'=>'admin/api/products.php:POST','message'=>'About to sync products after add','data'=>['productId'=>$newProduct['id'],'isFeatured'=>$newProduct['isFeatured']],'sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'A'])."\n", FILE_APPEND);
+        // #endregion
         // Sync to frontend
         syncProductsToFrontend();
+        // #region agent log
+        file_put_contents('/media/z/8EF6149BF614859D/Users/user/Builds/Khadivasthra/.cursor/debug.log', json_encode(['id'=>'log_'.time().'_add2','timestamp'=>time()*1000,'location'=>'admin/api/products.php:POST','message'=>'Sync completed after add','data'=>['productId'=>$newProduct['id']],'sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'A'])."\n", FILE_APPEND);
+        // #endregion
         jsonSuccess('Product added successfully', $newProduct);
     } else {
         jsonError('Failed to save product');
@@ -180,8 +186,14 @@ if ($method === 'PUT' || ($method === 'POST' && isset($_POST['_method']) && $_PO
     $data['products'] = $products;
     
     if (writeJSON(PRODUCTS_FILE, $data)) {
+        // #region agent log
+        file_put_contents('/media/z/8EF6149BF614859D/Users/user/Builds/Khadivasthra/.cursor/debug.log', json_encode(['id'=>'log_'.time().'_update','timestamp'=>time()*1000,'location'=>'admin/api/products.php:PUT','message'=>'About to sync products after update','data'=>['productId'=>$id,'isFeatured'=>$products[$index]['isFeatured']??false],'sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'A'])."\n", FILE_APPEND);
+        // #endregion
         // Sync to frontend
         syncProductsToFrontend();
+        // #region agent log
+        file_put_contents('/media/z/8EF6149BF614859D/Users/user/Builds/Khadivasthra/.cursor/debug.log', json_encode(['id'=>'log_'.time().'_update2','timestamp'=>time()*1000,'location'=>'admin/api/products.php:PUT','message'=>'Sync completed after update','data'=>['productId'=>$id],'sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'A'])."\n", FILE_APPEND);
+        // #endregion
         jsonSuccess('Product updated successfully', $products[$index]);
     } else {
         jsonError('Failed to update product');

@@ -56,7 +56,13 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 // GET - List all products
 if ($method === 'GET') {
+    // #region agent log
+    file_put_contents('/media/z/8EF6149BF614859D/Users/user/Builds/Khadivasthra/.cursor/debug.log', json_encode(['id'=>'log_'.time().'_api_get','timestamp'=>time()*1000,'location'=>'public/api/products.php:GET','message'=>'API GET request','data'=>['featuredParam'=>$_GET['featured'] ?? null,'categoryParam'=>$_GET['category'] ?? null],'sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'D'])."\n", FILE_APPEND);
+    // #endregion
     $data = readData();
+    // #region agent log
+    file_put_contents('/media/z/8EF6149BF614859D/Users/user/Builds/Khadivasthra/.cursor/debug.log', json_encode(['id'=>'log_'.time().'_api_read','timestamp'=>time()*1000,'location'=>'public/api/products.php:GET','message'=>'Data read from file','data'=>['dataFile'=>$dataFile,'hasProducts'=>isset($data['products']),'totalProducts'=>count($data['products'] ?? []),'featuredCount'=>count(array_filter($data['products'] ?? [], fn($p) => ($p['isFeatured'] ?? false) === true))],'sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'D'])."\n", FILE_APPEND);
+    // #endregion
     
     // Optional filtering
     $category = $_GET['category'] ?? null;
@@ -89,12 +95,30 @@ if ($method === 'GET') {
     
     // Filter featured
     if ($featured !== null) {
+        // #region agent log
+        file_put_contents('/media/z/8EF6149BF614859D/Users/user/Builds/Khadivasthra/.cursor/debug.log', json_encode(['id'=>'log_'.time().'_api_filter_before','timestamp'=>time()*1000,'location'=>'public/api/products.php:GET','message'=>'Before featured filter','data'=>['featuredParam'=>$featured,'totalProducts'=>count($products),'sampleProducts'=>array_slice($products, 0, 3)],'sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'F'])."\n", FILE_APPEND);
+        // #endregion
         $products = array_filter($products, function($p) use ($featured) {
-            return ($p['isFeatured'] ?? false) === $featured;
+            $isFeatured = $p['isFeatured'] ?? false;
+            // Handle boolean, string, and numeric values
+            if (is_bool($isFeatured)) {
+                return $isFeatured === $featured;
+            } elseif (is_string($isFeatured)) {
+                return ($isFeatured === 'true' || $isFeatured === '1') === $featured;
+            } elseif (is_numeric($isFeatured)) {
+                return ((bool)$isFeatured) === $featured;
+            }
+            return false;
         });
         $products = array_values($products);
+        // #region agent log
+        file_put_contents('/media/z/8EF6149BF614859D/Users/user/Builds/Khadivasthra/.cursor/debug.log', json_encode(['id'=>'log_'.time().'_api_filter_after','timestamp'=>time()*1000,'location'=>'public/api/products.php:GET','message'=>'After featured filter','data'=>['featuredParam'=>$featured,'filteredCount'=>count($products),'sampleFiltered'=>array_slice($products, 0, 3)],'sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'F'])."\n", FILE_APPEND);
+        // #endregion
     }
     
+    // #region agent log
+    file_put_contents('/media/z/8EF6149BF614859D/Users/user/Builds/Khadivasthra/.cursor/debug.log', json_encode(['id'=>'log_'.time().'_api_response','timestamp'=>time()*1000,'location'=>'public/api/products.php:GET','message'=>'Sending response','data'=>['productCount'=>count($products),'hasSuccess'=>true],'sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'E'])."\n", FILE_APPEND);
+    // #endregion
     echo json_encode(['success' => true, 'products' => $products]);
     exit;
 }

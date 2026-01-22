@@ -65,13 +65,3 @@
 .animate-scroll {
   animation: scroll 20s linear infinite;
 }
-
-.marquee-container {
-  display: flex;
-  width: 100%;
-}
-
-.marquee-content {
-  display: inline-flex;
-  min-width: 100%;
-}

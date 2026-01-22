@@ -9,6 +9,7 @@ import { ProductCard } from "@/components/product/ProductCard";
 import products from "@/data/products.json";
 import { Minus, Plus, ShoppingBag, Truck, ShieldCheck, Ruler, Droplets, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { normalizeProductImagePath } from "@/lib/imageUtils";
 
 export default function ProductDetailPage() {
     const params = useParams();
@@ -30,8 +31,16 @@ export default function ProductDetailPage() {
         addToCart(product, quantity);
     };
 
-    // Use product image, fallback to placeholder if not found
-    const imageUrl = product.image || `https://placehold.co/600x800/E8657B/FFF?text=${encodeURIComponent(product.name.replace(/ /g, '+'))}`;
+    // Normalize image path using product name for filename (ensures images are in public folder, not browser memory)
+    // Reject blob/data URLs - only use paths to public folder
+    let imagePath = product.image;
+    if (imagePath && (imagePath.startsWith('blob:') || imagePath.startsWith('data:'))) {
+      // Skip blob/data URLs - these are in browser memory
+      imagePath = undefined;
+    }
+    const normalizedImagePath = normalizeProductImagePath(product.id, imagePath, product.name);
+    // Use normalized path from public folder, fallback to placeholder if not found
+    const imageUrl = normalizedImagePath || `https://placehold.co/600x800/E8657B/FFF?text=${encodeURIComponent(product.name.replace(/ /g, '+'))}`;
 
     return (
         <div className="product-detail-page container mx-auto px-4 max-w-7xl py-12">

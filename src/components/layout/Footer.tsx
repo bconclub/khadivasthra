@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Instagram, Phone, MapPin, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -9,7 +10,16 @@ export function Footer() {
                 <div className="footer__content grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
                     {/* Column 1: About */}
                     <div className="footer__section footer__section--about">
-                        <h3 className="footer__title text-2xl font-bold mb-4 font-serif text-text">Khadi Vasthra</h3>
+                        <Link href="/" className="footer__logo-link block mb-4">
+                            <Image
+                                src="/Khadi Vasthra White Transparnt.png"
+                                alt="Khadi Vasthra Logo"
+                                width={200}
+                                height={70}
+                                className="footer__logo h-auto w-auto max-w-[200px] object-contain"
+                                priority
+                            />
+                        </Link>
                         <p className="footer__description text-text-muted text-sm leading-relaxed">
                             Authentic Kerala handloom mundus woven with tradition and care.
                             Bring home the essence of Kerala culture.

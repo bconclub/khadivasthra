@@ -189,13 +189,71 @@ function getNextId($items) {
  * Sync products from admin to frontend
  */
 function syncProductsToFrontend() {
+    // #region agent log
+    file_put_contents('/media/z/8EF6149BF614859D/Users/user/Builds/Khadivasthra/.cursor/debug.log', json_encode(['id'=>'log_'.time().'_sync_start','timestamp'=>time()*1000,'location'=>'admin/includes/functions.php:syncProductsToFrontend','message'=>'Sync function called','data'=>[],'sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'A'])."\n", FILE_APPEND);
+    // #endregion
     $adminProductsFile = PRODUCTS_FILE;
     $frontendProductsFile = __DIR__ . '/../../src/data/products.json';
+    $publicProductsFile = __DIR__ . '/../../public/data/products.json';
     
     // Read admin products
     $adminData = readJSON($adminProductsFile);
     $adminProducts = $adminData['products'] ?? [];
+    // #region agent log
+    $featuredCount = count(array_filter($adminProducts, fn($p) => ($p['isFeatured'] ?? false) === true));
+    file_put_contents('/media/z/8EF6149BF614859D/Users/user/Builds/Khadivasthra/.cursor/debug.log', json_encode(['id'=>'log_'.time().'_sync_read','timestamp'=>time()*1000,'location'=>'admin/includes/functions.php:syncProductsToFrontend','message'=>'Read admin products','data'=>['totalProducts'=>count($adminProducts),'featuredCount'=>$featuredCount],'sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'C'])."\n", FILE_APPEND);
+    // #endregion
     
+    // Format for public API (simple format)
+    $publicProducts = [];
+    foreach ($adminProducts as $adminProduct) {
+        $publicProduct = [
+            'id' => $adminProduct['id'],
+            'name' => $adminProduct['name'],
+            'category' => $adminProduct['category'],
+            'price' => $adminProduct['price'],
+            'description' => $adminProduct['description'] ?? '',
+            'image' => $adminProduct['image'] ?? '',
+            'isFeatured' => $adminProduct['isFeatured'] ?? false,
+            'slug' => $adminProduct['slug'] ?? '',
+            'material' => $adminProduct['material'] ?? '',
+            'careInstructions' => $adminProduct['careInstructions'] ?? '',
+            'inStock' => $adminProduct['inStock'] ?? true,
+            'isNew' => $adminProduct['isNew'] ?? false,
+            'isBestSeller' => $adminProduct['isBestSeller'] ?? false,
+        ];
+        
+        // Add optional fields
+        if (isset($adminProduct['longDescription'])) {
+            $publicProduct['longDescription'] = $adminProduct['longDescription'];
+        }
+        if (isset($adminProduct['comparePrice'])) {
+            $publicProduct['comparePrice'] = $adminProduct['comparePrice'];
+        }
+        if (isset($adminProduct['images'])) {
+            $publicProduct['images'] = $adminProduct['images'];
+        }
+        
+        $publicProducts[] = $publicProduct;
+    }
+    
+    // Write to public API products file
+    $publicData = ['products' => $publicProducts];
+    $publicJson = json_encode($publicData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+    $publicDir = dirname($publicProductsFile);
+    if (!is_dir($publicDir)) {
+        mkdir($publicDir, 0755, true);
+    }
+    // #region agent log
+    $publicFeaturedCount = count(array_filter($publicProducts, fn($p) => ($p['isFeatured'] ?? false) === true));
+    file_put_contents('/media/z/8EF6149BF614859D/Users/user/Builds/Khadivasthra/.cursor/debug.log', json_encode(['id'=>'log_'.time().'_sync_before_write','timestamp'=>time()*1000,'location'=>'admin/includes/functions.php:syncProductsToFrontend','message'=>'About to write public file','data'=>['publicFile'=>$publicProductsFile,'totalProducts'=>count($publicProducts),'featuredCount'=>$publicFeaturedCount,'sampleFeatured'=>array_values(array_filter($publicProducts, fn($p) => ($p['isFeatured'] ?? false) === true))[0] ?? null],'sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'C'])."\n", FILE_APPEND);
+    // #endregion
+    $writeResult = file_put_contents($publicProductsFile, $publicJson);
+    // #region agent log
+    file_put_contents('/media/z/8EF6149BF614859D/Users/user/Builds/Khadivasthra/.cursor/debug.log', json_encode(['id'=>'log_'.time().'_sync_write','timestamp'=>time()*1000,'location'=>'admin/includes/functions.php:syncProductsToFrontend','message'=>'Write result','data'=>['success'=>$writeResult !== false,'bytesWritten'=>$writeResult,'fileExists'=>file_exists($publicProductsFile)],'sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'B'])."\n", FILE_APPEND);
+    // #endregion
+    
+    // Also sync to src/data for Next.js (preserve frontend-specific fields)
     // Read frontend products (to preserve extra fields)
     $frontendProducts = [];
     if (file_exists($frontendProductsFile)) {

@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently --names \"NEXT,PHP\" --prefix-colors \"blue,green\" \"next dev --webpack\" \"php -S localhost:8080 -t admin || echo 'PHP server failed to start. Install PHP with: sudo apt install php-cli'\"",
+    "dev": "concurrently --names \"NEXT,PHP\" --prefix-colors \"cyan,yellow\" --kill-others-on-fail \"npm run dev:next\" \"npm run dev:backend\"",
     "dev:next": "next dev --webpack",
+    "dev:backend": "node scripts/start-backend.js",
     "dev:php": "php -S localhost:8080 -t admin",
     "check:php": "php --version || echo 'PHP not installed. Install with: sudo apt install php-cli'",
     "build": "next build --webpack",
