@@ -5,6 +5,10 @@ on:
     branches: [main]
   workflow_dispatch: # Allow manual trigger from GitHub UI
 
+concurrency:
+  group: deploy
+  cancel-in-progress: true
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -22,6 +26,24 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Stamp version.json
+        run: |
+          BUILD_NUM=${{ github.run_number }}
+          COMMIT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          DEPLOY_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+
+          cat > public/version.json << EOF
+          {
+            "version": "1.0.${BUILD_NUM}",
+            "build": ${BUILD_NUM},
+            "deployedAt": "${DEPLOY_TIME}",
+            "commit": "${COMMIT_SHA}"
+          }
+          EOF
+
+          echo "=== Version ==="
+          cat public/version.json
+
       - name: Build Next.js static export
         run: npm run build
 
@@ -35,6 +57,8 @@ jobs:
           # 2. Merge admin PHP backend into admin/ directory
           mkdir -p deploy/admin/api
           mkdir -p deploy/admin/includes
+          mkdir -p deploy/admin/data
+          mkdir -p deploy/admin/uploads
 
           # PHP API endpoints
           cp admin/api/*.php deploy/admin/api/
@@ -44,6 +68,10 @@ jobs:
 
           # Admin .htaccess for Apache PHP processing
           cp admin/.htaccess deploy/admin/
+
+          # Seed data files (first deploy only — won't overwrite on server)
+          cp admin/data/*.json deploy/admin/data/ 2>/dev/null || true
+          touch deploy/admin/uploads/.gitkeep
 
           echo "=== Deploy directory ready ==="
           find deploy/admin -type f | sort
