@@ -28,7 +28,8 @@ if ($method === 'GET') {
     
     // Convert admin/uploads/ paths to /images/products/ paths
     // Only do file operations if needed and safely
-    $productsDir = __DIR__ . '/../../public/images/products';
+    $webRoot = getWebRoot();
+    $productsDir = $webRoot . '/images/products';
     if (!is_dir($productsDir)) {
         @mkdir($productsDir, 0755, true);
     }

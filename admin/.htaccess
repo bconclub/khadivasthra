@@ -1,15 +1,21 @@
 # Apache configuration for admin folder
-# This ensures PHP files are processed correctly
+# Ensures PHP API files are processed correctly alongside Next.js static files
 
 <IfModule mod_rewrite.c>
     RewriteEngine On
     RewriteBase /admin/
-    
-    # Don't rewrite if file exists
+
+    # Don't rewrite if file exists (index.html, PHP files, etc.)
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteCond %{REQUEST_FILENAME} !-d
-    
-    # Redirect to index.php if accessing admin folder
+
+    # For the root admin URL, serve index.html (Next.js admin page) if it exists
+    RewriteCond %{DOCUMENT_ROOT}/admin/index.html -f
+    RewriteRule ^$ index.html [L]
+
+    # Fallback to index.php if no index.html
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
     RewriteRule ^$ index.php [L]
 </IfModule>
 

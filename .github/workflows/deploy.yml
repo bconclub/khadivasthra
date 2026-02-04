@@ -1,0 +1,63 @@
+name: Deploy to Hostinger
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # Allow manual trigger from GitHub UI
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Next.js static export
+        run: npm run build
+
+      - name: Prepare deploy directory
+        run: |
+          mkdir -p deploy
+
+          # 1. Copy Next.js static export
+          cp -r out/* deploy/
+
+          # 2. Merge admin PHP backend into admin/ directory
+          mkdir -p deploy/admin/api
+          mkdir -p deploy/admin/includes
+
+          # PHP API endpoints
+          cp admin/api/*.php deploy/admin/api/
+
+          # PHP includes (config, functions, auth)
+          cp admin/includes/*.php deploy/admin/includes/
+
+          # Admin .htaccess for Apache PHP processing
+          cp admin/.htaccess deploy/admin/
+
+          echo "=== Deploy directory ready ==="
+          find deploy/admin -type f | sort
+
+      - name: Deploy via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./deploy/
+          server-dir: /public_html/
+          dangerous-clean-slate: false
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**

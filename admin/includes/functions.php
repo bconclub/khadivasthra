@@ -162,6 +162,22 @@ function validateImage($file) {
 }
 
 /**
+ * Get the web root directory (public_html equivalent)
+ * Works for both local dev and shared hosting
+ */
+function getWebRoot() {
+    // On shared hosting: admin is at /public_html/admin/
+    // So web root is /public_html/ which is __DIR__/../../ from includes/
+    // But we should use DOCUMENT_ROOT for reliability
+    $docRoot = $_SERVER['DOCUMENT_ROOT'] ?? '';
+    if (!empty($docRoot) && is_dir($docRoot)) {
+        return rtrim($docRoot, '/\\');
+    }
+    // Fallback: go up from admin/includes/ to the parent of admin/
+    return realpath(__DIR__ . '/../../') ?: __DIR__ . '/../..';
+}
+
+/**
  * Upload image
  */
 function uploadImage($file, $prefix = 'product') {
@@ -179,9 +195,17 @@ function uploadImage($file, $prefix = 'product') {
     $path = UPLOADS_DIR . $filename;
 
     if (move_uploaded_file($file['tmp_name'], $path)) {
+        // Also copy to web root images directory for frontend access
+        $webRoot = getWebRoot();
+        $imagesDir = $webRoot . '/images/products';
+        if (!is_dir($imagesDir)) {
+            @mkdir($imagesDir, 0755, true);
+        }
+        @copy($path, $imagesDir . '/' . $filename);
+
         return [
             'success' => true,
-            'path' => '/admin/uploads/' . $filename,
+            'path' => '/images/products/' . $filename,
             'filename' => $filename
         ];
     }
@@ -228,8 +252,9 @@ function getNextId($items) {
  */
 function syncProductsToFrontend() {
     $adminProductsFile = PRODUCTS_FILE;
+    $webRoot = getWebRoot();
     $frontendProductsFile = __DIR__ . '/../../src/data/products.json';
-    $publicProductsFile = __DIR__ . '/../../public/data/products.json';
+    $publicProductsFile = $webRoot . '/data/products.json';
     
     // Read admin products
     $adminData = readJSON($adminProductsFile);
@@ -251,9 +276,9 @@ function syncProductsToFrontend() {
             
             // Organized structure: /images/products/{category-slug}/{product-slug}/
             $relPath = '/images/products/' . $categorySlug . '/' . $slug . '/';
-            
-            // Target path in public folder
-            $targetPath = __DIR__ . '/../../public' . $relPath . $filename;
+
+            // Target path in web root
+            $targetPath = $webRoot . $relPath . $filename;
             $sourcePath = __DIR__ . '/../uploads/' . $filename;
             
             // Create products directory if it doesn't exist
@@ -304,7 +329,7 @@ function syncProductsToFrontend() {
                     
                     // Organized structure: /images/products/{category-slug}/{product-slug}/
                     $relPath = '/images/products/' . $categorySlug . '/' . $slug . '/';
-                    $imgTargetPath = __DIR__ . '/../../public' . $relPath . $imgFilename;
+                    $imgTargetPath = $webRoot . $relPath . $imgFilename;
                     
                     $productsDir = dirname($imgTargetPath);
                     if (!is_dir($productsDir)) {

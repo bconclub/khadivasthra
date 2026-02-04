@@ -7,7 +7,9 @@
 // Session configuration
 ini_set('session.cookie_httponly', 1);
 ini_set('session.use_only_cookies', 1);
-ini_set('session.cookie_secure', 0); // Set to 1 in production with HTTPS
+// Auto-detect HTTPS for cookie security
+$isSecure = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off';
+ini_set('session.cookie_secure', $isSecure ? 1 : 0);
 
 // Start session
 if (session_status() === PHP_SESSION_NONE) {

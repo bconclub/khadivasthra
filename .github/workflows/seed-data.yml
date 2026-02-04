@@ -1,0 +1,37 @@
+name: Seed Admin Data (First Deploy Only)
+
+# Manual trigger only - run this ONCE after first deploy
+# to create admin/data/ and admin/uploads/ directories on the server
+on:
+  workflow_dispatch:
+
+jobs:
+  seed:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Prepare seed data
+        run: |
+          mkdir -p seed/admin/data
+          mkdir -p seed/admin/uploads
+
+          # Copy initial product and category data
+          cp admin/data/*.json seed/admin/data/
+          touch seed/admin/uploads/.gitkeep
+
+          echo "=== Seed files ==="
+          find seed -type f
+
+      - name: Upload seed data via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./seed/
+          server-dir: /public_html/
+          dangerous-clean-slate: false
+          state-name: .seed-sync-state.json
