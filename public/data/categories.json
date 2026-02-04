@@ -5,7 +5,7 @@
       "name": "White Mundus",
       "slug": "white-mundus",
       "description": "Traditional white mundus for daily wear and special occasions",
-      "image": "/images/mundu-white.png",
+      "image": "/images/products/white-mundus/single-white-mundu-with-kasavu/mundu-gold.png",
       "displayOrder": 1,
       "isActive": true
     },
@@ -14,7 +14,7 @@
       "name": "Kavi Mundus",
       "slug": "kavi-mundus",
       "description": "Traditional saffron colored mundus for temple visits and rituals",
-      "image": "/images/mundu-saffron.png",
+      "image": "/images/products/kavi-mundus/cotton-kavi-dhoti/mundu-saffron.png",
       "displayOrder": 2,
       "isActive": true
     },
@@ -23,7 +23,7 @@
       "name": "Printed Mundus",
       "slug": "printed-mundus",
       "description": "Hand block printed mundus featuring traditional Kerala motifs",
-      "image": "/images/mundu-pink.png",
+      "image": "/images/products/printed-mundus/floral-printed-cotton-mundu/mundu-white.png",
       "displayOrder": 3,
       "isActive": true
     },
@@ -32,7 +32,7 @@
       "name": "4.5m Double Mundus",
       "slug": "double-mundus",
       "description": "Extra length double mundus for traditional draping",
-      "image": "/images/mundu-gold.png",
+      "image": "/images/products/4-5m-double-mundus/silver-kasavu-double-mundu/mundu-gold.png",
       "displayOrder": 4,
       "isActive": true
     },
@@ -41,7 +41,7 @@
       "name": "Single Mundus",
       "slug": "single-mundus",
       "description": "Single length mundus and dhotis for everyday use",
-      "image": "/images/mundu-white.png",
+      "image": "/images/products/single-mundus/premium-single-dhoti/mundu-white.png",
       "displayOrder": 5,
       "isActive": true
     },
@@ -50,7 +50,7 @@
       "name": "Offwhite Mundus",
       "slug": "offwhite-mundus",
       "description": "Off-white and cream colored mundus",
-      "image": "/images/mundu-gold.png",
+      "image": "/images/products/offwhite-mundus/cream-cotton-mundu/mundu-white.png",
       "displayOrder": 6,
       "isActive": true
     },
@@ -59,7 +59,7 @@
       "name": "Yellow Double Mundus",
       "slug": "yellow-double-mundus",
       "description": "Yellow and golden colored mundus for festive occasions",
-      "image": "/images/mundu-gold.png",
+      "image": "/images/products/yellow-double-mundus/mustard-yellow-mundu/mundu-white.png",
       "displayOrder": 7,
       "isActive": true
     },

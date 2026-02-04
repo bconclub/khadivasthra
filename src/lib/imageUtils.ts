@@ -37,7 +37,7 @@ export function getProductImageFilename(productId: string, category: string): st
   
   if (imageMap[productId]) {
     const categorySlug = categoryToSlug(category);
-    return `/images/${categorySlug}/${imageMap[productId]}`;
+    return `/images/products/${categorySlug}/${imageMap[productId]}`;
   }
   
   return null;
@@ -77,7 +77,7 @@ export function getProductImagePath(productId: string, category: string, provide
   
   // Fallback to legacy category-based path if new format doesn't exist
   const categorySlug = categoryToSlug(category);
-  return `/images/${categorySlug}/${productId}.jpg`;
+    return `/images/products/${categorySlug}/${productId}.jpg`;
 }
 
 /**
@@ -110,9 +110,9 @@ export function getProductImagePaths(productId: string, category: string): strin
   
   // Legacy category-based paths
   const categorySlug = categoryToSlug(category);
-  extensions.forEach(ext => {
-    paths.push(`/images/${categorySlug}/${productId}.${ext}`);
-  });
+    extensions.forEach((ext) => {
+      paths.push(`/images/products/${categorySlug}/${productId}.${ext}`);
+    });
   
   return paths;
 }
@@ -129,7 +129,13 @@ export function normalizeProductImagePath(productId: string, imagePath?: string,
     imagePath = '';
   }
   
-  // First, try to get mapped image filename if available (handles cases where filenames don't match product IDs)
+  // If image path already exists and is in public folder, use it as-is
+  // Prefer the provided product image path (it often contains the correct subfolder)
+  if (imagePath && imagePath.startsWith('/images/') && !imagePath.includes('..')) {
+    return imagePath;
+  }
+
+  // Next, try to get mapped image filename if available (handles cases where filenames don't match product IDs)
   if (category) {
     const mappedImage = getProductImageFilename(productId, category);
     if (mappedImage) {
@@ -137,18 +143,12 @@ export function normalizeProductImagePath(productId: string, imagePath?: string,
     }
   }
   
-  // If image path already exists and is in public folder, use it as-is
-  // This preserves existing valid paths from products.json (e.g., /images/white-mundus/blur-border-white.png)
-  if (imagePath && imagePath.startsWith('/images/') && !imagePath.includes('..')) {
-    return imagePath;
-  }
-  
   // Only generate new path if no valid path was provided or imagePath is empty
   // Try category folder first with product ID (e.g., /images/white-mundus/{productId}.png)
   if (category && (!imagePath || imagePath === '' || imagePath.trim() === '')) {
     const categorySlug = categoryToSlug(category);
     // Try common extensions in category folder - start with png as most images in white-mundus are png
-    return `/images/${categorySlug}/${productId}.png`;
+     return `/images/products/${categorySlug}/${productId}.png`;
   }
   
   // Try new standardized location (product name slug)

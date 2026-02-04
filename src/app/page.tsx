@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ProductCarousel } from "@/components/product/ProductCarousel";
 import { ProductCard } from "@/components/product/ProductCard";
 import products from "@/data/products.json";
+import categoriesData from "../../public/data/categories.json";
 import { ArrowRight, Heart, ChevronLeft, ChevronRight, Loader2, ImageOff } from "lucide-react";
 import { useState, useCallback, useEffect } from "react";
 import useEmblaCarousel from "embla-carousel-react";
@@ -31,16 +32,35 @@ interface Category {
 
 export default function Home() {
   // State for featured products (from API)
-  const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
-  const [isLoadingTrending, setIsLoadingTrending] = useState(true);
+  // Start with static fallback so thumbnails are visible immediately
+  const initialTrending = (products as Product[]).filter(p => {
+    const isFeatured: any = p.isFeatured;
+    if (isFeatured === true) return true;
+    if (typeof isFeatured === 'number' && isFeatured === 1) return true;
+    if (typeof isFeatured === 'string') {
+      const s = isFeatured.toLowerCase().trim();
+      return s === 'true' || s === '1';
+    }
+    return false;
+  }).slice(0, 8);
+  const [trendingProducts, setTrendingProducts] = useState<Product[]>(initialTrending);
+  const [isLoadingTrending, setIsLoadingTrending] = useState(false);
 
   // State for categories
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [isLoadingCategories, setIsLoadingCategories] = useState(true);
+  // Use static categories immediately as fallback
+  const [categories, setCategories] = useState<Category[]>(categoriesData?.categories || []);
+  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
 
   // State for products grouped by category
-  const [productsByCategory, setProductsByCategory] = useState<Record<string, Product[]>>({});
-  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  // Initialize from static `products` so UI shows thumbnails immediately
+  const initialGrouped: Record<string, Product[]> = {};
+  (products as Product[]).forEach((product) => {
+    const category = product.category || 'Other';
+    if (!initialGrouped[category]) initialGrouped[category] = [];
+    initialGrouped[category].push(product);
+  });
+  const [productsByCategory, setProductsByCategory] = useState<Record<string, Product[]>>(initialGrouped);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
 
   // Get best selling products
   const bestSelling = products.filter((p: any) => p.isBestSeller === true || p.isBestSeller === "true").slice(0, 8);

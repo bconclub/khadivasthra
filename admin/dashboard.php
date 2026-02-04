@@ -685,7 +685,7 @@ $totalFeatured = count(array_filter($products, fn($p) => !empty($p['isFeatured']
             Object.assign(dashboard, {
             // Helper method to get correct image path for admin panel
             getImagePath(imagePath) {
-                if (!imagePath) return 'http://localhost:3000/images/mundu-white.png';
+                if (!imagePath) return 'http://localhost:3000/images/products/white-mundus/premium-cotton-white-mundu/blur-border-white.png';
                 // If path already has http, return as is
                 if (imagePath.startsWith('http')) {
                     return imagePath;
