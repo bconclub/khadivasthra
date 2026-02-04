@@ -69,7 +69,7 @@ jobs:
           # Admin .htaccess for Apache PHP processing
           cp admin/.htaccess deploy/admin/
 
-          # Seed data files (first deploy only — won't overwrite on server)
+          # Seed data files
           cp admin/data/*.json deploy/admin/data/ 2>/dev/null || true
           touch deploy/admin/uploads/.gitkeep
 
@@ -77,15 +77,28 @@ jobs:
           find deploy/admin -type f | sort
 
       - name: Deploy via FTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./deploy/
-          server-dir: domains/khadivasthra.com/public_html/
-          dangerous-clean-slate: false
-          exclude: |
-            **/.git*
-            **/.git*/**
-            **/node_modules/**
+        run: |
+          sudo apt-get install -y lftp > /dev/null 2>&1
+
+          # First, verify the correct target directory exists
+          lftp -u "${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }}" "${{ secrets.FTP_HOST }}" -e "
+            pwd;
+            ls;
+            quit
+          " 2>&1 | head -20
+
+          echo "=== Deploying to domains/khadivasthra.com/public_html/ ==="
+
+          lftp -u "${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }}" "${{ secrets.FTP_HOST }}" -e "
+            set ftp:ssl-allow no;
+            set mirror:use-pget-n 5;
+            set net:max-retries 3;
+            set net:timeout 30;
+            mirror --reverse --verbose --parallel=5 \
+              --exclude-glob .git* \
+              --exclude-glob node_modules/ \
+              ./deploy/ domains/khadivasthra.com/public_html/;
+            quit
+          "
+
+          echo "=== Deploy complete ==="
