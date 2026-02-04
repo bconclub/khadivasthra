@@ -1238,10 +1238,14 @@ function ProductModal({
       const productId = product?.id || (formData.slug ? formData.slug.replace(/-/g, '_') : `prod_${Date.now()}`);
       formDataUpload.append("productId", productId);
       
-      // Pass product name for filename (preferred over product ID)
+      // Pass product name and category for organized folder structure
       const productName = formData.name || product?.name;
       if (productName) {
         formDataUpload.append("productName", productName);
+      }
+      const category = formData.category || product?.category;
+      if (category) {
+        formDataUpload.append("category", category);
       }
 
       const res = await fetch(`${API_BASE}/upload.php`, {

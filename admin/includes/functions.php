@@ -178,39 +178,47 @@ function getWebRoot() {
 }
 
 /**
- * Upload image
+ * Upload image to organized folder structure
+ * Structure: /images/products/{category-slug}/{product-slug}/{filename}.{ext}
  */
-function uploadImage($file, $prefix = 'product') {
+function uploadImage($file, $prefix = 'product', $category = '', $productName = '') {
     $validation = validateImage($file);
     if (!$validation['valid']) {
         return ['success' => false, 'error' => $validation['error']];
     }
 
+    // Save to admin/uploads/ as backup
     if (!is_dir(UPLOADS_DIR)) {
         @mkdir(UPLOADS_DIR, 0755, true);
     }
 
     $ext = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
     $filename = $prefix . '_' . time() . '_' . uniqid() . '.' . $ext;
-    $path = UPLOADS_DIR . $filename;
+    $backupPath = UPLOADS_DIR . $filename;
 
-    if (move_uploaded_file($file['tmp_name'], $path)) {
-        // Also copy to web root images directory for frontend access
-        $webRoot = getWebRoot();
-        $imagesDir = $webRoot . '/images/products';
-        if (!is_dir($imagesDir)) {
-            @mkdir($imagesDir, 0755, true);
-        }
-        @copy($path, $imagesDir . '/' . $filename);
-
-        return [
-            'success' => true,
-            'path' => '/images/products/' . $filename,
-            'filename' => $filename
-        ];
+    if (!move_uploaded_file($file['tmp_name'], $backupPath)) {
+        return ['success' => false, 'error' => 'Failed to upload file'];
     }
 
-    return ['success' => false, 'error' => 'Failed to upload file'];
+    // Build organized path: /images/products/{category}/{product}/{filename}
+    $webRoot = getWebRoot();
+    $categorySlug = !empty($category) ? generateSlug($category) : 'uncategorized';
+    $productSlug = !empty($productName) ? generateSlug($productName) : 'general';
+
+    $relPath = '/images/products/' . $categorySlug . '/' . $productSlug;
+    $targetDir = $webRoot . $relPath;
+
+    if (!is_dir($targetDir)) {
+        @mkdir($targetDir, 0755, true);
+    }
+
+    @copy($backupPath, $targetDir . '/' . $filename);
+
+    return [
+        'success' => true,
+        'path' => $relPath . '/' . $filename,
+        'filename' => $filename
+    ];
 }
 
 /**
