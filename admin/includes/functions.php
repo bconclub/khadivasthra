@@ -222,6 +222,10 @@ function getNextId($items) {
 /**
  * Sync products from admin to frontend
  */
+
+/**
+ * Sync products from admin to frontend
+ */
 function syncProductsToFrontend() {
     $adminProductsFile = PRODUCTS_FILE;
     $frontendProductsFile = __DIR__ . '/../../src/data/products.json';
@@ -234,15 +238,22 @@ function syncProductsToFrontend() {
     // Format for public API (simple format)
     $publicProducts = [];
     foreach ($adminProducts as $adminProduct) {
-        // Convert admin/uploads/ paths to /images/products/ paths
+        $slug = $adminProduct['slug'] ?? generateSlug($adminProduct['name']);
+        $category = $adminProduct['category'] ?? 'uncategorized';
+        $categorySlug = generateSlug($category);
+        
+        // Convert admin/uploads/ paths to organized /images/products/category/product/ paths
         $imagePath = $adminProduct['image'] ?? '';
         
         if (!empty($imagePath) && strpos($imagePath, '/admin/uploads/') !== false) {
             // Extract filename from admin path
             $filename = basename($imagePath);
             
+            // Organized structure: /images/products/{category-slug}/{product-slug}/
+            $relPath = '/images/products/' . $categorySlug . '/' . $slug . '/';
+            
             // Target path in public folder
-            $targetPath = __DIR__ . '/../../public/images/products/' . $filename;
+            $targetPath = __DIR__ . '/../../public' . $relPath . $filename;
             $sourcePath = __DIR__ . '/../uploads/' . $filename;
             
             // Create products directory if it doesn't exist
@@ -251,13 +262,13 @@ function syncProductsToFrontend() {
                 mkdir($productsDir, 0755, true);
             }
             
-            // Copy file from admin/uploads to public/images/products if it exists
+            // Copy file from admin/uploads to structured folder if it exists
             if (file_exists($sourcePath)) {
                 copy($sourcePath, $targetPath);
             }
             
-            // Convert path to public path
-            $imagePath = '/images/products/' . $filename;
+            // Convert path to public structured path
+            $imagePath = $relPath . $filename;
         }
         
         $publicProduct = [
@@ -268,7 +279,7 @@ function syncProductsToFrontend() {
             'description' => $adminProduct['description'] ?? '',
             'image' => $imagePath,
             'isFeatured' => $adminProduct['isFeatured'] ?? false,
-            'slug' => $adminProduct['slug'] ?? '',
+            'slug' => $slug,
             'material' => $adminProduct['material'] ?? '',
             'careInstructions' => $adminProduct['careInstructions'] ?? '',
             'inStock' => $adminProduct['inStock'] ?? true,
@@ -290,7 +301,11 @@ function syncProductsToFrontend() {
                 if (!empty($img) && strpos($img, '/admin/uploads/') !== false) {
                     $imgFilename = basename($img);
                     $imgSourcePath = __DIR__ . '/../uploads/' . $imgFilename;
-                    $imgTargetPath = __DIR__ . '/../../public/images/products/' . $imgFilename;
+                    
+                    // Organized structure: /images/products/{category-slug}/{product-slug}/
+                    $relPath = '/images/products/' . $categorySlug . '/' . $slug . '/';
+                    $imgTargetPath = __DIR__ . '/../../public' . $relPath . $imgFilename;
+                    
                     $productsDir = dirname($imgTargetPath);
                     if (!is_dir($productsDir)) {
                         mkdir($productsDir, 0755, true);
@@ -298,7 +313,7 @@ function syncProductsToFrontend() {
                     if (file_exists($imgSourcePath)) {
                         copy($imgSourcePath, $imgTargetPath);
                     }
-                    $convertedImages[] = '/images/products/' . $imgFilename;
+                    $convertedImages[] = $relPath . $imgFilename;
                 } else {
                     $convertedImages[] = $img;
                 }
@@ -326,121 +341,49 @@ function syncProductsToFrontend() {
         $frontendProducts = json_decode($frontendContent, true) ?: [];
     }
     
-    // Create a map of frontend products by ID for merging
-    $frontendMap = [];
-    foreach ($frontendProducts as $product) {
-        $frontendMap[$product['id']] = $product;
-    }
-    
-    // Use admin as single source of truth - sync all products exactly as they are in admin
+    // Use admin as single source of truth but preserve structure
     $syncedProducts = [];
-    foreach ($adminProducts as $adminProduct) {
-        // Convert admin/uploads/ paths to /images/products/ paths
-        $imagePath = $adminProduct['image'] ?? '';
-        if (!empty($imagePath) && strpos($imagePath, '/admin/uploads/') !== false) {
-            $filename = basename($imagePath);
-            $sourcePath = __DIR__ . '/../uploads/' . $filename;
-            $targetPath = __DIR__ . '/../../public/images/products/' . $filename;
-            $productsDir = dirname($targetPath);
-            if (!is_dir($productsDir)) {
-                mkdir($productsDir, 0755, true);
+    foreach ($publicProducts as $pubProduct) {
+        $syncedProduct = $pubProduct;
+        
+        // Re-find original admin product to get details defaults if needed
+        $adminProduct = null;
+        foreach ($adminProducts as $ap) {
+            if ($ap['id'] === $pubProduct['id']) {
+                $adminProduct = $ap;
+                break;
             }
-            if (file_exists($sourcePath)) {
-                copy($sourcePath, $targetPath);
+        }
+        
+        if ($adminProduct) {
+             // Add default details if not present in admin
+            if (!isset($adminProduct['details'])) {
+                $syncedProduct['details'] = [
+                    'material' => $adminProduct['material'] ?? '100% Premium Cotton',
+                    'weave' => 'Handloom',
+                    'fit' => 'Regular Fit',
+                    'pattern' => 'Solid/Plain',
+                    'origin' => 'Aluva, Kerala',
+                    'dimensions' => '2.0m x 1.25m (Single)'
+                ];
+            } else {
+                $syncedProduct['details'] = $adminProduct['details'];
             }
-            $imagePath = '/images/products/' . $filename;
-        }
-        
-        // Start with admin product data - use admin as single source of truth
-        $syncedProduct = [
-            'id' => $adminProduct['id'],
-            'name' => $adminProduct['name'],
-            'slug' => $adminProduct['slug'] ?? '',
-            'category' => $adminProduct['category'],
-            'price' => $adminProduct['price'],
-            'description' => $adminProduct['description'] ?? '',
-            'image' => $imagePath,
-            'isFeatured' => $adminProduct['isFeatured'] ?? false,
-            'inStock' => $adminProduct['inStock'] ?? true,
-        ];
-        
-        // Add all admin fields exactly as they are
-        if (isset($adminProduct['longDescription'])) {
-            $syncedProduct['longDescription'] = $adminProduct['longDescription'];
-        }
-        if (isset($adminProduct['material'])) {
-            $syncedProduct['material'] = $adminProduct['material'];
-        }
-        if (isset($adminProduct['careInstructions'])) {
-            $syncedProduct['careInstructions'] = $adminProduct['careInstructions'];
-        }
-        if (isset($adminProduct['comparePrice'])) {
-            $syncedProduct['comparePrice'] = $adminProduct['comparePrice'];
-        }
-        if (isset($adminProduct['images'])) {
-            // Convert image paths in images array
-            $convertedImages = [];
-            foreach ($adminProduct['images'] as $img) {
-                if (!empty($img) && strpos($img, '/admin/uploads/') !== false) {
-                    $imgFilename = basename($img);
-                    $imgSourcePath = __DIR__ . '/../uploads/' . $imgFilename;
-                    $imgTargetPath = __DIR__ . '/../../public/images/products/' . $imgFilename;
-                    $productsDir = dirname($imgTargetPath);
-                    if (!is_dir($productsDir)) {
-                        mkdir($productsDir, 0755, true);
-                    }
-                    if (file_exists($imgSourcePath)) {
-                        copy($imgSourcePath, $imgTargetPath);
-                    }
-                    $convertedImages[] = '/images/products/' . $imgFilename;
-                } else {
-                    $convertedImages[] = $img;
-                }
+            
+            // Add default careInstructions if not present in admin
+            if (!isset($adminProduct['careInstructions'])) {
+                $syncedProduct['careInstructions'] = [
+                    'Hand wash separately in cold water',
+                    'Do not bleach',
+                    'Dry in shade',
+                    'Iron on medium heat',
+                    'Do not wring forcefully'
+                ];
             }
-            $syncedProduct['images'] = $convertedImages;
-        }
-        if (isset($adminProduct['isNew'])) {
-            $syncedProduct['isNew'] = $adminProduct['isNew'];
-        }
-        if (isset($adminProduct['isBestSeller'])) {
-            $syncedProduct['isBestSeller'] = $adminProduct['isBestSeller'];
-        }
-        
-        // Add default details if not present in admin
-        if (!isset($adminProduct['details'])) {
-            $syncedProduct['details'] = [
-                'material' => $adminProduct['material'] ?? '100% Premium Cotton',
-                'weave' => 'Handloom',
-                'fit' => 'Regular Fit',
-                'pattern' => 'Solid/Plain',
-                'origin' => 'Aluva, Kerala',
-                'dimensions' => '2.0m x 1.25m (Single)'
-            ];
-        } else {
-            $syncedProduct['details'] = $adminProduct['details'];
-        }
-        
-        // Add default careInstructions if not present in admin
-        if (!isset($adminProduct['careInstructions'])) {
-            $syncedProduct['careInstructions'] = [
-                'Hand wash separately in cold water',
-                'Do not bleach',
-                'Dry in shade',
-                'Iron on medium heat',
-                'Do not wring forcefully'
-            ];
-        }
-        
-        // Add longDescription if not present
-        if (!isset($syncedProduct['longDescription'])) {
-            $syncedProduct['longDescription'] = $adminProduct['description'] ?? '';
         }
         
         $syncedProducts[] = $syncedProduct;
     }
-    
-    // DO NOT add frontend-only products - admin is the single source of truth
-    // Products that exist only in frontend will be removed
     
     // Write to frontend products file
     $json = json_encode($syncedProducts, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);

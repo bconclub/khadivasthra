@@ -1796,7 +1796,7 @@ function CategoryModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg">
+      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-hidden">
         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
           <h2 className="text-xl font-semibold text-text">
             {category ? "Edit Category" : "Add New Category"}
@@ -1806,7 +1806,7 @@ function CategoryModal({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="p-6 space-y-6 overflow-y-auto max-h-[calc(90vh-140px)]">
           {/* Name */}
           <div>
             <label className="block text-sm font-medium text-text mb-2">

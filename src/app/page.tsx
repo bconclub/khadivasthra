@@ -33,17 +33,17 @@ export default function Home() {
   // State for featured products (from API)
   const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
   const [isLoadingTrending, setIsLoadingTrending] = useState(true);
-  
+
   // State for categories
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(true);
-  
+
   // State for products grouped by category
   const [productsByCategory, setProductsByCategory] = useState<Record<string, Product[]>>({});
   const [isLoadingProducts, setIsLoadingProducts] = useState(true);
-  
-  // Get best selling products (fallback to static data)
-  const bestSelling = products.slice(0, 7);
+
+  // Get best selling products
+  const bestSelling = products.filter((p: any) => p.isBestSeller === true || p.isBestSeller === "true").slice(0, 8);
 
   // Fetch featured products from API
   useEffect(() => {
@@ -51,7 +51,7 @@ export default function Home() {
       try {
         // Priority order: Production API → Local Dev API → Static JSON
         let response: Response | null = null;
-        
+
         // 1. Try production API first (khadivasthra.com)
         // Try multiple possible API paths
         const productionApiUrls = [
@@ -59,7 +59,7 @@ export default function Home() {
           'https://khadivasthra.com/public/api/products.php?featured=true',
           'https://khadivasthra.com/admin/api/products.php?featured=true',
         ];
-        
+
         for (const apiUrl of productionApiUrls) {
           try {
             response = await fetch(apiUrl, {
@@ -76,7 +76,7 @@ export default function Home() {
             response = null;
           }
         }
-        
+
         // 2. If production API failed, try local dev API (port 8080)
         if (!response || !response.ok) {
           try {
@@ -88,7 +88,7 @@ export default function Home() {
             response = null;
           }
         }
-        
+
         // 3. If both APIs failed, try static JSON file
         if (!response || !response.ok) {
           try {
@@ -97,60 +97,60 @@ export default function Home() {
             response = null;
           }
         }
-        
+
         if (!response) {
           throw new Error('No response from API or static JSON');
         }
-        
+
         if (response.ok) {
           const contentType = response.headers.get('content-type');
-          
+
           // Only parse as JSON if content-type is correct (prevents parsing PHP code as JSON)
           if (contentType && contentType.includes('application/json')) {
-              let data;
-              try {
-                data = await response.json();
-                
-                let featuredProductsList: Product[] = [];
-                
-                // Handle API response format (with success flag)
-                if (data.success && data.products && Array.isArray(data.products)) {
-                  featuredProductsList = data.products;
-                } 
-                // Handle static JSON format (direct products array or wrapped in products key)
-                else if (data.products && Array.isArray(data.products)) {
-                  featuredProductsList = data.products;
-                } else if (Array.isArray(data)) {
-                  featuredProductsList = data;
+            let data;
+            try {
+              data = await response.json();
+
+              let featuredProductsList: Product[] = [];
+
+              // Handle API response format (with success flag)
+              if (data.success && data.products && Array.isArray(data.products)) {
+                featuredProductsList = data.products;
+              }
+              // Handle static JSON format (direct products array or wrapped in products key)
+              else if (data.products && Array.isArray(data.products)) {
+                featuredProductsList = data.products;
+              } else if (Array.isArray(data)) {
+                featuredProductsList = data;
+              }
+
+              // Filter for featured products - ONLY show products marked as featured
+              const filteredFeatured = featuredProductsList.filter((p: Product) => {
+                const isFeatured: any = p.isFeatured;
+
+                // Handle boolean, string, and numeric values for isFeatured
+                // Only return true if isFeatured is explicitly true/1/'true'/'1'
+                // Handle runtime type checking (API might return string/number despite TypeScript type)
+                let result = false;
+                if (isFeatured === true) {
+                  result = true;
+                } else if (typeof isFeatured === 'number' && isFeatured === 1) {
+                  result = true;
+                } else if (typeof isFeatured === 'string') {
+                  const lowerStr = isFeatured.toLowerCase().trim();
+                  result = (lowerStr === 'true' || lowerStr === '1');
                 }
-                
-                 // Filter for featured products - ONLY show products marked as featured
-                 const filteredFeatured = featuredProductsList.filter((p: Product) => {
-                   const isFeatured: any = p.isFeatured;
-                   
-                   // Handle boolean, string, and numeric values for isFeatured
-                   // Only return true if isFeatured is explicitly true/1/'true'/'1'
-                   // Handle runtime type checking (API might return string/number despite TypeScript type)
-                   let result = false;
-                   if (isFeatured === true) {
-                     result = true;
-                   } else if (typeof isFeatured === 'number' && isFeatured === 1) {
-                     result = true;
-                   } else if (typeof isFeatured === 'string') {
-                     const lowerStr = isFeatured.toLowerCase().trim();
-                     result = (lowerStr === 'true' || lowerStr === '1');
-                   }
-                   
-                   // If isFeatured is false, undefined, null, or any other value, exclude it
-                   return result;
-                 });
-                
-                // Take first 8 featured products
-                if (filteredFeatured.length > 0) {
-                  setTrendingProducts(filteredFeatured.slice(0, 8));
-                  setIsLoadingTrending(false);
-                  return;
-                }
+
+                // If isFeatured is false, undefined, null, or any other value, exclude it
+                return result;
+              });
+
+              // Take first 8 featured products
+              if (filteredFeatured.length > 0) {
+                setTrendingProducts(filteredFeatured.slice(0, 8));
+                setIsLoadingTrending(false);
+                return;
+              }
             } catch (parseError: any) {
               // Continue to fallback instead of throwing
             }
@@ -158,7 +158,7 @@ export default function Home() {
             // Content-type is not JSON (likely PHP being served as static), skip and use fallback
           }
         }
-        
+
         // Fallback to static imported products if API/JSON fails - ONLY show featured
         const fallbackProducts = products.filter(p => {
           const isFeatured = p.isFeatured;
@@ -178,7 +178,7 @@ export default function Home() {
           // Exclude if false, undefined, null, or any other value
           return false;
         }).slice(0, 8);
-        
+
         setTrendingProducts(fallbackProducts);
       } catch (error) {
         console.error('Failed to fetch featured products from API:', error);
@@ -201,7 +201,7 @@ export default function Home() {
           // Exclude if false, undefined, null, or any other value
           return false;
         }).slice(0, 8);
-        
+
         setTrendingProducts(fallbackProducts);
       } finally {
         setIsLoadingTrending(false);
@@ -217,14 +217,14 @@ export default function Home() {
       try {
         // Priority order: Production API → Local Dev API → Static JSON
         let response: Response | null = null;
-        
+
         // 1. Try production API first (khadivasthra.com)
         const productionApiUrls = [
           'https://khadivasthra.com/api/categories.php?active=true',
           'https://khadivasthra.com/public/api/categories.php?active=true',
           'https://khadivasthra.com/admin/api/categories.php?active=true',
         ];
-        
+
         for (const apiUrl of productionApiUrls) {
           try {
             response = await fetch(apiUrl, { mode: 'cors' });
@@ -234,7 +234,7 @@ export default function Home() {
             response = null;
           }
         }
-        
+
         // 2. If production API failed, try local dev API (port 8080)
         if (!response || !response.ok) {
           try {
@@ -245,12 +245,12 @@ export default function Home() {
             response = null;
           }
         }
-        
+
         // 3. If both APIs failed, try static JSON
         if (!response || !response.ok) {
           response = await fetch('/data/categories.json');
         }
-        
+
         if (response && response.ok) {
           const data = await response.json();
           const categoriesList = data.categories || (Array.isArray(data) ? data : []);
@@ -279,7 +279,7 @@ export default function Home() {
       try {
         let allProducts: Product[] = [];
         let response: Response | null = null;
-        
+
         // Priority order: Production API → Local Dev API → Static Products
         // 1. Try production API first (khadivasthra.com)
         const productionApiUrls = [
@@ -287,7 +287,7 @@ export default function Home() {
           'https://khadivasthra.com/public/api/products.php',
           'https://khadivasthra.com/admin/api/products.php',
         ];
-        
+
         for (const apiUrl of productionApiUrls) {
           try {
             response = await fetch(apiUrl, { mode: 'cors' });
@@ -297,7 +297,7 @@ export default function Home() {
             response = null;
           }
         }
-        
+
         // 2. If production API failed, try local dev API (port 8080)
         if (!response || !response.ok) {
           try {
@@ -308,7 +308,7 @@ export default function Home() {
             response = null;
           }
         }
-        
+
         // 3. If API succeeded, parse products
         if (response && response.ok) {
           try {
@@ -324,12 +324,12 @@ export default function Home() {
             console.error('Failed to parse products API response:', parseError);
           }
         }
-        
+
         // 4. If API didn't return products, use static
         if (allProducts.length === 0) {
           allProducts = products as Product[];
         }
-        
+
         // Group products by category
         const grouped: Record<string, Product[]> = {};
         allProducts.forEach((product) => {
@@ -339,7 +339,7 @@ export default function Home() {
           }
           grouped[category].push(product);
         });
-        
+
         setProductsByCategory(grouped);
       } catch (error) {
         console.error('Failed to fetch products by category:', error);
@@ -373,20 +373,20 @@ export default function Home() {
       const windowHeight = window.innerHeight;
       const logoTop = rect.top;
       const scrollY = window.scrollY;
-      
+
       // Only start scaling when user has scrolled
       if (scrollY === 0) {
         setLogoScale(1);
         setLogoOpacity(1);
         return;
       }
-      
+
       // Calculate scale based on scroll position
       // Logo starts at scale 1, grows to 1.5 as it approaches header (80px from top)
       const headerThreshold = 80;
       const scrollRange = windowHeight - headerThreshold;
       const currentScroll = windowHeight - logoTop;
-      
+
       if (logoTop <= headerThreshold) {
         // Logo has reached header position - start fading out
         const fadeProgress = Math.max(0, 1 - (headerThreshold - logoTop) / 100);
@@ -407,14 +407,14 @@ export default function Home() {
 
     window.addEventListener('scroll', handleScroll);
     // Don't call handleScroll on initial load - let it stay at scale 1
-    
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   return (
     <>
       {/* 1. HERO SECTION - Fullscreen Cover Image with Logo in Middle */}
-      <section className="hero-section relative -mt-20 pt-20 h-screen flex items-center justify-center overflow-hidden">
+      <section className="hero-section relative -mt-20 pt-32 pb-20 min-h-[calc(100vh+5rem)] flex items-center justify-center overflow-hidden">
         {/* Background Image */}
         <Image
           src="/Cover KV.webp"
@@ -486,17 +486,17 @@ export default function Home() {
       <section className="banners-section bg-white py-12">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="banners-section__grid grid md:grid-cols-3 gap-6">
-            <BannerCard 
+            <BannerCard
               title="Festival Collection"
               overlay="coral"
               image="/images/card covers/festival collection.png"
             />
-            <BannerCard 
+            <BannerCard
               title="25% Off"
               overlay="orange"
               image="/images/card covers/offer.png"
             />
-            <BannerCard 
+            <BannerCard
               title="New Arrivals"
               overlay="cream"
               image="/images/card covers/new-arrivals.png"
@@ -571,9 +571,9 @@ export default function Home() {
                   const matchedCategory = categories.find((cat) => cat.name === categoryName);
                   const categorySlug = matchedCategory?.slug || slugifyCategory(categoryName);
                   const displayName = matchedCategory?.name || categoryName;
-                  
+
                   return (
-                      <div key={categoryName} className="category-products-row">
+                    <div key={categoryName} className="category-products-row">
                       <div className="category-products-row__header flex items-center justify-between mb-6">
                         <h3 className="category-products-row__title text-2xl font-bold text-text font-serif">
                           {displayName}
@@ -659,7 +659,7 @@ export default function Home() {
 // Banner Card Component
 function BannerCard({ title, overlay, image }: { title: string; overlay: string; image: string }) {
   const overlayClass = overlay === "coral" ? "bg-coral/40" : overlay === "orange" ? "bg-orange/40" : "bg-cream/40";
-  
+
   return (
     <div className="banner-card relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg group cursor-pointer">
       <Image
@@ -951,7 +951,7 @@ function CategoriesCarousel({ categories }: { categories: Category[] }) {
                 key={category.id}
                 className="categories-carousel__slide flex-[0_0_100%] sm:flex-[0_0_calc(50%-12px)] md:flex-[0_0_calc(33.333%-16px)] lg:flex-[0_0_calc(25%-18px)] xl:flex-[0_0_calc(20%-19px)] min-w-0"
               >
-                <Link 
+                <Link
                   href={`/shop/${categorySlug}`}
                   className="category-card group aspect-[3/5] flex flex-col bg-cream/30 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
                 >

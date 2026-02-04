@@ -19,9 +19,9 @@ export function Header() {
             const heroLogo = document.getElementById('hero-logo');
             if (heroLogo) {
                 const rect = heroLogo.getBoundingClientRect();
-                // Show header when hero logo reaches or passes header position (~80px from top)
-                const headerHeight = 80; // Header height threshold
-                const shouldShowHeader = rect.top <= headerHeight;
+                // Show header when hero logo reaches top of viewport (0px)
+                const threshold = 10; // Small buffer
+                const shouldShowHeader = rect.top <= threshold;
                 setShowHeader(shouldShowHeader);
                 setShowHeaderLogo(shouldShowHeader);
             } else {
@@ -35,16 +35,15 @@ export function Header() {
         window.addEventListener('scroll', handleScroll);
         // Check on mount in case page is already scrolled
         handleScroll();
-        
+
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
     return (
-        <header className={`header fixed top-0 z-50 w-full transition-all duration-300 ${
-            showHeader 
-                ? 'opacity-100 translate-y-0 pointer-events-auto' 
+        <header className={`header fixed top-0 z-50 w-full transition-all duration-300 ${showHeader
+                ? 'opacity-100 translate-y-0 pointer-events-auto'
                 : 'opacity-0 -translate-y-full pointer-events-none'
-        } bg-black/50 backdrop-blur-md border-b border-white/10 shadow-sm`}>
+            } bg-black/50 backdrop-blur-md border-b border-white/10 shadow-sm`}>
             <div className="header__container container mx-auto px-4 max-w-7xl flex h-16 md:h-20 items-center justify-between relative">
                 {/* Mobile Hamburger - left side, always visible on mobile */}
                 <Button
@@ -57,11 +56,10 @@ export function Header() {
                 </Button>
 
                 {/* Desktop Logo - shows after scroll */}
-                <div className={`hidden md:block transition-all duration-300 min-w-0 ${
-                    showHeaderLogo 
-                        ? 'opacity-100 translate-y-0 w-auto' 
+                <div className={`hidden md:block transition-all duration-300 min-w-0 ${showHeaderLogo
+                        ? 'opacity-100 translate-y-0 w-auto'
                         : 'opacity-0 -translate-y-2 w-0 pointer-events-none overflow-hidden'
-                }`}>
+                    }`}>
                     <Link href="/" className="header__logo-link flex items-center">
                         <Image
                             src="/Khadi Vasthra White Transparnt.png"
@@ -75,11 +73,10 @@ export function Header() {
                 </div>
 
                 {/* Mobile Logo - centered, shows after scroll */}
-                <div className={`md:hidden absolute left-1/2 -translate-x-1/2 transition-all duration-300 z-0 ${
-                    showHeaderLogo 
-                        ? 'opacity-100 translate-y-0' 
+                <div className={`md:hidden absolute left-1/2 -translate-x-1/2 transition-all duration-300 z-0 ${showHeaderLogo
+                        ? 'opacity-100 translate-y-0'
                         : 'opacity-0 -translate-y-2 pointer-events-none'
-                }`}>
+                    }`}>
                     <Link href="/" className="header__logo-link flex items-center">
                         <Image
                             src="/Khadi Vasthra White Transparnt.png"
@@ -94,26 +91,26 @@ export function Header() {
 
                 {/* Center Nav - absolutely centered, desktop only */}
                 <nav className="header__nav header__nav--desktop hidden md:flex items-center space-x-8 transition-all duration-300 absolute left-1/2 -translate-x-1/2">
-                    <Link 
-                        href="/products" 
+                    <Link
+                        href="/products"
                         className="header__nav-link text-sm font-medium text-white hover:text-cream transition-colors"
                     >
                         Shop
                     </Link>
-                    <Link 
-                        href="/products" 
+                    <Link
+                        href="/products"
                         className="header__nav-link text-sm font-medium text-white hover:text-cream transition-colors"
                     >
                         Collections
                     </Link>
-                    <Link 
-                        href="/contact" 
+                    <Link
+                        href="/contact"
                         className="header__nav-link text-sm font-medium text-white hover:text-cream transition-colors"
                     >
                         About
                     </Link>
-                    <Link 
-                        href="/contact" 
+                    <Link
+                        href="/contact"
                         className="header__nav-link text-sm font-medium text-white hover:text-cream transition-colors"
                     >
                         Contact
@@ -122,18 +119,18 @@ export function Header() {
 
                 {/* Right: Search & Cart */}
                 <div className="header__actions flex items-center space-x-2 md:space-x-4 ml-auto z-10">
-                    <Button 
-                        variant="ghost" 
-                        size="icon" 
+                    <Button
+                        variant="ghost"
+                        size="icon"
                         className="header__search-button text-white hover:text-cream hover:bg-white/20"
                         aria-label="Search"
                     >
                         <Search className="h-5 w-5" />
                     </Button>
                     <Link href="/cart" className="header__cart-link">
-                        <Button 
-                            variant="ghost" 
-                            size="icon" 
+                        <Button
+                            variant="ghost"
+                            size="icon"
                             className="header__cart-button relative text-white hover:text-cream hover:bg-white/20"
                         >
                             <ShoppingBag className="h-5 w-5" />
