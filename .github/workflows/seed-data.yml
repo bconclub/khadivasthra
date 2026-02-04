@@ -32,6 +32,6 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./seed/
-          server-dir: /public_html/
+          server-dir: public_html/
           dangerous-clean-slate: false
           state-name: .seed-sync-state.json

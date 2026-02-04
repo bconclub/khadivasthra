@@ -76,6 +76,19 @@ jobs:
           echo "=== Deploy directory ready ==="
           find deploy/admin -type f | sort
 
+      - name: Debug FTP directory structure
+        run: |
+          sudo apt-get install -y lftp > /dev/null 2>&1
+          lftp -u "${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }}" "${{ secrets.FTP_HOST }}" -e "
+            pwd;
+            ls;
+            echo '--- inside public_html ---';
+            ls public_html/;
+            echo '--- inside public_html/admin ---';
+            ls public_html/admin/ 2>/dev/null || echo 'no admin dir';
+            quit
+          " 2>&1 || echo "FTP debug failed"
+
       - name: Deploy via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -83,7 +96,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./deploy/
-          server-dir: /public_html/
+          server-dir: public_html/
           dangerous-clean-slate: false
           exclude: |
             **/.git*
