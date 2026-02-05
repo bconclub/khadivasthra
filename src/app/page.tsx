@@ -470,7 +470,7 @@ export default function Home() {
             Discover the finest collection of handcrafted Mundus and Dhotis, brought to you directly from the artisans of Aluva.
           </p>
           <div className="hero-section__actions flex flex-col sm:flex-row items-center justify-center gap-6">
-            <Link href="/products" className="hero-section__cta-primary">
+            <Link href="/shop" className="hero-section__cta-primary">
               <Button size="lg" className="bg-orange hover:bg-orange-dark text-white font-bold min-w-[200px] h-14 text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                 Shop Now
               </Button>

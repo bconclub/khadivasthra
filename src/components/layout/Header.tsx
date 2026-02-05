@@ -92,13 +92,13 @@ export function Header() {
                 {/* Center Nav - absolutely centered, desktop only */}
                 <nav className="header__nav header__nav--desktop hidden md:flex items-center space-x-8 transition-all duration-300 absolute left-1/2 -translate-x-1/2">
                     <Link
-                        href="/products"
+                        href="/shop"
                         className="header__nav-link text-sm font-medium text-white hover:text-cream transition-colors"
                     >
                         Shop
                     </Link>
                     <Link
-                        href="/products"
+                        href="/collections"
                         className="header__nav-link text-sm font-medium text-white hover:text-cream transition-colors"
                     >
                         Collections
@@ -149,14 +149,14 @@ export function Header() {
                 <div className="header__mobile-nav md:hidden border-t border-white/10 p-4 bg-black/50 backdrop-blur-md">
                     <nav className="header__nav header__nav--mobile flex flex-col space-y-4">
                         <Link
-                            href="/products"
+                            href="/shop"
                             className="header__nav-link text-sm font-medium text-white hover:text-cream transition-colors"
                             onClick={() => setIsMenuOpen(false)}
                         >
                             Shop
                         </Link>
                         <Link
-                            href="/products"
+                            href="/collections"
                             className="header__nav-link text-sm font-medium text-white hover:text-cream transition-colors"
                             onClick={() => setIsMenuOpen(false)}
                         >

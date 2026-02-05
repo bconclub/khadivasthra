@@ -29,7 +29,7 @@ export default function ProductsLayout({
                         <h3 className="font-bold text-lg mb-4 text-coral">Categories</h3>
                         <div className="flex flex-col space-y-1">
                             <Link
-                                href="/products"
+                                href="/shop"
                                 className="px-3 py-2 rounded-md hover:bg-cream/50 text-sm font-medium text-text transition-colors"
                             >
                                 All Products
@@ -51,7 +51,7 @@ export default function ProductsLayout({
                 <div className="md:hidden mb-6 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
                     <div className="flex space-x-2">
                         <Link
-                            href="/products"
+                            href="/shop"
                             className="flex-shrink-0 px-4 py-2 bg-cream/50 rounded-full text-sm font-medium whitespace-nowrap active:bg-coral active:text-white"
                         >
                             All

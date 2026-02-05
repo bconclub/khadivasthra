@@ -27,7 +27,7 @@ export default function CartPage() {
             <div className="cart-page cart-page--empty container mx-auto px-4 max-w-7xl py-20 text-center">
                 <h1 className="cart-page__empty-title text-3xl font-bold mb-6 text-text">Your Cart is Empty</h1>
                 <p className="cart-page__empty-message text-text-muted mb-8">Looks like you haven't added any authentic mundus yet.</p>
-                <Link href="/products" className="cart-page__empty-cta">
+                <Link href="/shop" className="cart-page__empty-cta">
                     <Button size="lg" variant="primary">Start Shopping</Button>
                 </Link>
             </div>

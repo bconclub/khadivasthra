@@ -31,10 +31,10 @@ export function Footer() {
                         <h4 className="footer__section-title text-lg font-semibold mb-4 text-text font-serif">Quick Links</h4>
                         <ul className="footer__links space-y-2 text-sm text-text-muted">
                             <li className="footer__link-item">
-                                <Link href="/products" className="footer__link hover:text-coral transition-colors">Shop</Link>
+                                <Link href="/shop" className="footer__link hover:text-coral transition-colors">Shop</Link>
                             </li>
                             <li className="footer__link-item">
-                                <Link href="/products" className="footer__link hover:text-coral transition-colors">Collections</Link>
+                                <Link href="/collections" className="footer__link hover:text-coral transition-colors">Collections</Link>
                             </li>
                             <li className="footer__link-item">
                                 <Link href="/contact" className="footer__link hover:text-coral transition-colors">About Us</Link>
