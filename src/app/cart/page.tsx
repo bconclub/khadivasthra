@@ -52,7 +52,7 @@ export default function CartPage() {
                             </div>
 
                             <div className="cart-page__item-info flex-1">
-                                <Link href={`/product/${item.id}`} className="cart-page__item-name font-medium text-text hover:text-coral transition-colors line-clamp-2">
+                                <Link href={`/product/${item.slug || item.id}`} className="cart-page__item-name font-medium text-text hover:text-coral transition-colors line-clamp-2">
                                     {item.name}
                                 </Link>
                                 <div className="cart-page__item-price text-orange text-sm mt-1 font-semibold">₹{item.price}</div>

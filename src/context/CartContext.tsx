@@ -5,6 +5,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 export type CartItem = {
     id: string;
     name: string;
+    slug?: string;
     price: number;
     image: string;
     quantity: number;
@@ -12,7 +13,7 @@ export type CartItem = {
 
 interface CartContextType {
     items: CartItem[];
-    addToCart: (product: { id: string; name: string; price: number; image: string }, quantity?: number) => void;
+    addToCart: (product: { id: string; name: string; slug?: string; price: number; image: string }, quantity?: number) => void;
     removeFromCart: (id: string) => void;
     updateQuantity: (id: string, quantity: number) => void;
     clearCart: () => void;
@@ -51,7 +52,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
     }, [items, isLoaded]);
 
-    const addToCart = (product: { id: string; name: string; price: number; image: string }, quantity = 1) => {
+    const addToCart = (product: { id: string; name: string; slug?: string; price: number; image: string }, quantity = 1) => {
         setItems((prev) => {
             const existing = prev.find((item) => item.id === product.id);
             if (existing) {
@@ -66,6 +67,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 {
                     id: product.id,
                     name: product.name,
+                    slug: product.slug,
                     price: product.price,
                     image: product.image,
                     quantity,

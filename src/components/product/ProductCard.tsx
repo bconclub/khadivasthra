@@ -5,13 +5,13 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { ShoppingBag, Heart, ImageOff } from "lucide-react";
-import { normalizeProductImagePath } from "@/lib/imageUtils";
 import { useState } from "react";
 
 interface ProductCardProps {
     product: {
         id: string;
         name: string;
+        slug?: string;
         price: number;
         image: string;
         category: string;
@@ -24,26 +24,18 @@ export function ProductCard({ product, variant = "white", showHeart = false }: P
     const { addToCart } = useCart();
     const [imageError, setImageError] = useState(false);
 
-    // Normalize image path using product name for filename (ensures images are in public folder, not browser memory)
-    // Reject blob/data URLs - only use paths to public folder
-    let imagePath = product.image;
-    
-    if (imagePath && (imagePath.startsWith('blob:') || imagePath.startsWith('data:'))) {
-      // Skip blob/data URLs - these are in browser memory
+    // Use product image path directly - admin saves organized paths like /images/products/category/product/file.ext
+    let imagePath = product.image || '';
+
+    // Reject blob/data URLs and admin upload paths
+    if (imagePath.startsWith('blob:') || imagePath.startsWith('data:')) {
       imagePath = '';
     }
-    
-    // Convert admin/uploads/ paths to /images/ paths
-    if (imagePath && imagePath.includes('/admin/uploads/')) {
-      // Extract filename and convert to /images/products/ path
-      const filename = imagePath.split('/').pop() || '';
-      imagePath = `/images/products/${filename}`;
-    }
-    
-    const normalizedImagePath = normalizeProductImagePath(product.id, imagePath, product.name, product.category);
-    
-    // Use normalized path from public folder, fallback to placeholder if not found
-    const imageUrl = normalizedImagePath || `https://placehold.co/600x800/E8657B/FFF?text=${encodeURIComponent(product.name.replace(/ /g, '+'))}`;
+
+    // Use the path as-is if it's a valid /images/ path, otherwise use placeholder
+    const imageUrl = imagePath && imagePath.startsWith('/images/')
+      ? imagePath
+      : `https://placehold.co/600x800/E8657B/FFF?text=${encodeURIComponent(product.name.replace(/ /g, '+'))}`;
 
     const cardBg = variant === "cream" ? "bg-cream" : "bg-white";
     const borderColor = variant === "cream" ? "border-cream/50" : "border-cream/30";
@@ -53,7 +45,7 @@ export function ProductCard({ product, variant = "white", showHeart = false }: P
 
     return (
         <div className={`product-card group relative ${cardBg} rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 border ${borderColor} hover:border-coral/30 flex flex-col h-full`}>
-            <Link href={`/product/${product.id}`} className="product-card__image-link block relative aspect-[2/3] overflow-hidden bg-cream/30">
+            <Link href={`/product/${product.slug || product.id}`} className="product-card__image-link block relative aspect-[2/3] overflow-hidden bg-cream/30">
                 {hasValidImage ? (
                     <Image
                         src={imageUrl}
@@ -88,7 +80,7 @@ export function ProductCard({ product, variant = "white", showHeart = false }: P
 
             <div className={`product-card__content p-5 flex flex-col flex-grow ${cardBg} transition-colors`}>
                 <p className="product-card__category text-xs text-text-muted font-semibold tracking-wider uppercase mb-2">{product.category}</p>
-                <Link href={`/product/${product.id}`} className="product-card__name-link flex-grow">
+                <Link href={`/product/${product.slug || product.id}`} className="product-card__name-link flex-grow">
                     <h3 className="product-card__name font-bold text-lg text-text font-serif leading-tight hover:text-coral transition-colors line-clamp-2" title={product.name}>{product.name}</h3>
                 </Link>
                 <div className={`product-card__footer mt-4 pt-4 border-t ${borderColor} flex items-center justify-between`}>
