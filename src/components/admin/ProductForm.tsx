@@ -1,13 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { ImageUpload } from "./ImageUpload";
 import { uploadProductImage } from "@/lib/services/storage";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getCategories } from "@/lib/services/categories";
 import type { Product } from "@/types";
-import { Loader2, X } from "lucide-react";
+import { Loader2, X, Plus } from "lucide-react";
+import Image from "next/image";
 
 interface ProductFormProps {
   product?: Product;
@@ -36,6 +37,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const [categoryId, setCategoryId] = useState(product?.category_id || "");
   const [material, setMaterial] = useState(product?.material || "");
   const [imageUrl, setImageUrl] = useState(product?.image_url || "");
+  const [galleryImages, setGalleryImages] = useState<string[]>(product?.images || []);
   const [isFeatured, setIsFeatured] = useState(product?.is_featured || false);
   const [isBestSeller, setIsBestSeller] = useState(product?.is_best_seller || false);
   const [isActive, setIsActive] = useState(product?.is_active !== false);
@@ -43,6 +45,16 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const [careInstructions, setCareInstructions] = useState<string[]>(
     product?.care_instructions || ["Hand wash cold", "Dry in shade"]
   );
+  const [uploadingGallery, setUploadingGallery] = useState(false);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
+
+  // Discount preview
+  const priceNum = parseFloat(price) || 0;
+  const comparePriceNum = parseFloat(comparePrice) || 0;
+  const hasDiscount = comparePriceNum > 0 && comparePriceNum > priceNum && priceNum > 0;
+  const discountPercent = hasDiscount
+    ? Math.round(((comparePriceNum - priceNum) / comparePriceNum) * 100)
+    : 0;
 
   const handleNameChange = (value: string) => {
     setName(value);
@@ -51,12 +63,38 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
     }
   };
 
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploadingGallery(true);
+    try {
+      const newUrls: string[] = [];
+      for (const file of Array.from(files)) {
+        if (!file.type.startsWith("image/")) continue;
+        if (file.size > 5 * 1024 * 1024) continue;
+        const url = await uploadProductImage(file, slug || slugify(name));
+        newUrls.push(url);
+      }
+      setGalleryImages([...galleryImages, ...newUrls]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Gallery upload failed");
+    } finally {
+      setUploadingGallery(false);
+      if (galleryInputRef.current) galleryInputRef.current.value = "";
+    }
+  };
+
+  const removeGalleryImage = (index: number) => {
+    setGalleryImages(galleryImages.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
     if (!name || !price || !categoryId) {
-      setError("Name, price, and category are required.");
+      setError("Name, sale price, and category are required.");
       return;
     }
 
@@ -72,6 +110,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         category_id: categoryId,
         material,
         image_url: imageUrl,
+        images: galleryImages,
         is_featured: isFeatured,
         is_best_seller: isBestSeller,
         is_active: isActive,
@@ -149,28 +188,51 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         />
       </div>
 
-      <div className="grid md:grid-cols-3 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Price (₹) *</label>
-          <input
-            type="number"
-            required
-            step="0.01"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
-          />
+      {/* Pricing */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-3">Pricing</label>
+        <div className="grid md:grid-cols-3 gap-4 items-end">
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Sale Price (₹) *</label>
+            <input
+              type="number"
+              required
+              step="0.01"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
+              placeholder="What customer pays"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">MRP / Original Price (₹)</label>
+            <input
+              type="number"
+              step="0.01"
+              value={comparePrice}
+              onChange={(e) => setComparePrice(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
+              placeholder="Shown crossed out"
+            />
+          </div>
+          <div>
+            {hasDiscount ? (
+              <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2 text-center">
+                <span className="text-green-700 font-bold text-lg">{discountPercent}% OFF</span>
+                <p className="text-xs text-green-600">
+                  <span className="line-through">₹{comparePriceNum}</span> → ₹{priceNum}
+                </p>
+              </div>
+            ) : (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-center text-sm text-gray-400">
+                Set MRP higher than sale price to show discount
+              </div>
+            )}
+          </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Compare Price (₹)</label>
-          <input
-            type="number"
-            step="0.01"
-            value={comparePrice}
-            onChange={(e) => setComparePrice(e.target.value)}
-            className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
-          />
-        </div>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
           <select
@@ -187,19 +249,19 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
             ))}
           </select>
         </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Material</label>
+          <input
+            type="text"
+            value={material}
+            onChange={(e) => setMaterial(e.target.value)}
+            className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
+            placeholder="e.g., 100% Cotton"
+          />
+        </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Material</label>
-        <input
-          type="text"
-          value={material}
-          onChange={(e) => setMaterial(e.target.value)}
-          className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
-          placeholder="e.g., 100% Cotton"
-        />
-      </div>
-
+      {/* Main Image */}
       <ImageUpload
         currentUrl={imageUrl}
         onUpload={async (file) => {
@@ -208,7 +270,62 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
           return url;
         }}
         onRemove={() => setImageUrl("")}
+        label="Main Product Image"
       />
+
+      {/* Gallery Images */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Gallery Images
+          <span className="text-gray-400 font-normal ml-2">({galleryImages.length} images)</span>
+        </label>
+        <div className="flex flex-wrap gap-3">
+          {galleryImages.map((url, index) => (
+            <div key={index} className="relative w-24 h-32 rounded-lg overflow-hidden border border-gray-200 group">
+              <Image
+                src={url}
+                alt={`Gallery ${index + 1}`}
+                fill
+                className="object-cover"
+                unoptimized
+              />
+              <button
+                type="button"
+                onClick={() => removeGalleryImage(index)}
+                className="absolute top-1 right-1 bg-white/90 p-1 rounded-full shadow opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-50"
+              >
+                <X className="w-3 h-3 text-red-500" />
+              </button>
+            </div>
+          ))}
+
+          {/* Add button */}
+          <button
+            type="button"
+            onClick={() => galleryInputRef.current?.click()}
+            disabled={uploadingGallery}
+            className="w-24 h-32 rounded-lg border-2 border-dashed border-gray-300 hover:border-coral/50 flex flex-col items-center justify-center cursor-pointer transition-colors bg-gray-50"
+          >
+            {uploadingGallery ? (
+              <Loader2 className="w-5 h-5 animate-spin text-coral" />
+            ) : (
+              <>
+                <Plus className="w-5 h-5 text-gray-400" />
+                <span className="text-xs text-gray-400 mt-1">Add</span>
+              </>
+            )}
+          </button>
+        </div>
+        <input
+          ref={galleryInputRef}
+          type="file"
+          accept="image/*"
+          multiple
+          onChange={handleGalleryUpload}
+          className="hidden"
+        />
+        <p className="text-xs text-gray-400 mt-2">Upload multiple images for the product gallery.</p>
+      </div>
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">Care Instructions</label>

@@ -9,7 +9,7 @@ import { ProductCard } from "@/components/product/ProductCard";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getProductBySlug, getRelatedProducts, recordProductView } from "@/lib/services/products";
 import type { ProductWithCategory } from "@/types";
-import { Minus, Plus, ShoppingBag, Truck, ShieldCheck, Ruler, Droplets, Info, ImageOff, Loader2 } from "lucide-react";
+import { Minus, Plus, ShoppingBag, Truck, ShieldCheck, Ruler, Droplets, Info, ImageOff, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 function toCardProduct(product: ProductWithCategory) {
@@ -18,6 +18,7 @@ function toCardProduct(product: ProductWithCategory) {
     name: product.name,
     slug: product.slug,
     price: Number(product.price),
+    compare_price: product.compare_price ? Number(product.compare_price) : null,
     image: product.image_url || '',
     category: product.category?.name || '',
   };
@@ -36,6 +37,7 @@ export default function ProductDetailPage() {
     const [quantity, setQuantity] = useState(1);
     const [activeTab, setActiveTab] = useState<"details" | "specs" | "care">("details");
     const [imageError, setImageError] = useState(false);
+    const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const { addToCart } = useCart();
 
     // Record product view
@@ -67,13 +69,29 @@ export default function ProductDetailPage() {
         }, quantity);
     };
 
-    let imagePath = product.image_url || '';
-    if (imagePath.startsWith('blob:') || imagePath.startsWith('data:')) {
-      imagePath = '';
+    // Build gallery: main image + additional gallery images
+    const allImages: string[] = [];
+    const mainImg = product.image_url || '';
+    if (mainImg && !mainImg.startsWith('blob:') && !mainImg.startsWith('data:') && (mainImg.startsWith('/images/') || mainImg.startsWith('https://'))) {
+      allImages.push(mainImg);
     }
-    const imageUrl = imagePath && (imagePath.startsWith('/images/') || imagePath.startsWith('https://'))
-      ? imagePath
-      : `https://placehold.co/600x800/E8657B/FFF?text=${encodeURIComponent(product.name.replace(/ /g, '+'))}`;
+    if (product.images && product.images.length > 0) {
+      for (const img of product.images) {
+        if (img && !allImages.includes(img)) allImages.push(img);
+      }
+    }
+    if (allImages.length === 0) {
+      allImages.push(`https://placehold.co/600x800/E8657B/FFF?text=${encodeURIComponent(product.name.replace(/ /g, '+'))}`);
+    }
+
+    const currentImage = allImages[selectedImageIndex] || allImages[0];
+    const hasMultipleImages = allImages.length > 1;
+
+    // Discount calculation
+    const salePrice = Number(product.price);
+    const mrp = product.compare_price ? Number(product.compare_price) : 0;
+    const hasDiscount = mrp > 0 && mrp > salePrice && salePrice > 0;
+    const discountPercent = hasDiscount ? Math.round(((mrp - salePrice) / mrp) * 100) : 0;
 
     const details = product.details || {};
     const careInstructions = product.care_instructions || ['Hand wash cold', 'Dry in shade'];
@@ -81,11 +99,12 @@ export default function ProductDetailPage() {
     return (
         <div className="product-detail-page container mx-auto px-4 max-w-7xl py-12">
             <div className="grid md:grid-cols-2 gap-12 lg:gap-16 mb-20">
-                {/* Image */}
-                <div className="relative aspect-[3/4] bg-cream/30 rounded-2xl overflow-hidden shadow-lg border border-cream/30">
-                    {!imageError && imageUrl ? (
+                {/* Image Gallery */}
+                <div className="space-y-3">
+                  <div className="relative aspect-[3/4] bg-cream/30 rounded-2xl overflow-hidden shadow-lg border border-cream/30">
+                    {!imageError && currentImage ? (
                         <Image
-                            src={imageUrl}
+                            src={currentImage}
                             alt={product.name}
                             fill
                             className="object-cover"
@@ -99,6 +118,48 @@ export default function ProductDetailPage() {
                             <p className="text-sm text-center px-4">No image available</p>
                         </div>
                     )}
+                    {/* Discount badge */}
+                    {hasDiscount && (
+                      <span className="absolute top-3 left-3 bg-coral text-white text-sm font-bold px-3 py-1 rounded-full shadow-md">
+                        {discountPercent}% OFF
+                      </span>
+                    )}
+                    {/* Gallery nav arrows */}
+                    {hasMultipleImages && (
+                      <>
+                        <button
+                          onClick={() => setSelectedImageIndex((selectedImageIndex - 1 + allImages.length) % allImages.length)}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow transition-colors"
+                        >
+                          <ChevronLeft className="w-5 h-5 text-gray-700" />
+                        </button>
+                        <button
+                          onClick={() => setSelectedImageIndex((selectedImageIndex + 1) % allImages.length)}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white p-2 rounded-full shadow transition-colors"
+                        >
+                          <ChevronRight className="w-5 h-5 text-gray-700" />
+                        </button>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Thumbnail strip */}
+                  {hasMultipleImages && (
+                    <div className="flex gap-2 overflow-x-auto pb-1">
+                      {allImages.map((img, index) => (
+                        <button
+                          key={index}
+                          onClick={() => { setSelectedImageIndex(index); setImageError(false); }}
+                          className={cn(
+                            "relative w-16 h-20 md:w-20 md:h-24 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all",
+                            selectedImageIndex === index ? "border-coral shadow-md" : "border-gray-200 hover:border-coral/50"
+                          )}
+                        >
+                          <Image src={img} alt={`${product.name} ${index + 1}`} fill className="object-cover" unoptimized />
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 {/* Product Info */}
@@ -108,10 +169,13 @@ export default function ProductDetailPage() {
                             {product.category?.name}
                         </span>
                         <h1 className="text-4xl md:text-5xl font-bold text-text leading-tight mb-2 font-serif">{product.name}</h1>
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl font-semibold text-orange">&#8377;{Number(product.price)}</span>
-                          {product.compare_price && Number(product.compare_price) > Number(product.price) && (
-                            <span className="text-lg text-text-muted line-through">&#8377;{Number(product.compare_price)}</span>
+                        <div className="flex items-center gap-3 flex-wrap">
+                          <span className="text-2xl font-semibold text-orange">&#8377;{salePrice}</span>
+                          {hasDiscount && (
+                            <>
+                              <span className="text-lg text-text-muted line-through">&#8377;{mrp}</span>
+                              <span className="text-sm font-bold text-coral bg-coral/10 px-2 py-0.5 rounded-full">{discountPercent}% OFF</span>
+                            </>
                           )}
                         </div>
                     </div>

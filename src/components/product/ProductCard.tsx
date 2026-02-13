@@ -13,6 +13,7 @@ interface ProductCardProps {
         name: string;
         slug?: string;
         price: number;
+        compare_price?: number | null;
         image: string;
         category: string;
     };
@@ -43,6 +44,12 @@ export function ProductCard({ product, variant = "white", showHeart = false }: P
     // Check if we have a valid image URL (not empty)
     const hasValidImage = !imageError && imageUrl && imageUrl.trim() !== '';
 
+    // Discount calculation
+    const hasDiscount = product.compare_price && product.compare_price > product.price;
+    const discountPercent = hasDiscount
+      ? Math.round(((product.compare_price! - product.price) / product.compare_price!) * 100)
+      : 0;
+
     return (
         <div className={`product-card group relative ${cardBg} rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 border ${borderColor} hover:border-coral/30 flex flex-col h-full`}>
             <Link href={`/product/${product.slug || product.id}`} className="product-card__image-link block relative aspect-[2/3] overflow-hidden bg-cream/30">
@@ -59,6 +66,13 @@ export function ProductCard({ product, variant = "white", showHeart = false }: P
                 ) : (
                     <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
                         <ImageOff className="w-16 h-16 text-gray-400" />
+                    </div>
+                )}
+
+                {/* Discount Badge */}
+                {hasDiscount && (
+                    <div className="absolute top-3 left-3 bg-coral text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-md">
+                        {discountPercent}% OFF
                     </div>
                 )}
 
@@ -84,7 +98,12 @@ export function ProductCard({ product, variant = "white", showHeart = false }: P
                     <h3 className="product-card__name font-bold text-lg text-text font-serif leading-tight hover:text-coral transition-colors line-clamp-2" title={product.name}>{product.name}</h3>
                 </Link>
                 <div className={`product-card__footer mt-4 pt-4 border-t ${borderColor} flex items-center justify-between`}>
-                    <span className="product-card__price font-bold text-xl text-orange font-serif">₹{product.price}</span>
+                    <div className="product-card__pricing">
+                        <span className="product-card__price font-bold text-xl text-orange font-serif">₹{product.price}</span>
+                        {hasDiscount && (
+                            <span className="product-card__compare-price text-sm text-text-muted line-through ml-2">₹{product.compare_price}</span>
+                        )}
+                    </div>
                     <Button
                         size="sm"
                         variant="outline"
@@ -101,4 +120,3 @@ export function ProductCard({ product, variant = "white", showHeart = false }: P
         </div>
     );
 }
-

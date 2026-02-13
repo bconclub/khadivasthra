@@ -19,6 +19,7 @@ function toCardProduct(product: ProductWithCategory) {
     name: product.name,
     slug: product.slug,
     price: Number(product.price),
+    compare_price: product.compare_price ? Number(product.compare_price) : null,
     image: product.image_url || '',
     category: product.category?.name || '',
   };
