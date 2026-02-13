@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Playfair_Display, Outfit } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
+import { AdminAuthProvider } from "@/context/AdminAuthContext";
+import { ToastProvider } from "@/components/ui/ToastProvider";
 import { LayoutWrapper } from "@/components/layout/LayoutWrapper";
 
 const playfair = Playfair_Display({
@@ -34,11 +36,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${outfit.variable} ${playfair.variable} font-sans min-h-screen flex flex-col bg-white text-text antialiased`}>
-        <CartProvider>
-          <LayoutWrapper>
-            {children}
-          </LayoutWrapper>
-        </CartProvider>
+        <AdminAuthProvider>
+          <CartProvider>
+            <LayoutWrapper>
+              {children}
+            </LayoutWrapper>
+            <ToastProvider />
+          </CartProvider>
+        </AdminAuthProvider>
       </body>
     </html>
   );

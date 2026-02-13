@@ -2,36 +2,53 @@
 
 import { useState } from "react";
 import { ProductCard } from "@/components/product/ProductCard";
-import products from "@/data/products.json";
-import { ArrowUpDown, Filter } from "lucide-react";
+import { useSupabaseQuery } from "@/hooks/useSupabase";
+import { getProducts } from "@/lib/services/products";
+import { getCategories } from "@/lib/services/categories";
+import type { ProductWithCategory } from "@/types";
+import { ArrowUpDown, Filter, Loader2 } from "lucide-react";
 
-const CATEGORIES = [
-  "White Mundus",
-  "Offwhite Mundus",
-  "4.5m Double Mundus",
-  "Printed Mundus",
-  "Yellow Double Mundus",
-  "Single Mundus",
-  "Kavi Mundus"
-];
+function toCardProduct(product: ProductWithCategory) {
+  return {
+    id: product.id,
+    name: product.name,
+    slug: product.slug,
+    price: Number(product.price),
+    image: product.image_url || '',
+    category: product.category?.name || '',
+  };
+}
 
 export default function ShopPage() {
+  const { data: products, loading: loadingProducts } = useSupabaseQuery(getProducts);
+  const { data: categories } = useSupabaseQuery(getCategories);
   const [sortBy, setSortBy] = useState<"price-asc" | "price-desc" | "newest" | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
 
+  const allProducts = products || [];
+  const categoryNames = categories?.map(c => c.name) || [];
+
   // Filter products
   let filteredProducts = selectedCategory
-    ? products.filter((p) => p.category === selectedCategory)
-    : products;
+    ? allProducts.filter((p) => p.category?.name === selectedCategory)
+    : allProducts;
 
   // Sort products
   const sortedProducts = [...filteredProducts].sort((a, b) => {
-    if (sortBy === "price-asc") return a.price - b.price;
-    if (sortBy === "price-desc") return b.price - a.price;
-    if (sortBy === "newest") return (b as any).isNew ? 1 : -1;
+    if (sortBy === "price-asc") return Number(a.price) - Number(b.price);
+    if (sortBy === "price-desc") return Number(b.price) - Number(a.price);
+    if (sortBy === "newest") return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
     return 0;
   });
+
+  if (loadingProducts) {
+    return (
+      <div className="min-h-screen bg-cream flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-coral" />
+      </div>
+    );
+  }
 
   return (
     <div className="shop-page min-h-screen bg-cream">
@@ -42,7 +59,7 @@ export default function ShopPage() {
             Shop All Products
           </h1>
           <p className="text-text-muted text-lg max-w-2xl mx-auto">
-            Discover our complete collection of authentic Kerala handloom mundus, 
+            Discover our complete collection of authentic Kerala handloom mundus,
             crafted by skilled artisans from Aluva.
           </p>
         </div>
@@ -53,28 +70,23 @@ export default function ShopPage() {
           {/* Sidebar - Desktop */}
           <aside className="hidden lg:block w-64 flex-shrink-0">
             <div className="sticky top-24 space-y-6">
-              {/* Categories */}
               <div className="bg-white rounded-xl p-6 shadow-sm">
                 <h3 className="font-bold text-lg text-text mb-4">Categories</h3>
                 <div className="space-y-2">
                   <button
                     onClick={() => setSelectedCategory(null)}
                     className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                      !selectedCategory
-                        ? "bg-coral text-white"
-                        : "hover:bg-cream text-text"
+                      !selectedCategory ? "bg-coral text-white" : "hover:bg-cream text-text"
                     }`}
                   >
                     All Products
                   </button>
-                  {CATEGORIES.map((cat) => (
+                  {categoryNames.map((cat) => (
                     <button
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
                       className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                        selectedCategory === cat
-                          ? "bg-coral text-white"
-                          : "hover:bg-cream text-text"
+                        selectedCategory === cat ? "bg-coral text-white" : "hover:bg-cream text-text"
                       }`}
                     >
                       {cat}
@@ -83,7 +95,6 @@ export default function ShopPage() {
                 </div>
               </div>
 
-              {/* Price Filter */}
               <div className="bg-white rounded-xl p-6 shadow-sm">
                 <h3 className="font-bold text-lg text-text mb-4">Sort By</h3>
                 <div className="space-y-2">
@@ -97,9 +108,7 @@ export default function ShopPage() {
                       key={option.label}
                       onClick={() => setSortBy(option.value as typeof sortBy)}
                       className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
-                        sortBy === option.value
-                          ? "bg-orange text-white"
-                          : "hover:bg-cream text-text"
+                        sortBy === option.value ? "bg-orange text-white" : "hover:bg-cream text-text"
                       }`}
                     >
                       {option.label}
@@ -142,29 +151,19 @@ export default function ShopPage() {
                 <h3 className="font-bold text-text mb-3">Categories</h3>
                 <div className="flex flex-wrap gap-2">
                   <button
-                    onClick={() => {
-                      setSelectedCategory(null);
-                      setShowFilters(false);
-                    }}
+                    onClick={() => { setSelectedCategory(null); setShowFilters(false); }}
                     className={`px-4 py-2 rounded-full text-sm transition-colors ${
-                      !selectedCategory
-                        ? "bg-coral text-white"
-                        : "bg-cream text-text"
+                      !selectedCategory ? "bg-coral text-white" : "bg-cream text-text"
                     }`}
                   >
                     All
                   </button>
-                  {CATEGORIES.map((cat) => (
+                  {categoryNames.map((cat) => (
                     <button
                       key={cat}
-                      onClick={() => {
-                        setSelectedCategory(cat);
-                        setShowFilters(false);
-                      }}
+                      onClick={() => { setSelectedCategory(cat); setShowFilters(false); }}
                       className={`px-4 py-2 rounded-full text-sm transition-colors ${
-                        selectedCategory === cat
-                          ? "bg-coral text-white"
-                          : "bg-cream text-text"
+                        selectedCategory === cat ? "bg-coral text-white" : "bg-cream text-text"
                       }`}
                     >
                       {cat}
@@ -182,8 +181,6 @@ export default function ShopPage() {
                   <span> in <span className="font-semibold text-coral">{selectedCategory}</span></span>
                 )}
               </p>
-              
-              {/* Desktop Sort */}
               <div className="hidden lg:flex items-center gap-2">
                 <span className="text-sm text-text-muted">Sort by:</span>
                 <select
@@ -203,7 +200,7 @@ export default function ShopPage() {
             {sortedProducts.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
                 {sortedProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} variant="white" />
+                  <ProductCard key={product.id} product={toCardProduct(product)} variant="white" />
                 ))}
               </div>
             ) : (

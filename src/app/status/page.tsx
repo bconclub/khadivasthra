@@ -1,115 +1,131 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
+import { Loader2, CheckCircle2, XCircle, AlertCircle } from 'lucide-react';
 
-interface VersionInfo {
-  version: string;
-  build: number;
-  deployedAt: string;
-  commit: string;
-}
-
-interface ApiStatus {
+interface HealthCheck {
   name: string;
-  url: string;
   status: 'checking' | 'ok' | 'error';
   message?: string;
 }
 
 export default function StatusPage() {
-  const [version, setVersion] = useState<VersionInfo | null>(null);
-  const [apis, setApis] = useState<ApiStatus[]>([
-    { name: 'Products API', url: '/admin/api/products.php', status: 'checking' },
-    { name: 'Categories API', url: '/admin/api/categories.php', status: 'checking' },
-    { name: 'Upload API', url: '/admin/api/upload.php', status: 'checking' },
-    { name: 'Auth API', url: '/admin/api/auth.php', status: 'checking' },
+  const [checks, setChecks] = useState<HealthCheck[]>([
+    { name: 'Supabase Connection', status: 'checking' },
+    { name: 'Products Table', status: 'checking' },
+    { name: 'Categories Table', status: 'checking' },
+    { name: 'Orders Table', status: 'checking' },
+    { name: 'Settings Table', status: 'checking' },
   ]);
 
   useEffect(() => {
-    // Fetch version info
-    fetch('/version.json')
-      .then(res => res.json())
-      .then(data => setVersion(data))
-      .catch(() => setVersion(null));
+    async function runChecks() {
+      const results: HealthCheck[] = [];
 
-    // Check each API endpoint
-    apis.forEach((api, index) => {
-      const method = api.url.includes('upload') ? 'POST' : 'GET';
-      fetch(api.url, { method: method === 'POST' ? 'OPTIONS' : 'GET' })
-        .then(res => {
-          setApis(prev => {
-            const updated = [...prev];
-            updated[index] = {
-              ...updated[index],
-              status: res.status === 404 ? 'error' : 'ok',
-              message: res.status === 404 ? '404 Not Found' : `${res.status} OK`,
-            };
-            return updated;
-          });
-        })
-        .catch(err => {
-          setApis(prev => {
-            const updated = [...prev];
-            updated[index] = {
-              ...updated[index],
-              status: 'error',
-              message: err.message,
-            };
-            return updated;
-          });
+      // Check Supabase connection
+      try {
+        const { error } = await supabase.from('categories').select('id', { count: 'exact', head: true });
+        results.push({
+          name: 'Supabase Connection',
+          status: error ? 'error' : 'ok',
+          message: error ? error.message : 'Connected',
         });
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+      } catch (err) {
+        results.push({
+          name: 'Supabase Connection',
+          status: 'error',
+          message: err instanceof Error ? err.message : 'Connection failed',
+        });
+      }
+
+      // Check each table
+      const tables = [
+        { name: 'Products Table', table: 'products' },
+        { name: 'Categories Table', table: 'categories' },
+        { name: 'Orders Table', table: 'orders' },
+        { name: 'Settings Table', table: 'settings' },
+      ];
+
+      for (const { name, table } of tables) {
+        try {
+          const { count, error } = await supabase
+            .from(table)
+            .select('*', { count: 'exact', head: true });
+          results.push({
+            name,
+            status: error ? 'error' : 'ok',
+            message: error ? error.message : `${count ?? 0} rows`,
+          });
+        } catch (err) {
+          results.push({
+            name,
+            status: 'error',
+            message: err instanceof Error ? err.message : 'Query failed',
+          });
+        }
+      }
+
+      setChecks(results);
+    }
+
+    runChecks();
   }, []);
 
-  return (
-    <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">Site Status</h1>
+  const allOk = checks.every(c => c.status === 'ok');
+  const anyChecking = checks.some(c => c.status === 'checking');
 
-        {/* Version Info */}
-        <div className="bg-white rounded-lg shadow p-6 mb-6">
-          <h2 className="text-lg font-semibold mb-4">Deployment Info</h2>
-          {version ? (
-            <dl className="grid grid-cols-2 gap-2 text-sm">
-              <dt className="text-gray-500">Version</dt>
-              <dd className="font-mono">{version.version}</dd>
-              <dt className="text-gray-500">Build</dt>
-              <dd className="font-mono">#{version.build}</dd>
-              <dt className="text-gray-500">Deployed</dt>
-              <dd className="font-mono">{version.deployedAt}</dd>
-              <dt className="text-gray-500">Commit</dt>
-              <dd className="font-mono">{version.commit}</dd>
-            </dl>
-          ) : (
-            <p className="text-gray-400">version.json not found</p>
-          )}
+  return (
+    <div className="min-h-screen bg-cream p-8">
+      <div className="max-w-2xl mx-auto">
+        <h1 className="text-2xl font-bold mb-2 text-text font-serif">Site Status</h1>
+        <p className="text-text-muted mb-8">Khadi Vasthra &mdash; Backend Health</p>
+
+        {/* Overall Status */}
+        <div className={`rounded-xl p-6 mb-6 border ${
+          anyChecking ? 'bg-yellow-50 border-yellow-200' :
+          allOk ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+        }`}>
+          <div className="flex items-center gap-3">
+            {anyChecking ? (
+              <Loader2 className="w-6 h-6 animate-spin text-yellow-600" />
+            ) : allOk ? (
+              <CheckCircle2 className="w-6 h-6 text-green-600" />
+            ) : (
+              <AlertCircle className="w-6 h-6 text-red-600" />
+            )}
+            <span className="font-semibold text-lg text-text">
+              {anyChecking ? 'Checking...' : allOk ? 'All Systems Operational' : 'Some Issues Detected'}
+            </span>
+          </div>
         </div>
 
-        {/* API Health Checks */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-lg font-semibold mb-4">API Endpoints</h2>
-          <div className="space-y-3">
-            {apis.map((api) => (
-              <div key={api.name} className="flex items-center justify-between py-2 border-b last:border-0">
-                <div>
-                  <p className="font-medium text-sm">{api.name}</p>
-                  <p className="text-xs text-gray-400 font-mono">{api.url}</p>
+        {/* Individual Checks */}
+        <div className="bg-white rounded-xl shadow-sm border border-cream/30 overflow-hidden">
+          <div className="p-6">
+            <h2 className="text-lg font-semibold mb-4 text-text">Supabase Backend</h2>
+            <div className="space-y-3">
+              {checks.map((check) => (
+                <div key={check.name} className="flex items-center justify-between py-3 border-b border-cream/30 last:border-0">
+                  <span className="font-medium text-sm text-text">{check.name}</span>
+                  <div className="flex items-center gap-2">
+                    {check.status === 'checking' ? (
+                      <Loader2 className="w-4 h-4 animate-spin text-yellow-500" />
+                    ) : check.status === 'ok' ? (
+                      <CheckCircle2 className="w-4 h-4 text-green-500" />
+                    ) : (
+                      <XCircle className="w-4 h-4 text-red-500" />
+                    )}
+                    <span className={`text-xs font-mono ${
+                      check.status === 'ok' ? 'text-green-600' :
+                      check.status === 'error' ? 'text-red-600' : 'text-yellow-600'
+                    }`}>
+                      {check.status === 'checking' ? 'Checking...' : check.message}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className={`inline-block w-2.5 h-2.5 rounded-full ${
-                    api.status === 'checking' ? 'bg-yellow-400 animate-pulse' :
-                    api.status === 'ok' ? 'bg-green-500' : 'bg-red-500'
-                  }`} />
-                  <span className={`text-xs font-mono ${
-                    api.status === 'ok' ? 'text-green-600' :
-                    api.status === 'error' ? 'text-red-600' : 'text-yellow-600'
-                  }`}>
-                    {api.status === 'checking' ? 'Checking...' : api.message}
-                  </span>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </div>

@@ -2,36 +2,50 @@
 
 import { useState } from "react";
 import { ProductCard } from "@/components/product/ProductCard";
-import products from "@/data/products.json";
-import { ArrowUpDown, ChevronLeft } from "lucide-react";
+import { useSupabaseQuery } from "@/hooks/useSupabase";
+import { getProductsByCategorySlug } from "@/lib/services/products";
+import { getCategoryBySlug } from "@/lib/services/categories";
+import type { ProductWithCategory } from "@/types";
+import { ArrowUpDown, ChevronLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 
-function slugify(text: string) {
-  return text.toLowerCase().replace(/ /g, "-").replace(/\./g, "");
+function toCardProduct(product: ProductWithCategory) {
+  return {
+    id: product.id,
+    name: product.name,
+    slug: product.slug,
+    price: Number(product.price),
+    image: product.image_url || '',
+    category: product.category?.name || '',
+  };
 }
 
-// Map slugs back to category names
-const getCategoryFromSlug = (slug: string) => {
-  const categories = Array.from(new Set(products.map((p) => p.category)));
-  return categories.find((c) => slugify(c) === slug);
-};
-
 export default function ShopCategoryClient({ slug }: { slug: string }) {
-  const categoryName = getCategoryFromSlug(slug);
+  const { data: category, loading: loadingCategory } = useSupabaseQuery(
+    () => getCategoryBySlug(slug), [slug]
+  );
+  const { data: products, loading: loadingProducts } = useSupabaseQuery(
+    () => getProductsByCategorySlug(slug), [slug]
+  );
   const [sortBy, setSortBy] = useState<"price-asc" | "price-desc" | null>(null);
 
-  if (!categoryName) {
+  if (loadingCategory || loadingProducts) {
+    return (
+      <div className="min-h-screen bg-cream flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-coral" />
+      </div>
+    );
+  }
+
+  if (!category) {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-text mb-4">Category Not Found</h1>
           <p className="text-text-muted mb-6">
-            We couldn't find the category you're looking for.
+            We couldn&apos;t find the category you&apos;re looking for.
           </p>
-          <Link
-            href="/shop"
-            className="inline-flex items-center gap-2 text-coral hover:underline"
-          >
+          <Link href="/shop" className="inline-flex items-center gap-2 text-coral hover:underline">
             <ChevronLeft className="w-4 h-4" />
             Back to Shop
           </Link>
@@ -40,51 +54,39 @@ export default function ShopCategoryClient({ slug }: { slug: string }) {
     );
   }
 
-  const filteredProducts = products.filter((p) => p.category === categoryName);
-
-  const sortedProducts = [...filteredProducts].sort((a, b) => {
-    if (sortBy === "price-asc") return a.price - b.price;
-    if (sortBy === "price-desc") return b.price - a.price;
+  const allProducts = products || [];
+  const sortedProducts = [...allProducts].sort((a, b) => {
+    if (sortBy === "price-asc") return Number(a.price) - Number(b.price);
+    if (sortBy === "price-desc") return Number(b.price) - Number(a.price);
     return 0;
   });
 
   return (
     <div className="shop-category-page min-h-screen bg-cream">
-      {/* Hero Banner */}
       <div className="bg-coral/10 py-12">
         <div className="container mx-auto px-4 max-w-7xl">
-          <Link
-            href="/shop"
-            className="inline-flex items-center gap-2 text-coral hover:underline mb-4"
-          >
+          <Link href="/shop" className="inline-flex items-center gap-2 text-coral hover:underline mb-4">
             <ChevronLeft className="w-4 h-4" />
             Back to Shop
           </Link>
           <h1 className="text-4xl md:text-5xl font-bold text-text font-serif mb-4">
-            {categoryName}
+            {category.name}
           </h1>
           <p className="text-text-muted text-lg max-w-2xl">
-            Browse our collection of {categoryName.toLowerCase()}. Each piece is handcrafted
-            by skilled artisans from Aluva, Kerala.
+            {category.description || `Browse our collection of ${category.name.toLowerCase()}. Each piece is handcrafted by skilled artisans from Aluva, Kerala.`}
           </p>
         </div>
       </div>
 
       <div className="container mx-auto px-4 max-w-7xl py-8">
-        {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <p className="text-text-muted">
             Showing <span className="font-semibold text-text">{sortedProducts.length}</span> products
           </p>
-
           <div className="relative">
             <select
               className="appearance-none bg-white border border-gray-200 px-4 py-2 rounded-lg pr-10 cursor-pointer focus:ring-2 focus:ring-coral focus:border-transparent"
-              onChange={(e) =>
-                setSortBy(
-                  e.target.value === "" ? null : (e.target.value as typeof sortBy)
-                )
-              }
+              onChange={(e) => setSortBy(e.target.value === "" ? null : (e.target.value as typeof sortBy))}
               value={sortBy || ""}
             >
               <option value="">Sort: Featured</option>
@@ -95,11 +97,10 @@ export default function ShopCategoryClient({ slug }: { slug: string }) {
           </div>
         </div>
 
-        {/* Products Grid */}
         {sortedProducts.length > 0 ? (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {sortedProducts.map((product) => (
-              <ProductCard key={product.id} product={product} variant="white" />
+              <ProductCard key={product.id} product={toCardProduct(product)} variant="white" />
             ))}
           </div>
         ) : (

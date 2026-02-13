@@ -3,23 +3,22 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "concurrently --names \"NEXT,PHP\" --prefix-colors \"cyan,yellow\" --kill-others-on-fail \"npm run dev:next\" \"npm run dev:backend\"",
-    "dev:next": "next dev --webpack",
-    "dev:backend": "node scripts/start-backend.js",
-    "dev:php": "php -S localhost:8080 -t admin",
-    "check:php": "php --version || echo 'PHP not installed. Install with: sudo apt install php-cli'",
+    "dev": "next dev --webpack",
     "build": "next build --webpack",
     "build:static": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "migrate": "npx tsx --env-file=.env.local scripts/migrate-to-supabase.ts"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.95.3",
     "clsx": "^2.1.1",
     "embla-carousel-react": "^8.6.0",
     "lucide-react": "^0.562.0",
     "next": "16.1.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "react-hot-toast": "^2.6.0",
     "tailwind-merge": "^3.4.0"
   },
   "devDependencies": {
@@ -27,8 +26,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "concurrently": "^9.2.1",
-    "eslint": "^9",
+"eslint": "^9",
     "eslint-config-next": "16.1.1",
     "tailwindcss": "^4",
     "typescript": "^5"

@@ -4,13 +4,45 @@ import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
-import { Trash2, Plus, Minus, MessageCircle } from "lucide-react";
+import { Trash2, Plus, Minus, MessageCircle, ShoppingBag, ImageOff } from "lucide-react";
+import { useState } from "react";
+
+function CartItemImage({ src, alt }: { src: string; alt: string }) {
+  const [imageError, setImageError] = useState(false);
+
+  let imagePath = src || '';
+  if (imagePath.startsWith('blob:') || imagePath.startsWith('data:')) {
+    imagePath = '';
+  }
+  const imageUrl = imagePath && (imagePath.startsWith('/images/') || imagePath.startsWith('https://'))
+    ? imagePath
+    : '';
+
+  if (!imageUrl || imageError) {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
+        <ImageOff className="w-8 h-8 text-gray-400" />
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      src={imageUrl}
+      alt={alt}
+      fill
+      className="object-cover"
+      onError={() => setImageError(true)}
+      unoptimized
+    />
+  );
+}
 
 export default function CartPage() {
     const { items, updateQuantity, removeFromCart, cartTotal } = useCart();
 
     const handleWhatsAppCheckout = () => {
-        const phoneNumber = "919745512345"; // Replace with actual number
+        const phoneNumber = "919745512345";
 
         let message = "Hi, I want to order:\n\n";
         items.forEach(item => {
@@ -26,7 +58,7 @@ export default function CartPage() {
         return (
             <div className="cart-page cart-page--empty container mx-auto px-4 max-w-7xl py-20 text-center">
                 <h1 className="cart-page__empty-title text-3xl font-bold mb-6 text-text">Your Cart is Empty</h1>
-                <p className="cart-page__empty-message text-text-muted mb-8">Looks like you haven't added any authentic mundus yet.</p>
+                <p className="cart-page__empty-message text-text-muted mb-8">Looks like you haven&apos;t added any authentic mundus yet.</p>
                 <Link href="/shop" className="cart-page__empty-cta">
                     <Button size="lg" variant="primary">Start Shopping</Button>
                 </Link>
@@ -43,12 +75,7 @@ export default function CartPage() {
                     {items.map((item) => (
                         <div key={item.id} className="cart-page__item flex gap-4 p-4 bg-white rounded-lg shadow-sm border border-cream/30 items-center">
                             <div className="cart-page__item-image-wrapper relative w-20 h-24 bg-cream/30 rounded-md overflow-hidden flex-shrink-0">
-                                <Image
-                                    src={`https://placehold.co/600x800/E8657B/FFF?text=${encodeURIComponent(item.name.replace(/ /g, '+'))}`}
-                                    alt={item.name}
-                                    fill
-                                    className="cart-page__item-image object-cover"
-                                />
+                                <CartItemImage src={item.image} alt={item.name} />
                             </div>
 
                             <div className="cart-page__item-info flex-1">
@@ -97,7 +124,7 @@ export default function CartPage() {
                             </div>
                             <div className="cart-page__summary-row flex justify-between text-text-muted">
                                 <span className="cart-page__summary-label">Shipping</span>
-                                <span className="cart-page__summary-value text-green-600">Calculated on WhatsApp</span>
+                                <span className="cart-page__summary-value text-green-600">Calculated at checkout</span>
                             </div>
                             <div className="cart-page__summary-total border-t border-cream/30 pt-4 flex justify-between font-bold text-lg text-orange">
                                 <span className="cart-page__summary-total-label">Total</span>
@@ -105,16 +132,26 @@ export default function CartPage() {
                             </div>
                         </div>
 
+                        <Link href="/checkout">
+                            <Button
+                                size="lg"
+                                variant="primary"
+                                className="cart-page__checkout-btn w-full flex items-center justify-center gap-2 h-12 mb-3"
+                            >
+                                <ShoppingBag className="h-5 w-5" /> Proceed to Checkout
+                            </Button>
+                        </Link>
+
                         <Button
                             size="lg"
                             variant="secondary"
-                            className="cart-page__checkout-btn w-full flex items-center justify-center gap-2 h-12"
+                            className="cart-page__whatsapp-btn w-full flex items-center justify-center gap-2 h-12"
                             onClick={handleWhatsAppCheckout}
                         >
                             Order on WhatsApp <MessageCircle className="h-5 w-5" />
                         </Button>
                         <p className="cart-page__checkout-note text-xs text-text-muted text-center mt-4">
-                            Clicking this will open WhatsApp with your order details pre-filled.
+                            Checkout online or order directly via WhatsApp.
                         </p>
                     </div>
                 </div>

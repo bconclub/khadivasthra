@@ -32,8 +32,8 @@ export function ProductCard({ product, variant = "white", showHeart = false }: P
       imagePath = '';
     }
 
-    // Use the path as-is if it's a valid /images/ path, otherwise use placeholder
-    const imageUrl = imagePath && imagePath.startsWith('/images/')
+    // Use the path as-is if it's a valid /images/ or https:// path, otherwise use placeholder
+    const imageUrl = imagePath && (imagePath.startsWith('/images/') || imagePath.startsWith('https://'))
       ? imagePath
       : `https://placehold.co/600x800/E8657B/FFF?text=${encodeURIComponent(product.name.replace(/ /g, '+'))}`;
 
