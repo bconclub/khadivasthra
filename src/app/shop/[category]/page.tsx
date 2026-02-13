@@ -1,17 +1,21 @@
-import products from "@/data/products.json";
+import { createClient } from '@supabase/supabase-js';
 import ShopCategoryClient from "./ShopCategoryClient";
 
-function slugify(text: string) {
-  return text.toLowerCase().replace(/ /g, "-").replace(/\./g, "");
-}
+export async function generateStaticParams() {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const { data: categories } = await supabase
+    .from('categories')
+    .select('slug');
 
-// Generate static params for all categories
-export function generateStaticParams() {
-  const categories = Array.from(new Set(products.map((p) => p.category)));
-  return categories.map((category) => ({
-    category: slugify(category),
+  return (categories || []).map((cat) => ({
+    category: cat.slug,
   }));
 }
+
+export const dynamicParams = false;
 
 export default async function ShopCategoryPage({
   params,

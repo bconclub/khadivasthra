@@ -1,7 +1,16 @@
-import products from "@/data/products.json";
+import { createClient } from '@supabase/supabase-js';
 
-export function generateStaticParams() {
-  return products.map((product) => ({
+export async function generateStaticParams() {
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const { data: products } = await supabase
+    .from('products')
+    .select('slug')
+    .eq('is_active', true);
+
+  return (products || []).map((product) => ({
     slug: product.slug,
   }));
 }
