@@ -8,7 +8,7 @@ import { getProducts } from "@/lib/services/products";
 import { getCategories } from "@/lib/services/categories";
 import { createProduct, updateProduct, deleteProduct } from "@/lib/services/admin";
 import type { Product } from "@/types";
-import { Plus, Search, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Loader2, Eye, EyeOff, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 
@@ -51,6 +51,28 @@ export default function AdminProductsPage() {
       refetch();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Delete failed");
+    }
+  };
+
+  const toggleActive = async (product: Product) => {
+    try {
+      const newState = !product.is_active;
+      await updateProduct(product.id, { is_active: newState });
+      toast.success(newState ? `"${product.name}" is now visible` : `"${product.name}" is now hidden`);
+      refetch();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update");
+    }
+  };
+
+  const toggleFeatured = async (product: Product) => {
+    try {
+      const newState = !product.is_featured;
+      await updateProduct(product.id, { is_featured: newState });
+      toast.success(newState ? `"${product.name}" marked as featured` : `"${product.name}" removed from featured`);
+      refetch();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update");
     }
   };
 
@@ -132,7 +154,7 @@ export default function AdminProductsPage() {
                   <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
                     <th className="px-6 py-3">Product</th>
                     <th className="px-6 py-3">Price</th>
-                    <th className="px-6 py-3">Status</th>
+                    <th className="px-6 py-3">Visible</th>
                     <th className="px-6 py-3">Featured</th>
                     <th className="px-6 py-3 text-right">Actions</th>
                   </tr>
@@ -146,7 +168,7 @@ export default function AdminProductsPage() {
                     </tr>
                   ) : (
                     filtered.map((product) => (
-                      <tr key={product.id} className="hover:bg-gray-50">
+                      <tr key={product.id} className={`hover:bg-gray-50 ${!product.is_active ? 'opacity-60' : ''}`}>
                         <td className="px-6 py-4">
                           <div>
                             <p className="font-medium text-gray-900 line-clamp-1">{product.name}</p>
@@ -157,26 +179,49 @@ export default function AdminProductsPage() {
                           ₹{Number(product.price).toLocaleString()}
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                            product.is_active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
-                          }`}>
-                            {product.is_active ? "Active" : "Draft"}
-                          </span>
+                          <button
+                            onClick={() => toggleActive(product)}
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
+                              product.is_active
+                                ? "bg-green-100 text-green-700 hover:bg-green-200"
+                                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                            }`}
+                            title={product.is_active ? "Click to hide" : "Click to show"}
+                          >
+                            {product.is_active ? (
+                              <><Eye className="w-3.5 h-3.5" /> Visible</>
+                            ) : (
+                              <><EyeOff className="w-3.5 h-3.5" /> Hidden</>
+                            )}
+                          </button>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-500">
-                          {product.is_featured ? "★" : "—"}
+                        <td className="px-6 py-4">
+                          <button
+                            onClick={() => toggleFeatured(product)}
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
+                              product.is_featured
+                                ? "bg-amber-100 text-amber-700 hover:bg-amber-200"
+                                : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                            }`}
+                            title={product.is_featured ? "Remove from featured" : "Mark as featured"}
+                          >
+                            <Star className={`w-3.5 h-3.5 ${product.is_featured ? 'fill-amber-500' : ''}`} />
+                            {product.is_featured ? "Featured" : "Not featured"}
+                          </button>
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => openEdit(product)}
                               className="p-2 text-gray-400 hover:text-coral rounded-lg hover:bg-gray-100 transition-colors"
+                              title="Edit product"
                             >
                               <Pencil className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDelete(product)}
                               className="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-gray-100 transition-colors"
+                              title="Delete product"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
