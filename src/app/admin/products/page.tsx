@@ -154,6 +154,7 @@ export default function AdminProductsPage() {
                   <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
                     <th className="px-6 py-3">Product</th>
                     <th className="px-6 py-3">Price</th>
+                    <th className="px-6 py-3">Stock</th>
                     <th className="px-6 py-3">Visible</th>
                     <th className="px-6 py-3">Featured</th>
                     <th className="px-6 py-3 text-right">Actions</th>
@@ -162,7 +163,7 @@ export default function AdminProductsPage() {
                 <tbody className="divide-y divide-gray-100">
                   {filtered.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-gray-400">
+                      <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
                         No products found
                       </td>
                     </tr>
@@ -177,6 +178,17 @@ export default function AdminProductsPage() {
                         </td>
                         <td className="px-6 py-4 text-sm font-medium text-gray-900">
                           ₹{Number(product.price).toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
+                            (product.stock_quantity || 0) > 10
+                              ? 'bg-green-100 text-green-700'
+                              : (product.stock_quantity || 0) > 0
+                                ? 'bg-amber-100 text-amber-700'
+                                : 'bg-red-100 text-red-600'
+                          }`}>
+                            {(product.stock_quantity || 0) > 0 ? product.stock_quantity : 'Out'}
+                          </span>
                         </td>
                         <td className="px-6 py-4">
                           <button

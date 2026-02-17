@@ -19,6 +19,7 @@ function toCardProduct(product: ProductWithCategory) {
     slug: product.slug,
     price: Number(product.price),
     compare_price: product.compare_price ? Number(product.compare_price) : null,
+    in_stock: product.in_stock,
     image: product.image_url || '',
     category: product.category?.name || '',
   };
@@ -198,15 +199,21 @@ export default function ProductDetailPage() {
                                     </button>
                                 </div>
                             </div>
-                            <Button
-                                size="lg"
-                                variant="primary"
-                                className="w-full text-lg h-14 font-semibold shadow-lg shadow-coral/20 hover:shadow-coral/30 transition-all"
-                                onClick={handleAddToCart}
-                            >
-                                <ShoppingBag className="mr-2 h-5 w-5" />
-                                Add to Cart
-                            </Button>
+                            {product.in_stock === false ? (
+                              <div className="w-full text-lg h-14 font-semibold bg-gray-200 text-gray-500 rounded-lg flex items-center justify-center">
+                                Out of Stock
+                              </div>
+                            ) : (
+                              <Button
+                                  size="lg"
+                                  variant="primary"
+                                  className="w-full text-lg h-14 font-semibold shadow-lg shadow-coral/20 hover:shadow-coral/30 transition-all"
+                                  onClick={handleAddToCart}
+                              >
+                                  <ShoppingBag className="mr-2 h-5 w-5" />
+                                  Add to Cart
+                              </Button>
+                            )}
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">

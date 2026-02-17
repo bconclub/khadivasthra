@@ -52,7 +52,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const [isFeatured, setIsFeatured] = useState(product?.is_featured || false);
   const [isBestSeller, setIsBestSeller] = useState(product?.is_best_seller || false);
   const [isActive, setIsActive] = useState(product?.is_active !== false);
-  const [inStock, setInStock] = useState(product?.in_stock !== false);
+  const [stockQuantity, setStockQuantity] = useState(product?.stock_quantity?.toString() || "0");
   const [careInstructions, setCareInstructions] = useState<string[]>(
     product?.care_instructions || ["Hand wash cold", "Dry in shade"]
   );
@@ -124,7 +124,8 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         is_featured: isFeatured,
         is_best_seller: isBestSeller,
         is_active: isActive,
-        in_stock: inStock,
+        stock_quantity: parseInt(stockQuantity) || 0,
+        in_stock: (parseInt(stockQuantity) || 0) > 0,
         care_instructions: careInstructions.filter(Boolean),
       });
     } catch (err) {
@@ -248,7 +249,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         </div>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-3 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Category *</label>
           <select
@@ -274,6 +275,20 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
             className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
             placeholder="e.g., 100% Cotton"
           />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Stock Quantity</label>
+          <input
+            type="number"
+            min="0"
+            value={stockQuantity}
+            onChange={(e) => setStockQuantity(e.target.value)}
+            className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
+            placeholder="0"
+          />
+          <p className={`text-xs mt-1 ${(parseInt(stockQuantity) || 0) > 0 ? 'text-green-600' : 'text-red-500'}`}>
+            {(parseInt(stockQuantity) || 0) > 0 ? `${stockQuantity} in stock` : 'Out of stock'}
+          </p>
         </div>
       </div>
 
@@ -386,10 +401,6 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         <label className="flex items-center gap-2 cursor-pointer">
           <input type="checkbox" checked={isActive} onChange={(e) => setIsActive(e.target.checked)} className="rounded border-gray-300 text-coral focus:ring-coral" />
           <span className="text-sm text-gray-700">Active</span>
-        </label>
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" checked={inStock} onChange={(e) => setInStock(e.target.checked)} className="rounded border-gray-300 text-coral focus:ring-coral" />
-          <span className="text-sm text-gray-700">In Stock</span>
         </label>
       </div>
 

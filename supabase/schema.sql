@@ -30,6 +30,7 @@ CREATE TABLE products (
   care_instructions TEXT[] DEFAULT '{}',
   details JSONB,
   in_stock BOOLEAN NOT NULL DEFAULT true,
+  stock_quantity INTEGER NOT NULL DEFAULT 0,
   is_active BOOLEAN NOT NULL DEFAULT true,
   is_featured BOOLEAN NOT NULL DEFAULT false,
   is_new BOOLEAN NOT NULL DEFAULT false,

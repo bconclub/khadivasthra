@@ -36,6 +36,7 @@ export interface Product {
   care_instructions: string[];
   details: ProductDetails | null;
   in_stock: boolean;
+  stock_quantity: number;
   is_active: boolean;
   is_featured: boolean;
   is_new: boolean;

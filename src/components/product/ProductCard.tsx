@@ -14,6 +14,7 @@ interface ProductCardProps {
         slug?: string;
         price: number;
         compare_price?: number | null;
+        in_stock?: boolean;
         image: string;
         category: string;
     };
@@ -50,6 +51,8 @@ export function ProductCard({ product, variant = "white", showHeart = false }: P
       ? Math.round(((product.compare_price! - product.price) / product.compare_price!) * 100)
       : 0;
 
+    const isOutOfStock = product.in_stock === false;
+
     return (
         <div className={`product-card group relative ${cardBg} rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 border ${borderColor} hover:border-coral/30 flex flex-col h-full`}>
             <Link href={`/product/${product.slug || product.id}`} className="product-card__image-link block relative aspect-[2/3] overflow-hidden bg-cream/30">
@@ -70,9 +73,18 @@ export function ProductCard({ product, variant = "white", showHeart = false }: P
                 )}
 
                 {/* Discount Badge */}
-                {hasDiscount && (
+                {hasDiscount && !isOutOfStock && (
                     <div className="absolute top-3 left-3 bg-coral text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-md">
                         {discountPercent}% OFF
+                    </div>
+                )}
+
+                {/* Out of Stock overlay */}
+                {isOutOfStock && (
+                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                        <span className="bg-white/90 text-gray-700 text-sm font-bold px-4 py-2 rounded-full shadow">
+                            Out of Stock
+                        </span>
                     </div>
                 )}
 
@@ -107,13 +119,14 @@ export function ProductCard({ product, variant = "white", showHeart = false }: P
                     <Button
                         size="sm"
                         variant="outline"
-                        className="product-card__add-button rounded-full px-4"
+                        className={`product-card__add-button rounded-full px-4 ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        disabled={isOutOfStock}
                         onClick={(e) => {
                             e.preventDefault();
-                            addToCart(product);
+                            if (!isOutOfStock) addToCart(product);
                         }}
                     >
-                        Add
+                        {isOutOfStock ? 'Sold Out' : 'Add'}
                     </Button>
                 </div>
             </div>
