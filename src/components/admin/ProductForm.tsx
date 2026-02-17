@@ -32,8 +32,19 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const [slug, setSlug] = useState(product?.slug || "");
   const [description, setDescription] = useState(product?.description || "");
   const [longDescription, setLongDescription] = useState(product?.long_description || "");
-  const [price, setPrice] = useState(product?.price?.toString() || "");
-  const [comparePrice, setComparePrice] = useState(product?.compare_price?.toString() || "");
+  // Pricing: MRP is the base, discount % is selected, sale price is calculated
+  const [comparePrice, setComparePrice] = useState(product?.compare_price?.toString() || product?.price?.toString() || "");
+  // Calculate initial discount from existing product data
+  const initialDiscount = (() => {
+    if (product?.compare_price && product?.price && Number(product.compare_price) > Number(product.price)) {
+      const raw = Math.round(((Number(product.compare_price) - Number(product.price)) / Number(product.compare_price)) * 100);
+      // Snap to nearest 5
+      const snapped = Math.round(raw / 5) * 5;
+      return Math.min(30, Math.max(0, snapped));
+    }
+    return 0;
+  })();
+  const [discountPct, setDiscountPct] = useState(initialDiscount);
   const [categoryId, setCategoryId] = useState(product?.category_id || "");
   const [material, setMaterial] = useState(product?.material || "");
   const [imageUrl, setImageUrl] = useState(product?.image_url || "");
@@ -48,13 +59,12 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
-  // Discount preview
-  const priceNum = parseFloat(price) || 0;
-  const comparePriceNum = parseFloat(comparePrice) || 0;
-  const hasDiscount = comparePriceNum > 0 && comparePriceNum > priceNum && priceNum > 0;
-  const discountPercent = hasDiscount
-    ? Math.round(((comparePriceNum - priceNum) / comparePriceNum) * 100)
-    : 0;
+  // Calculate sale price from MRP and discount
+  const mrpNum = parseFloat(comparePrice) || 0;
+  const calculatedSalePrice = discountPct > 0 && mrpNum > 0
+    ? Math.round(mrpNum * (1 - discountPct / 100))
+    : mrpNum;
+  const hasDiscount = discountPct > 0 && mrpNum > 0;
 
   const handleNameChange = (value: string) => {
     setName(value);
@@ -93,8 +103,8 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
     e.preventDefault();
     setError("");
 
-    if (!name || !price || !categoryId) {
-      setError("Name, sale price, and category are required.");
+    if (!name || !mrpNum || !categoryId) {
+      setError("Name, MRP, and category are required.");
       return;
     }
 
@@ -105,8 +115,8 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         slug,
         description,
         long_description: longDescription,
-        price: parseFloat(price),
-        compare_price: comparePrice ? parseFloat(comparePrice) : null,
+        price: calculatedSalePrice,
+        compare_price: hasDiscount ? mrpNum : null,
         category_id: categoryId,
         material,
         image_url: imageUrl,
@@ -193,39 +203,45 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         <label className="block text-sm font-medium text-gray-700 mb-3">Pricing</label>
         <div className="grid md:grid-cols-3 gap-4 items-end">
           <div>
-            <label className="block text-xs text-gray-500 mb-1">Sale Price (₹) *</label>
+            <label className="block text-xs text-gray-500 mb-1">MRP (₹) *</label>
             <input
               type="number"
               required
-              step="0.01"
-              value={price}
-              onChange={(e) => setPrice(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
-              placeholder="What customer pays"
-            />
-          </div>
-          <div>
-            <label className="block text-xs text-gray-500 mb-1">MRP / Original Price (₹)</label>
-            <input
-              type="number"
-              step="0.01"
+              step="1"
               value={comparePrice}
               onChange={(e) => setComparePrice(e.target.value)}
-              className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
-              placeholder="Shown crossed out"
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent text-lg font-semibold"
+              placeholder="Original price"
             />
           </div>
           <div>
-            {hasDiscount ? (
-              <div className="bg-green-50 border border-green-200 rounded-lg px-3 py-2 text-center">
-                <span className="text-green-700 font-bold text-lg">{discountPercent}% OFF</span>
-                <p className="text-xs text-green-600">
-                  <span className="line-through">₹{comparePriceNum}</span> → ₹{priceNum}
-                </p>
+            <label className="block text-xs text-gray-500 mb-1">Discount %</label>
+            <select
+              value={discountPct}
+              onChange={(e) => setDiscountPct(Number(e.target.value))}
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent text-lg font-semibold"
+            >
+              {[0, 5, 10, 15, 20, 25, 30].map((pct) => (
+                <option key={pct} value={pct}>
+                  {pct === 0 ? "No discount" : `${pct}% OFF`}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div>
+            {mrpNum > 0 ? (
+              <div className={`${hasDiscount ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200'} border rounded-lg px-3 py-2 text-center`}>
+                <p className="text-xs text-gray-500 mb-0.5">Selling Price</p>
+                <span className={`font-bold text-xl ${hasDiscount ? 'text-green-700' : 'text-gray-700'}`}>₹{calculatedSalePrice}</span>
+                {hasDiscount && (
+                  <p className="text-xs text-green-600">
+                    <span className="line-through">₹{mrpNum}</span> → ₹{calculatedSalePrice}
+                  </p>
+                )}
               </div>
             ) : (
               <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-center text-sm text-gray-400">
-                Set MRP higher than sale price to show discount
+                Enter MRP to see selling price
               </div>
             )}
           </div>
