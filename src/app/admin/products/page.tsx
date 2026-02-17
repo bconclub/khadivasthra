@@ -43,6 +43,11 @@ export default function AdminProductsPage() {
     refetch();
   };
 
+  const closeForm = () => {
+    setShowForm(false);
+    setEditingProduct(undefined);
+  };
+
   const handleDelete = async (product: Product) => {
     if (!confirm(`Delete "${product.name}"? This cannot be undone.`)) return;
     try {
@@ -84,11 +89,6 @@ export default function AdminProductsPage() {
   const openCreate = () => {
     setEditingProduct(undefined);
     setShowForm(true);
-  };
-
-  const closeForm = () => {
-    setShowForm(false);
-    setEditingProduct(undefined);
   };
 
   return (

@@ -3,12 +3,34 @@ import type { Product, Category, ProductFormData, CategoryFormData } from '@/typ
 
 // Products CRUD
 export async function createProduct(data: ProductFormData): Promise<Product> {
+  // Check if slug already exists; if so, append a number to make it unique
+  let slug = data.slug;
+  const { count } = await supabase
+    .from('products')
+    .select('*', { count: 'exact', head: true })
+    .eq('slug', slug);
+  if (count && count > 0) {
+    let suffix = 2;
+    while (true) {
+      const candidate = `${slug}-${suffix}`;
+      const { count: c } = await supabase
+        .from('products')
+        .select('*', { count: 'exact', head: true })
+        .eq('slug', candidate);
+      if (!c || c === 0) { slug = candidate; break; }
+      suffix++;
+    }
+  }
+
   const { data: product, error } = await supabase
     .from('products')
-    .insert(data)
+    .insert({ ...data, slug })
     .select()
     .single();
-  if (error) throw error;
+  if (error) {
+    if (error.code === '23505') throw new Error(`A product with this slug already exists. Please use a different name.`);
+    throw error;
+  }
   return product;
 }
 
