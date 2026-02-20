@@ -109,24 +109,24 @@ export function ProductCard({ product, variant = "white", showHeart = false }: P
                 <Link href={`/product/${product.slug || product.id}`} className="product-card__name-link flex-grow">
                     <h3 className="product-card__name font-bold text-lg text-text font-serif leading-tight hover:text-coral transition-colors line-clamp-2" title={product.name}>{product.name}</h3>
                 </Link>
-                <div className={`product-card__footer mt-4 pt-4 border-t ${borderColor} flex items-center justify-between`}>
-                    <div className="product-card__pricing">
+                <div className={`product-card__footer mt-4 pt-4 border-t ${borderColor} flex flex-col gap-3`}>
+                    <div className="product-card__pricing flex items-baseline flex-wrap gap-x-2 gap-y-0">
                         <span className="product-card__price font-bold text-xl text-orange font-serif">₹{product.price}</span>
                         {hasDiscount && (
-                            <span className="product-card__compare-price text-sm text-text-muted line-through ml-2">₹{product.compare_price}</span>
+                            <span className="product-card__compare-price text-sm text-text-muted line-through">₹{product.compare_price}</span>
                         )}
                     </div>
                     <Button
                         size="sm"
                         variant="outline"
-                        className={`product-card__add-button rounded-full px-4 ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`product-card__add-button rounded-full w-full ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''}`}
                         disabled={isOutOfStock}
                         onClick={(e) => {
                             e.preventDefault();
                             if (!isOutOfStock) addToCart(product);
                         }}
                     >
-                        {isOutOfStock ? 'Sold Out' : 'Add'}
+                        {isOutOfStock ? 'Sold Out' : 'Add to Cart'}
                     </Button>
                 </div>
             </div>
