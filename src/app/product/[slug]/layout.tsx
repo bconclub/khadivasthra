@@ -7,8 +7,7 @@ export async function generateStaticParams() {
   );
   const { data: products } = await supabase
     .from('products')
-    .select('slug')
-    .eq('is_active', true);
+    .select('slug');
 
   return (products || []).map((product) => ({
     slug: product.slug,
