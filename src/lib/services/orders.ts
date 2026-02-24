@@ -76,18 +76,43 @@ export async function updateOrderStatus(id: string, status: string): Promise<voi
   if (error) throw error;
 }
 
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+async function invokeEdgeFunction(functionName: string, body: Record<string, unknown>) {
+  const url = `${SUPABASE_URL}/functions/v1/${functionName}`;
+  console.log(`Calling edge function: ${url}`);
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'apikey': SUPABASE_ANON_KEY,
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    console.error(`Edge function ${functionName} error:`, res.status, data);
+    throw new Error(data?.error || `Edge function failed (${res.status})`);
+  }
+
+  if (data?.error) {
+    throw new Error(data.error);
+  }
+
+  return data;
+}
+
 export async function createRazorpayOrder(
   orderId: string,
   amount: number,
   currency: string = 'INR'
 ): Promise<{ razorpay_order_id: string; amount: number; currency: string }> {
-  const { data, error } = await supabase.functions.invoke('create-razorpay-order', {
-    body: { order_id: orderId, amount, currency },
-  });
-
-  if (error) throw new Error(error.message || 'Failed to create payment order');
-  if (data?.error) throw new Error(data.error);
-  return data;
+  return invokeEdgeFunction('create-razorpay-order', { order_id: orderId, amount, currency });
 }
 
 export async function verifyRazorpayPayment(
@@ -96,16 +121,10 @@ export async function verifyRazorpayPayment(
   razorpayPaymentId: string,
   razorpaySignature: string
 ): Promise<{ verified: boolean }> {
-  const { data, error } = await supabase.functions.invoke('verify-razorpay-payment', {
-    body: {
-      order_id: orderId,
-      razorpay_order_id: razorpayOrderId,
-      razorpay_payment_id: razorpayPaymentId,
-      razorpay_signature: razorpaySignature,
-    },
+  return invokeEdgeFunction('verify-razorpay-payment', {
+    order_id: orderId,
+    razorpay_order_id: razorpayOrderId,
+    razorpay_payment_id: razorpayPaymentId,
+    razorpay_signature: razorpaySignature,
   });
-
-  if (error) throw new Error(error.message || 'Payment verification failed');
-  if (data?.error) throw new Error(data.error);
-  return data;
 }
