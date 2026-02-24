@@ -18,6 +18,12 @@ const STATUS_STYLES: Record<string, string> = {
   cancelled: "bg-red-100 text-red-700",
 };
 
+const PAYMENT_STYLES: Record<string, string> = {
+  pending: "bg-yellow-100 text-yellow-700",
+  paid: "bg-green-100 text-green-700",
+  failed: "bg-red-100 text-red-700",
+};
+
 export default function AdminOrdersPage() {
   const { data: orders, loading, refetch } = useSupabaseQuery(getOrders);
   const [statusFilter, setStatusFilter] = useState<string>("");
@@ -109,6 +115,9 @@ export default function AdminOrdersPage() {
                     <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${STATUS_STYLES[order.status] || "bg-gray-100 text-gray-700"}`}>
                       {order.status}
                     </span>
+                    <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${PAYMENT_STYLES[order.payment_status] || "bg-gray-100 text-gray-700"}`}>
+                      {order.payment_status === "paid" ? "Paid" : order.payment_status === "failed" ? "Pay Failed" : "Unpaid"}
+                    </span>
                     <span className="text-xs text-gray-400">
                       {new Date(order.created_at).toLocaleDateString()}
                     </span>
@@ -137,6 +146,28 @@ export default function AdminOrdersPage() {
                           <p><span className="text-gray-500">City:</span> {order.customer_city}, {order.customer_state} - {order.customer_pincode}</p>
                           {order.notes && (
                             <p><span className="text-gray-500">Notes:</span> {order.notes}</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Payment Details */}
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-700 mb-3">Payment Details</h3>
+                        <div className="space-y-2 text-sm mb-4">
+                          <p>
+                            <span className="text-gray-500">Payment Status:</span>{" "}
+                            <span className={`font-medium ${
+                              order.payment_status === "paid" ? "text-green-600" :
+                              order.payment_status === "failed" ? "text-red-600" : "text-yellow-600"
+                            }`}>
+                              {order.payment_status?.toUpperCase() || "PENDING"}
+                            </span>
+                          </p>
+                          {order.razorpay_order_id && (
+                            <p><span className="text-gray-500">Razorpay Order:</span> {order.razorpay_order_id}</p>
+                          )}
+                          {order.razorpay_payment_id && (
+                            <p><span className="text-gray-500">Payment ID:</span> {order.razorpay_payment_id}</p>
                           )}
                         </div>
                       </div>

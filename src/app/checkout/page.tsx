@@ -3,17 +3,23 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
+import { useRazorpay } from "@/hooks/useRazorpay";
 import { Button } from "@/components/ui/button";
-import { createOrder } from "@/lib/services/orders";
+import { createOrder, createRazorpayOrder, verifyRazorpayPayment } from "@/lib/services/orders";
 import Link from "next/link";
 import { ChevronLeft, Loader2, ShoppingBag } from "lucide-react";
-import type { CheckoutFormData } from "@/types";
+import type { CheckoutFormData, Order } from "@/types";
+
+type PaymentStep = "form" | "creating" | "paying";
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, cartTotal, clearCart } = useCart();
+  const { isLoaded: razorpayLoaded, openCheckout } = useRazorpay();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [paymentStep, setPaymentStep] = useState<PaymentStep>("form");
+  const [pendingOrder, setPendingOrder] = useState<Order | null>(null);
   const [form, setForm] = useState<CheckoutFormData>({
     name: "",
     phone: "",
@@ -27,6 +33,60 @@ export default function CheckoutPage() {
 
   const updateField = (field: keyof CheckoutFormData, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const initiatePayment = async (order: Order) => {
+    // Create Razorpay order via edge function
+    const razorpayOrder = await createRazorpayOrder(order.id, order.total);
+
+    setPaymentStep("paying");
+    openCheckout({
+      key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID!,
+      amount: razorpayOrder.amount,
+      currency: razorpayOrder.currency,
+      name: "Khadi Vasthra",
+      description: `Order ${order.order_number}`,
+      order_id: razorpayOrder.razorpay_order_id,
+      prefill: {
+        name: form.name,
+        email: form.email || undefined,
+        contact: form.phone,
+      },
+      theme: { color: "#E8657B" },
+      handler: async (response: RazorpayResponse) => {
+        try {
+          const result = await verifyRazorpayPayment(
+            order.id,
+            response.razorpay_order_id,
+            response.razorpay_payment_id,
+            response.razorpay_signature
+          );
+          if (result.verified) {
+            clearCart();
+            router.push(`/order-success?order=${order.order_number}&paid=true`);
+          } else {
+            setError("Payment verification failed. Please contact support.");
+            setPaymentStep("form");
+            setSubmitting(false);
+          }
+        } catch {
+          setError(
+            "Payment verification failed. Your payment may have been processed. Please contact support with your order number."
+          );
+          setPaymentStep("form");
+          setSubmitting(false);
+        }
+      },
+      modal: {
+        ondismiss: () => {
+          setPaymentStep("form");
+          setSubmitting(false);
+          setError("Payment was not completed. You can retry below.");
+        },
+        confirm_close: true,
+        escape: false,
+      },
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,18 +103,47 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (!razorpayLoaded) {
+      setError("Payment system is loading. Please wait a moment and try again.");
+      return;
+    }
+
     setSubmitting(true);
+    setPaymentStep("creating");
+
     try {
-      const order = await createOrder(form, items, cartTotal);
-      clearCart();
-      router.push(`/order-success?order=${order.order_number}`);
+      // If we have a pending order from a previous attempt, reuse it
+      const order = pendingOrder || await createOrder(form, items, cartTotal);
+      if (!pendingOrder) setPendingOrder(order);
+
+      await initiatePayment(order);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to place order. Please try again.");
+      console.error("Checkout error:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to initiate payment. Please try again."
+      );
+      setPaymentStep("form");
       setSubmitting(false);
     }
   };
 
-  if (items.length === 0) {
+  const handleRetryPayment = async () => {
+    if (!pendingOrder) return;
+    setError("");
+    setSubmitting(true);
+    setPaymentStep("creating");
+    try {
+      await initiatePayment(pendingOrder);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to initiate payment. Please try again."
+      );
+      setPaymentStep("form");
+      setSubmitting(false);
+    }
+  };
+
+  if (items.length === 0 && !pendingOrder) {
     return (
       <div className="min-h-screen bg-cream flex items-center justify-center">
         <div className="text-center">
@@ -68,6 +157,13 @@ export default function CheckoutPage() {
       </div>
     );
   }
+
+  const buttonText =
+    paymentStep === "creating"
+      ? "Creating Order..."
+      : paymentStep === "paying"
+        ? "Complete Payment..."
+        : "Place Order & Pay";
 
   return (
     <div className="min-h-screen bg-cream">
@@ -239,24 +335,47 @@ export default function CheckoutPage() {
                   </div>
                 )}
 
-                <Button
-                  type="submit"
-                  size="lg"
-                  variant="primary"
-                  className="w-full h-14 text-lg font-semibold"
-                  disabled={submitting}
-                >
-                  {submitting ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin mr-2" /> Placing Order...
-                    </>
-                  ) : (
-                    "Place Order"
-                  )}
-                </Button>
+                {pendingOrder && paymentStep === "form" ? (
+                  <Button
+                    type="button"
+                    size="lg"
+                    variant="primary"
+                    className="w-full h-14 text-lg font-semibold"
+                    disabled={submitting}
+                    onClick={handleRetryPayment}
+                  >
+                    Retry Payment
+                  </Button>
+                ) : (
+                  <Button
+                    type="submit"
+                    size="lg"
+                    variant="primary"
+                    className="w-full h-14 text-lg font-semibold"
+                    disabled={submitting || !razorpayLoaded}
+                  >
+                    {submitting ? (
+                      <>
+                        <Loader2 className="w-5 h-5 animate-spin mr-2" /> {buttonText}
+                      </>
+                    ) : !razorpayLoaded ? (
+                      "Loading payment..."
+                    ) : (
+                      buttonText
+                    )}
+                  </Button>
+                )}
 
                 <p className="text-xs text-text-muted text-center mt-3">
-                  We will contact you on WhatsApp to confirm payment and delivery.
+                  Secure payment powered by Razorpay. Having trouble?{" "}
+                  <a
+                    href="https://wa.me/919745512345"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-coral hover:underline"
+                  >
+                    Contact us on WhatsApp
+                  </a>
                 </p>
               </div>
             </div>

@@ -9,8 +9,11 @@ import { Suspense } from "react";
 function OrderSuccessContent() {
   const searchParams = useSearchParams();
   const orderNumber = searchParams.get("order") || "";
+  const isPaid = searchParams.get("paid") === "true";
 
-  const whatsappMessage = `Hi! I just placed an order on Khadi Vasthra. My order number is: ${orderNumber}. Could you confirm the payment details?`;
+  const whatsappMessage = isPaid
+    ? `Hi! I just paid for my order on Khadi Vasthra. My order number is: ${orderNumber}.`
+    : `Hi! I just placed an order on Khadi Vasthra. My order number is: ${orderNumber}. Could you confirm the payment details?`;
   const whatsappUrl = `https://wa.me/919745512345?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
@@ -20,10 +23,12 @@ function OrderSuccessContent() {
           <CheckCircle2 className="w-16 h-16 text-green-500 mx-auto mb-6" />
 
           <h1 className="text-3xl font-bold text-text font-serif mb-2">
-            Order Placed!
+            {isPaid ? "Payment Successful!" : "Order Placed!"}
           </h1>
           <p className="text-text-muted mb-6">
-            Thank you for shopping with Khadi Vasthra.
+            {isPaid
+              ? "Your payment has been confirmed. We'll start processing your order right away."
+              : "Thank you for shopping with Khadi Vasthra."}
           </p>
 
           {orderNumber && (
@@ -34,8 +39,9 @@ function OrderSuccessContent() {
           )}
 
           <p className="text-sm text-text-muted mb-8">
-            We will reach out to you on WhatsApp to confirm payment and delivery details.
-            You can also contact us directly.
+            {isPaid
+              ? "You will receive order updates on your phone. For any queries, feel free to reach out on WhatsApp."
+              : "We will reach out to you on WhatsApp to confirm payment and delivery details. You can also contact us directly."}
           </p>
 
           <div className="space-y-3">

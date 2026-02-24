@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import type { CartItem } from "@/types";
 
 export type { CartItem };
@@ -13,6 +13,9 @@ interface CartContextType {
     clearCart: () => void;
     cartTotal: number;
     cartCount: number;
+    isCartOpen: boolean;
+    openCart: () => void;
+    closeCart: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -20,6 +23,7 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export function CartProvider({ children }: { children: React.ReactNode }) {
     const [items, setItems] = useState<CartItem[]>([]);
     const [isLoaded, setIsLoaded] = useState(false);
+    const [isCartOpen, setIsCartOpen] = useState(false);
 
     // Load from local storage on mount
     useEffect(() => {
@@ -46,6 +50,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }
     }, [items, isLoaded]);
 
+    const openCart = useCallback(() => setIsCartOpen(true), []);
+    const closeCart = useCallback(() => setIsCartOpen(false), []);
+
     const addToCart = (product: { id: string; name: string; slug?: string; price: number; image: string }, quantity = 1) => {
         setItems((prev) => {
             const existing = prev.find((item) => item.id === product.id);
@@ -68,6 +75,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 },
             ];
         });
+        // Auto-open cart drawer when item is added
+        setIsCartOpen(true);
     };
 
     const removeFromCart = (id: string) => {
@@ -94,7 +103,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <CartContext.Provider
-            value={{ items, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal, cartCount }}
+            value={{ items, addToCart, removeFromCart, updateQuantity, clearCart, cartTotal, cartCount, isCartOpen, openCart, closeCart }}
         >
             {children}
         </CartContext.Provider>

@@ -56,6 +56,10 @@ CREATE TABLE orders (
   total NUMERIC(10,2) NOT NULL DEFAULT 0,
   status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','confirmed','shipped','delivered','cancelled')),
   notes TEXT,
+  razorpay_order_id TEXT,
+  razorpay_payment_id TEXT,
+  razorpay_signature TEXT,
+  payment_status TEXT NOT NULL DEFAULT 'pending' CHECK (payment_status IN ('pending','paid','failed')),
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
@@ -92,6 +96,7 @@ CREATE INDEX idx_products_bestseller ON products(is_best_seller) WHERE is_best_s
 CREATE INDEX idx_categories_slug ON categories(slug);
 CREATE INDEX idx_categories_active ON categories(is_active) WHERE is_active = true;
 CREATE INDEX idx_orders_status ON orders(status);
+CREATE INDEX idx_orders_payment_status ON orders(payment_status);
 CREATE INDEX idx_orders_created ON orders(created_at DESC);
 CREATE INDEX idx_product_views_product ON product_views(product_id);
 

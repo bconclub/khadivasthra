@@ -75,3 +75,37 @@ export async function updateOrderStatus(id: string, status: string): Promise<voi
     .eq('id', id);
   if (error) throw error;
 }
+
+export async function createRazorpayOrder(
+  orderId: string,
+  amount: number,
+  currency: string = 'INR'
+): Promise<{ razorpay_order_id: string; amount: number; currency: string }> {
+  const { data, error } = await supabase.functions.invoke('create-razorpay-order', {
+    body: { order_id: orderId, amount, currency },
+  });
+
+  if (error) throw new Error(error.message || 'Failed to create payment order');
+  if (data?.error) throw new Error(data.error);
+  return data;
+}
+
+export async function verifyRazorpayPayment(
+  orderId: string,
+  razorpayOrderId: string,
+  razorpayPaymentId: string,
+  razorpaySignature: string
+): Promise<{ verified: boolean }> {
+  const { data, error } = await supabase.functions.invoke('verify-razorpay-payment', {
+    body: {
+      order_id: orderId,
+      razorpay_order_id: razorpayOrderId,
+      razorpay_payment_id: razorpayPaymentId,
+      razorpay_signature: razorpaySignature,
+    },
+  });
+
+  if (error) throw new Error(error.message || 'Payment verification failed');
+  if (data?.error) throw new Error(data.error);
+  return data;
+}

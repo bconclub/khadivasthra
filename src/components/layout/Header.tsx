@@ -8,7 +8,7 @@ import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 
 export function Header() {
-    const { cartCount } = useCart();
+    const { cartCount, openCart } = useCart();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [showHeaderLogo, setShowHeaderLogo] = useState(false);
@@ -127,20 +127,19 @@ export function Header() {
                     >
                         <Search className="h-5 w-5" />
                     </Button>
-                    <Link href="/cart" className="header__cart-link">
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="header__cart-button relative text-white hover:text-cream hover:bg-white/20"
-                        >
-                            <ShoppingBag className="h-5 w-5" />
-                            {cartCount > 0 && (
-                                <span className="header__cart-badge absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-coral text-[10px] text-white font-bold">
-                                    {cartCount}
-                                </span>
-                            )}
-                        </Button>
-                    </Link>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="header__cart-button relative text-white hover:text-cream hover:bg-white/20"
+                        onClick={openCart}
+                    >
+                        <ShoppingBag className="h-5 w-5" />
+                        {cartCount > 0 && (
+                            <span className="header__cart-badge absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-coral text-[10px] text-white font-bold">
+                                {cartCount}
+                            </span>
+                        )}
+                    </Button>
                 </div>
             </div>
 

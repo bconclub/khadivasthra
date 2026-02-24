@@ -59,6 +59,7 @@ export interface OrderItem {
 }
 
 export type OrderStatus = 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
+export type PaymentStatus = 'pending' | 'paid' | 'failed';
 
 export interface Order {
   id: string;
@@ -76,6 +77,10 @@ export interface Order {
   total: number;
   status: OrderStatus;
   notes: string | null;
+  razorpay_order_id: string | null;
+  razorpay_payment_id: string | null;
+  razorpay_signature: string | null;
+  payment_status: PaymentStatus;
   created_at: string;
   updated_at: string;
 }
