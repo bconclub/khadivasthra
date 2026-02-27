@@ -42,7 +42,7 @@ export default function CartPage() {
     const { items, updateQuantity, removeFromCart, cartTotal } = useCart();
 
     const handleWhatsAppCheckout = () => {
-        const phoneNumber = "919745512345";
+        const phoneNumber = "918714090510";
 
         let message = "Hi, I want to order:\n\n";
         items.forEach(item => {

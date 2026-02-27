@@ -50,8 +50,8 @@ export default function ContactPage() {
                                 </div>
                                 <div className="contact-page__info-content">
                                     <h3 className="contact-page__info-item-title font-semibold text-text text-lg">Call Us</h3>
-                                    <a href="tel:+919745512345" className="contact-page__info-link text-text-muted hover:text-coral transition-colors block mt-1">
-                                        +91 97455 12345
+                                    <a href="tel:+918714090510" className="contact-page__info-link text-text-muted hover:text-coral transition-colors block mt-1">
+                                        +91 87140 90510
                                     </a>
                                 </div>
                             </div>

@@ -14,7 +14,7 @@ function OrderSuccessContent() {
   const whatsappMessage = isPaid
     ? `Hi! I just paid for my order on Khadi Vasthra. My order number is: ${orderNumber}.`
     : `Hi! I just placed an order on Khadi Vasthra. My order number is: ${orderNumber}. Could you confirm the payment details?`;
-  const whatsappUrl = `https://wa.me/919745512345?text=${encodeURIComponent(whatsappMessage)}`;
+  const whatsappUrl = `https://wa.me/918714090510?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
     <div className="min-h-screen bg-cream flex items-center justify-center px-4">

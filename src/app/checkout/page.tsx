@@ -369,7 +369,7 @@ export default function CheckoutPage() {
                 <p className="text-xs text-text-muted text-center mt-3">
                   Secure payment powered by Razorpay. Having trouble?{" "}
                   <a
-                    href="https://wa.me/919745512345"
+                    href="https://wa.me/918714090510"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-coral hover:underline"

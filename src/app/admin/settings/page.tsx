@@ -129,9 +129,9 @@ export default function AdminSettingsPage() {
                 value={whatsappNumber}
                 onChange={(e) => setWhatsappNumber(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
-                placeholder="919745512345"
+                placeholder="918714090510"
               />
-              <p className="text-xs text-gray-400 mt-1">Include country code without + (e.g., 919745512345)</p>
+              <p className="text-xs text-gray-400 mt-1">Include country code without + (e.g., 918714090510)</p>
             </div>
           </div>
 
