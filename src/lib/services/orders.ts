@@ -112,7 +112,7 @@ export async function createRazorpayOrder(
   amount: number,
   currency: string = 'INR'
 ): Promise<{ razorpay_order_id: string; amount: number; currency: string }> {
-  return invokeEdgeFunction('quick-task', { order_id: orderId, amount, currency });
+  return invokeEdgeFunction('create-razorpay-order', { order_id: orderId, amount, currency });
 }
 
 export async function verifyRazorpayPayment(
