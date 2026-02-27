@@ -76,6 +76,13 @@ jobs:
           echo "=== Deploy directory ready ==="
           find deploy/admin -type f | sort
 
+      - name: Deploy Supabase Edge Functions
+        run: |
+          npx supabase functions deploy create-razorpay-order --project-ref etjxdomvtsxrnbjmjzxz
+          npx supabase functions deploy verify-razorpay-payment --project-ref etjxdomvtsxrnbjmjzxz
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+
       - name: Deploy via FTP
         run: |
           sudo apt-get install -y lftp > /dev/null 2>&1
