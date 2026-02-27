@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useRazorpay } from "@/hooks/useRazorpay";
 import { Button } from "@/components/ui/button";
-import { createOrder, createRazorpayOrder, verifyRazorpayPayment } from "@/lib/services/orders";
+import { createOrder, createRazorpayOrder, verifyRazorpayPayment, checkShippingServiceability } from "@/lib/services/orders";
 import Link from "next/link";
-import { ChevronLeft, Loader2, ShoppingBag } from "lucide-react";
-import type { CheckoutFormData, Order } from "@/types";
+import { ChevronLeft, Loader2, ShoppingBag, CheckCircle2, XCircle, Truck } from "lucide-react";
+import type { CheckoutFormData, Order, ServiceabilityResult } from "@/types";
 
 type PaymentStep = "form" | "creating" | "paying";
 
@@ -31,12 +31,55 @@ export default function CheckoutPage() {
     notes: "",
   });
 
+  // Shipping serviceability state
+  const [shippingInfo, setShippingInfo] = useState<ServiceabilityResult | null>(null);
+  const [checkingPincode, setCheckingPincode] = useState(false);
+  const [pincodeError, setPincodeError] = useState("");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
+  const shippingCost = shippingInfo?.available ? shippingInfo.cheapest_rate : 0;
+  const orderTotal = cartTotal + shippingCost;
+
+  // Check pincode serviceability with debounce
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+
+    const pincode = form.pincode.trim();
+    if (pincode.length !== 6 || !/^\d{6}$/.test(pincode)) {
+      setShippingInfo(null);
+      setPincodeError("");
+      return;
+    }
+
+    setCheckingPincode(true);
+    setPincodeError("");
+
+    debounceRef.current = setTimeout(async () => {
+      try {
+        const result = await checkShippingServiceability(pincode, totalItems);
+        setShippingInfo(result);
+        if (!result.available) {
+          setPincodeError("Delivery not available to this pincode.");
+        }
+      } catch {
+        setPincodeError("Could not check delivery availability.");
+        setShippingInfo(null);
+      } finally {
+        setCheckingPincode(false);
+      }
+    }, 500);
+
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [form.pincode, totalItems]);
+
   const updateField = (field: keyof CheckoutFormData, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
   };
 
   const initiatePayment = async (order: Order) => {
-    // Create Razorpay order via edge function
     const razorpayOrder = await createRazorpayOrder(order.id, order.total);
 
     setPaymentStep("paying");
@@ -103,6 +146,11 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (!shippingInfo?.available) {
+      setError("Please enter a valid pincode where delivery is available.");
+      return;
+    }
+
     if (!razorpayLoaded) {
       setError("Payment system is loading. Please wait a moment and try again.");
       return;
@@ -112,8 +160,7 @@ export default function CheckoutPage() {
     setPaymentStep("creating");
 
     try {
-      // If we have a pending order from a previous attempt, reuse it
-      const order = pendingOrder || await createOrder(form, items, cartTotal);
+      const order = pendingOrder || await createOrder(form, items, cartTotal, shippingCost);
       if (!pendingOrder) setPendingOrder(order);
 
       await initiatePayment(order);
@@ -278,6 +325,22 @@ export default function CheckoutPage() {
                         className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
                         placeholder="6-digit pincode"
                       />
+                      {/* Pincode serviceability feedback */}
+                      {checkingPincode && (
+                        <p className="text-xs text-text-muted mt-1 flex items-center gap-1">
+                          <Loader2 className="w-3 h-3 animate-spin" /> Checking delivery availability...
+                        </p>
+                      )}
+                      {!checkingPincode && shippingInfo?.available && (
+                        <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3" /> Delivery available. Est. {shippingInfo.fastest_etd}
+                        </p>
+                      )}
+                      {!checkingPincode && pincodeError && (
+                        <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                          <XCircle className="w-3 h-3" /> {pincodeError}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div>
@@ -320,12 +383,25 @@ export default function CheckoutPage() {
                     <span>₹{cartTotal}</span>
                   </div>
                   <div className="flex justify-between text-sm text-text-muted">
-                    <span>Shipping</span>
-                    <span className="text-green-600">Free</span>
+                    <span className="flex items-center gap-1">
+                      <Truck className="w-3.5 h-3.5" /> Shipping
+                    </span>
+                    {checkingPincode ? (
+                      <span className="text-text-muted">Calculating...</span>
+                    ) : shippingInfo?.available ? (
+                      <span>₹{shippingCost}</span>
+                    ) : (
+                      <span className="text-text-muted">Enter pincode</span>
+                    )}
                   </div>
+                  {shippingInfo?.available && shippingInfo.fastest_etd && (
+                    <p className="text-xs text-green-600 flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" /> Est. delivery: {shippingInfo.fastest_etd}
+                    </p>
+                  )}
                   <div className="flex justify-between font-bold text-lg text-orange border-t border-cream/30 pt-3">
                     <span>Total</span>
-                    <span>₹{cartTotal}</span>
+                    <span>₹{orderTotal}</span>
                   </div>
                 </div>
 
@@ -352,7 +428,7 @@ export default function CheckoutPage() {
                     size="lg"
                     variant="primary"
                     className="w-full h-14 text-lg font-semibold"
-                    disabled={submitting || !razorpayLoaded}
+                    disabled={submitting || !razorpayLoaded || (!shippingInfo?.available && !pendingOrder)}
                   >
                     {submitting ? (
                       <>

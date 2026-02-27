@@ -3,9 +3,9 @@
 import { useState } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
-import { getOrders, updateOrderStatus } from "@/lib/services/orders";
+import { getOrders, updateOrderStatus, createShiprocketOrder } from "@/lib/services/orders";
 import type { OrderStatus } from "@/types";
-import { Loader2, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp, Truck, ExternalLink } from "lucide-react";
 import toast from "react-hot-toast";
 
 const STATUS_OPTIONS: OrderStatus[] = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
@@ -28,6 +28,7 @@ export default function AdminOrdersPage() {
   const { data: orders, loading, refetch } = useSupabaseQuery(getOrders);
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
+  const [creatingShipment, setCreatingShipment] = useState<string | null>(null);
 
   const allOrders = orders || [];
   const filtered = statusFilter
@@ -46,6 +47,19 @@ export default function AdminOrdersPage() {
 
   const toggleExpand = (orderId: string) => {
     setExpandedOrder(expandedOrder === orderId ? null : orderId);
+  };
+
+  const handleCreateShipment = async (orderId: string) => {
+    setCreatingShipment(orderId);
+    try {
+      const result = await createShiprocketOrder(orderId);
+      toast.success(`Shipment created${result.awb_code ? ` - AWB: ${result.awb_code}` : ""}`);
+      refetch();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create shipment");
+    } finally {
+      setCreatingShipment(null);
+    }
   };
 
   return (
@@ -170,6 +184,48 @@ export default function AdminOrdersPage() {
                             <p><span className="text-gray-500">Payment ID:</span> {order.razorpay_payment_id}</p>
                           )}
                         </div>
+                      </div>
+
+                      {/* Shipping Details */}
+                      <div>
+                        <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-1">
+                          <Truck className="w-4 h-4" /> Shipping Details
+                        </h3>
+                        {order.shiprocket_order_id ? (
+                          <div className="space-y-2 text-sm">
+                            <p><span className="text-gray-500">Shiprocket ID:</span> {order.shiprocket_order_id}</p>
+                            {order.awb_code && (
+                              <p><span className="text-gray-500">AWB:</span> {order.awb_code}</p>
+                            )}
+                            {order.courier_name && (
+                              <p><span className="text-gray-500">Courier:</span> {order.courier_name}</p>
+                            )}
+                            {order.tracking_url && (
+                              <a
+                                href={order.tracking_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-coral hover:underline text-sm"
+                              >
+                                <ExternalLink className="w-3 h-3" /> Track shipment
+                              </a>
+                            )}
+                          </div>
+                        ) : order.payment_status === "paid" ? (
+                          <button
+                            onClick={() => handleCreateShipment(order.id)}
+                            disabled={creatingShipment === order.id}
+                            className="px-4 py-2 bg-purple-100 text-purple-700 rounded-lg text-sm font-medium hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-2"
+                          >
+                            {creatingShipment === order.id ? (
+                              <><Loader2 className="w-4 h-4 animate-spin" /> Creating...</>
+                            ) : (
+                              <><Truck className="w-4 h-4" /> Create Shipment</>
+                            )}
+                          </button>
+                        ) : (
+                          <p className="text-sm text-gray-400">Payment required before shipping</p>
+                        )}
                       </div>
 
                       {/* Order Items & Status */}

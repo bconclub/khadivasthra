@@ -94,6 +94,24 @@ serve(async (req) => {
         );
       }
 
+      // Auto-create Shiprocket shipment (non-blocking — don't fail payment if this errors)
+      try {
+        const shiprocketUrl = `${SUPABASE_URL}/functions/v1/shiprocket-create-order`;
+        const shipRes = await fetch(shiprocketUrl, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          },
+          body: JSON.stringify({ order_id }),
+        });
+        if (!shipRes.ok) {
+          console.error("Shiprocket auto-create failed:", await shipRes.text());
+        }
+      } catch (shipErr) {
+        console.error("Shiprocket auto-create error:", shipErr);
+      }
+
       return new Response(JSON.stringify({ verified: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

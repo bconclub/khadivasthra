@@ -81,8 +81,42 @@ export interface Order {
   razorpay_payment_id: string | null;
   razorpay_signature: string | null;
   payment_status: PaymentStatus;
+  shiprocket_order_id: string | null;
+  shipment_id: string | null;
+  awb_code: string | null;
+  courier_name: string | null;
+  tracking_url: string | null;
   created_at: string;
   updated_at: string;
+}
+
+export interface ShippingRate {
+  courier_company_id: number;
+  courier_name: string;
+  rate: number;
+  etd: string;
+  estimated_delivery_days: number;
+}
+
+export interface ServiceabilityResult {
+  available: boolean;
+  rates: ShippingRate[];
+  cheapest_rate: number;
+  fastest_etd: string;
+}
+
+export interface TrackingScan {
+  date: string;
+  activity: string;
+  location: string;
+}
+
+export interface TrackingResult {
+  status: string;
+  current_status: string;
+  tracking_url: string | null;
+  etd: string | null;
+  scans: TrackingScan[];
 }
 
 export interface SiteSettings {

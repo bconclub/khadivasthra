@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import type { Order, OrderItem, CheckoutFormData, CartItem } from '@/types';
+import type { Order, OrderItem, CheckoutFormData, CartItem, ServiceabilityResult, TrackingResult } from '@/types';
 
 function generateOrderNumber(): string {
   const date = new Date();
@@ -11,7 +11,8 @@ function generateOrderNumber(): string {
 export async function createOrder(
   formData: CheckoutFormData,
   cartItems: CartItem[],
-  subtotal: number
+  subtotal: number,
+  shippingCost: number = 0
 ): Promise<Order> {
   const items: OrderItem[] = cartItems.map(item => ({
     product_id: item.id,
@@ -33,8 +34,8 @@ export async function createOrder(
     customer_pincode: formData.pincode,
     items,
     subtotal,
-    shipping: 0,
-    total: subtotal,
+    shipping: shippingCost,
+    total: subtotal + shippingCost,
     status: 'pending' as const,
     notes: formData.notes || null,
   };
@@ -127,4 +128,28 @@ export async function verifyRazorpayPayment(
     razorpay_payment_id: razorpayPaymentId,
     razorpay_signature: razorpaySignature,
   });
+}
+
+// Shiprocket shipping functions
+
+export async function checkShippingServiceability(
+  deliveryPincode: string,
+  totalItems: number = 1
+): Promise<ServiceabilityResult> {
+  return invokeEdgeFunction('shiprocket-check-serviceability', {
+    delivery_pincode: deliveryPincode,
+    total_items: totalItems,
+  });
+}
+
+export async function createShiprocketOrder(
+  orderId: string
+): Promise<{ shiprocket_order_id: string; shipment_id: string; awb_code?: string }> {
+  return invokeEdgeFunction('shiprocket-create-order', { order_id: orderId });
+}
+
+export async function trackShipment(
+  orderNumber: string
+): Promise<TrackingResult> {
+  return invokeEdgeFunction('shiprocket-track', { order_number: orderNumber });
 }

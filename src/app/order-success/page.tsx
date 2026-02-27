@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, MessageCircle, ShoppingBag } from "lucide-react";
+import { CheckCircle2, MessageCircle, ShoppingBag, Truck } from "lucide-react";
 import { Suspense } from "react";
 
 function OrderSuccessContent() {
@@ -45,6 +45,18 @@ function OrderSuccessContent() {
           </p>
 
           <div className="space-y-3">
+            {orderNumber && (
+              <Link href={`/track?order=${orderNumber}`} className="block">
+                <Button
+                  size="lg"
+                  variant="primary"
+                  className="w-full flex items-center justify-center gap-2 h-12"
+                >
+                  <Truck className="h-5 w-5" /> Track Your Order
+                </Button>
+              </Link>
+            )}
+
             <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="block">
               <Button
                 size="lg"

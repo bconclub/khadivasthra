@@ -60,6 +60,11 @@ CREATE TABLE orders (
   razorpay_payment_id TEXT,
   razorpay_signature TEXT,
   payment_status TEXT NOT NULL DEFAULT 'pending' CHECK (payment_status IN ('pending','paid','failed')),
+  shiprocket_order_id TEXT,
+  shipment_id TEXT,
+  awb_code TEXT,
+  courier_name TEXT,
+  tracking_url TEXT,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
