@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { ShoppingBag, Menu, X, Search } from "lucide-react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
 
@@ -12,39 +12,37 @@ export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [showHeaderLogo, setShowHeaderLogo] = useState(false);
-    const [showHeader, setShowHeader] = useState(true);
-    const [lastScrollY, setLastScrollY] = useState(0);
+    const [showHeader, setShowHeader] = useState(false);
+    const lastScrollYRef = React.useRef(0);
 
     useEffect(() => {
         const handleScroll = () => {
             const currentScrollY = window.scrollY;
+            const lastY = lastScrollYRef.current;
 
-            // Hide header on scroll down, show on scroll up
-            if (currentScrollY > lastScrollY && currentScrollY > 80) {
-                setShowHeader(false);
-            } else {
+            // Only show header when scrolling UP and past initial threshold
+            if (currentScrollY < lastY && currentScrollY > 80) {
                 setShowHeader(true);
+            } else if (currentScrollY > lastY || currentScrollY <= 80) {
+                setShowHeader(false);
             }
 
             // Show logo in header once scrolled past hero logo or 100px
             const heroLogo = document.getElementById('hero-logo');
             if (heroLogo) {
                 const rect = heroLogo.getBoundingClientRect();
-                const shouldShowLogo = rect.top <= 10;
-                setShowHeaderLogo(shouldShowLogo);
+                setShowHeaderLogo(rect.top <= 10);
             } else {
                 setShowHeaderLogo(currentScrollY > 100);
             }
 
             setScrolled(currentScrollY > 50);
-            setLastScrollY(currentScrollY);
+            lastScrollYRef.current = currentScrollY;
         };
 
         window.addEventListener('scroll', handleScroll, { passive: true });
-        handleScroll();
-
         return () => window.removeEventListener('scroll', handleScroll);
-    }, [lastScrollY]);
+    }, []);
 
     return (
         <header className={`header fixed top-0 z-50 w-full transition-all duration-300 ${showHeader

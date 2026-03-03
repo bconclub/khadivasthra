@@ -81,13 +81,14 @@ export default function ShopCategoryClient({ slug }: { slug: string }) {
       </div>
 
       <div className="container mx-auto px-4 max-w-7xl py-8">
-        <div className="flex items-center justify-between mb-6">
-          <p className="text-text-muted">
+        {/* Sort bar - sticky on mobile */}
+        <div className="sticky top-0 z-40 -mx-4 px-4 py-3 md:static md:mx-0 md:px-0 md:py-0 bg-cream/80 backdrop-blur-lg md:bg-transparent md:backdrop-blur-none border-b border-white/40 md:border-0 flex items-center justify-between mb-6">
+          <p className="text-text-muted text-sm md:text-base">
             Showing <span className="font-semibold text-text">{sortedProducts.length}</span> products
           </p>
           <div className="relative">
             <select
-              className="appearance-none bg-white border border-gray-200 px-4 py-2 rounded-lg pr-10 cursor-pointer focus:ring-2 focus:ring-coral focus:border-transparent"
+              className="appearance-none bg-white/70 backdrop-blur-sm md:bg-white border border-white/50 md:border-gray-200 px-4 py-2 rounded-xl md:rounded-lg pr-10 cursor-pointer focus:ring-2 focus:ring-coral focus:border-transparent text-sm font-medium"
               onChange={(e) => setSortBy(e.target.value === "" ? null : (e.target.value as typeof sortBy))}
               value={sortBy || ""}
             >
