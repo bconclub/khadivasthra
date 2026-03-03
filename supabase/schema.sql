@@ -158,6 +158,37 @@ CREATE POLICY "Admin upload category images" ON storage.objects FOR INSERT WITH 
 CREATE POLICY "Admin update category images" ON storage.objects FOR UPDATE USING (bucket_id = 'category-images' AND auth.role() = 'authenticated');
 CREATE POLICY "Admin delete category images" ON storage.objects FOR DELETE USING (bucket_id = 'category-images' AND auth.role() = 'authenticated');
 
+-- Banners table
+CREATE TABLE banners (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  title TEXT NOT NULL,
+  subtitle TEXT,
+  image_url TEXT NOT NULL,
+  size TEXT NOT NULL DEFAULT 'wide' CHECK (size IN ('hero', 'wide', 'square', 'tall')),
+  link_type TEXT NOT NULL DEFAULT 'none' CHECK (link_type IN ('product', 'category', 'url', 'none')),
+  link_value TEXT,
+  display_order INTEGER NOT NULL DEFAULT 0,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  starts_at TIMESTAMPTZ,
+  ends_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+CREATE INDEX idx_banners_active ON banners(is_active, display_order);
+CREATE TRIGGER update_banners_updated_at BEFORE UPDATE ON banners FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+ALTER TABLE banners ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public read banners" ON banners FOR SELECT USING (true);
+CREATE POLICY "Admin manage banners" ON banners FOR ALL USING (auth.role() = 'authenticated');
+
+-- Banner images storage bucket
+INSERT INTO storage.buckets (id, name, public) VALUES ('banner-images', 'banner-images', true) ON CONFLICT (id) DO NOTHING;
+CREATE POLICY "Public read banner images" ON storage.objects FOR SELECT USING (bucket_id = 'banner-images');
+CREATE POLICY "Admin upload banner images" ON storage.objects FOR INSERT WITH CHECK (bucket_id = 'banner-images' AND auth.role() = 'authenticated');
+CREATE POLICY "Admin update banner images" ON storage.objects FOR UPDATE USING (bucket_id = 'banner-images' AND auth.role() = 'authenticated');
+CREATE POLICY "Admin delete banner images" ON storage.objects FOR DELETE USING (bucket_id = 'banner-images' AND auth.role() = 'authenticated');
+
 -- Insert default settings row
 INSERT INTO settings (whatsapp_number, store_name, store_phone, store_address)
 VALUES ('919745512345', 'Khadi Vasthra', '+91 97455 12345', 'Kurumassery P.O, Aluva, Ernakulam, Kerala - 683579');

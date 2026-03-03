@@ -141,9 +141,30 @@ export interface ProductView {
   session_id: string | null;
 }
 
+// Banner types
+export type BannerSize = 'hero' | 'wide' | 'square' | 'tall';
+export type BannerLinkType = 'product' | 'category' | 'url' | 'none';
+
+export interface Banner {
+  id: string;
+  title: string;
+  subtitle: string | null;
+  image_url: string;
+  size: BannerSize;
+  link_type: BannerLinkType;
+  link_value: string | null;  // product slug, category slug, or external URL
+  display_order: number;
+  is_active: boolean;
+  starts_at: string | null;
+  ends_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 // Form types for admin CRUD
 export type ProductFormData = Omit<Product, 'id' | 'created_at' | 'updated_at'>;
 export type CategoryFormData = Omit<Category, 'id' | 'created_at' | 'updated_at'>;
+export type BannerFormData = Omit<Banner, 'id' | 'created_at' | 'updated_at'>;
 
 // Cart item type (compatible with existing CartContext)
 export interface CartItem {

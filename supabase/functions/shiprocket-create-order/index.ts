@@ -84,12 +84,26 @@ serve(async (req) => {
       );
     }
 
+    console.log("Processing order:", order.id, "order_number:", order.order_number, "status:", order.status, "payment:", order.payment_status);
+
     const token = await getShiprocketToken();
+    console.log("Shiprocket auth success");
 
     // Calculate total items for weight
     const items = order.items || [];
+    if (!items || items.length === 0) {
+      console.error("Order has no items:", order.id);
+      return new Response(
+        JSON.stringify({ error: "Order has no items" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     const totalQuantity = items.reduce(
-      (sum: number, item: { quantity: number }) => sum + item.quantity,
+      (sum: number, item: { quantity: number }) => sum + (item.quantity || 1),
       0
     );
     const weight = Math.max(0.5, totalQuantity * 0.5);
@@ -113,14 +127,39 @@ serve(async (req) => {
         quantity: number;
         price: number;
       }) => ({
-        name: item.product_name,
-        sku: item.product_id,
-        units: item.quantity,
-        selling_price: item.price,
+        name: item.product_name || "Product",
+        sku: item.product_id || "SKU-001",
+        units: item.quantity || 1,
+        selling_price: item.price || 0,
         discount: 0,
         tax: 0,
       })
     );
+
+    const shiprocketPayload = {
+      order_id: order.order_number,
+      order_date: orderDate,
+      pickup_location: "Primary",
+      billing_customer_name: firstName,
+      billing_last_name: lastName || ".",
+      billing_address: order.customer_address || "NA",
+      billing_city: order.customer_city || "NA",
+      billing_pincode: order.customer_pincode || "000000",
+      billing_state: order.customer_state || "Kerala",
+      billing_country: "India",
+      billing_email: order.customer_email || "noreply@khadivasthra.com",
+      billing_phone: order.customer_phone || "0000000000",
+      shipping_is_billing: true,
+      order_items: shiprocketItems,
+      payment_method: "Prepaid",
+      sub_total: order.subtotal || 0,
+      length: 30,
+      breadth: 20,
+      height: 5,
+      weight,
+    };
+
+    console.log("Sending to Shiprocket:", JSON.stringify(shiprocketPayload));
 
     // Create Shiprocket order
     const createRes = await fetch(
@@ -131,28 +170,7 @@ serve(async (req) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          order_id: order.order_number,
-          order_date: orderDate,
-          pickup_location: "Primary",
-          billing_customer_name: firstName,
-          billing_last_name: lastName,
-          billing_address: order.customer_address,
-          billing_city: order.customer_city,
-          billing_pincode: order.customer_pincode,
-          billing_state: order.customer_state,
-          billing_country: "India",
-          billing_email: order.customer_email || "",
-          billing_phone: order.customer_phone,
-          shipping_is_billing: true,
-          order_items: shiprocketItems,
-          payment_method: "Prepaid",
-          sub_total: order.subtotal,
-          length: 30,
-          breadth: 20,
-          height: 5,
-          weight,
-        }),
+        body: JSON.stringify(shiprocketPayload),
       }
     );
 

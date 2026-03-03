@@ -32,6 +32,22 @@ export async function uploadCategoryImage(file: File, categorySlug: string): Pro
   return data.publicUrl;
 }
 
+export async function uploadBannerImage(file: File): Promise<string> {
+  const ext = file.name.split('.').pop();
+  const fileName = `banners/${Date.now()}.${ext}`;
+
+  const { error } = await supabase.storage
+    .from('banner-images')
+    .upload(fileName, file, { upsert: true });
+  if (error) throw error;
+
+  const { data } = supabase.storage
+    .from('banner-images')
+    .getPublicUrl(fileName);
+
+  return data.publicUrl;
+}
+
 export async function deleteStorageFile(bucket: string, filePath: string): Promise<void> {
   const { error } = await supabase.storage.from(bucket).remove([filePath]);
   if (error) throw error;

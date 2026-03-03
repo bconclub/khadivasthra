@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   Loader2,
+  ImageIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,6 +23,7 @@ const NAV_ITEMS = [
   { href: "/admin/products", label: "Products", icon: Package },
   { href: "/admin/categories", label: "Categories", icon: FolderOpen },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
+  { href: "/admin/banners", label: "Banners", icon: ImageIcon },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 

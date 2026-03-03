@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import type { Product, Category, ProductFormData, CategoryFormData } from '@/types';
+import type { Product, Category, Banner, ProductFormData, CategoryFormData, BannerFormData } from '@/types';
 
 // Products CRUD
 export async function createProduct(data: ProductFormData): Promise<Product> {
@@ -75,6 +75,55 @@ export async function updateCategory(id: string, data: Partial<CategoryFormData>
 export async function deleteCategory(id: string): Promise<void> {
   const { error } = await supabase.from('categories').delete().eq('id', id);
   if (error) throw error;
+}
+
+// Banners CRUD
+export async function createBanner(data: BannerFormData): Promise<Banner> {
+  const { data: banner, error } = await supabase
+    .from('banners')
+    .insert(data)
+    .select()
+    .single();
+  if (error) throw error;
+  return banner;
+}
+
+export async function updateBanner(id: string, data: Partial<BannerFormData>): Promise<Banner> {
+  const { data: banner, error } = await supabase
+    .from('banners')
+    .update(data)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return banner;
+}
+
+export async function deleteBanner(id: string): Promise<void> {
+  const { error } = await supabase.from('banners').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function getBanners(): Promise<Banner[]> {
+  const { data, error } = await supabase
+    .from('banners')
+    .select('*')
+    .order('display_order', { ascending: true });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function getActiveBanners(): Promise<Banner[]> {
+  const now = new Date().toISOString();
+  const { data, error } = await supabase
+    .from('banners')
+    .select('*')
+    .eq('is_active', true)
+    .or(`starts_at.is.null,starts_at.lte.${now}`)
+    .or(`ends_at.is.null,ends_at.gte.${now}`)
+    .order('display_order', { ascending: true });
+  if (error) throw error;
+  return data || [];
 }
 
 // Dashboard stats

@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
-import { ShoppingBag, Heart, ImageOff } from "lucide-react";
+import { ArrowUpRight, ImageOff } from "lucide-react";
 import { useState } from "react";
 
 interface ProductCardProps {
@@ -18,34 +17,25 @@ interface ProductCardProps {
         image: string;
         category: string;
     };
-    variant?: "white" | "cream"; // Context-aware background
-    showHeart?: boolean; // Show heart icon for favorites
+    variant?: "white" | "cream";
+    showHeart?: boolean;
 }
 
-export function ProductCard({ product, variant = "white", showHeart = false }: ProductCardProps) {
+export function ProductCard({ product, variant = "white" }: ProductCardProps) {
     const { addToCart } = useCart();
     const [imageError, setImageError] = useState(false);
 
-    // Use product image path directly - admin saves organized paths like /images/products/category/product/file.ext
     let imagePath = product.image || '';
-
-    // Reject blob/data URLs and admin upload paths
     if (imagePath.startsWith('blob:') || imagePath.startsWith('data:')) {
       imagePath = '';
     }
 
-    // Use the path as-is if it's a valid /images/ or https:// path, otherwise use placeholder
     const imageUrl = imagePath && (imagePath.startsWith('/images/') || imagePath.startsWith('https://'))
       ? imagePath
       : `https://placehold.co/600x800/E8657B/FFF?text=${encodeURIComponent(product.name.replace(/ /g, '+'))}`;
 
-    const cardBg = variant === "cream" ? "bg-cream" : "bg-white";
-    const borderColor = variant === "cream" ? "border-cream/50" : "border-cream/30";
-
-    // Check if we have a valid image URL (not empty)
     const hasValidImage = !imageError && imageUrl && imageUrl.trim() !== '';
 
-    // Discount calculation
     const hasDiscount = product.compare_price && product.compare_price > product.price;
     const discountPercent = hasDiscount
       ? Math.round(((product.compare_price! - product.price) / product.compare_price!) * 100)
@@ -54,80 +44,83 @@ export function ProductCard({ product, variant = "white", showHeart = false }: P
     const isOutOfStock = product.in_stock === false;
 
     return (
-        <div className={`product-card group relative ${cardBg} rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 border ${borderColor} hover:border-coral/30 flex flex-col h-full`}>
-            <Link href={`/product/${product.slug || product.id}`} className="product-card__image-link block relative aspect-[3/4] overflow-hidden bg-cream/30">
+        <div className="product-card group relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col h-full">
+            {/* Image Section */}
+            <Link href={`/product/${product.slug || product.id}`} className="product-card__image-link block relative aspect-[4/5] overflow-hidden bg-cream/20">
                 {hasValidImage ? (
                     <Image
                         src={imageUrl}
                         alt={product.name}
                         fill
-                        className="product-card__image object-cover transition-transform duration-500 group-hover:scale-110"
+                        className="product-card__image object-cover transition-transform duration-700 group-hover:scale-105"
                         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                         onError={() => setImageError(true)}
                         unoptimized
                     />
                 ) : (
-                    <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-                        <ImageOff className="w-16 h-16 text-gray-400" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
+                        <ImageOff className="w-12 h-12 text-gray-300" />
                     </div>
                 )}
 
                 {/* Discount Badge */}
                 {hasDiscount && !isOutOfStock && (
-                    <div className="absolute top-3 left-3 bg-coral text-white text-xs font-bold px-2.5 py-1 rounded-full shadow-md">
+                    <div className="absolute top-3 left-3 bg-coral text-white text-[11px] font-bold px-2.5 py-1 rounded-full shadow-sm">
                         {discountPercent}% OFF
+                    </div>
+                )}
+
+                {/* Best Seller / Category Badge */}
+                {product.category && (
+                    <div className="absolute top-3 right-3 bg-white/80 backdrop-blur-sm text-gray-700 text-[10px] font-semibold px-2.5 py-1 rounded-full shadow-sm uppercase tracking-wider">
+                        {product.category}
                     </div>
                 )}
 
                 {/* Out of Stock overlay */}
                 {isOutOfStock && (
-                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                        <span className="bg-white/90 text-gray-700 text-sm font-bold px-4 py-2 rounded-full shadow">
-                            Out of Stock
+                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-[1px]">
+                        <span className="bg-white text-gray-800 text-xs font-bold px-5 py-2 rounded-full shadow-lg">
+                            Sold Out
                         </span>
                     </div>
                 )}
-
-                <div className="product-card__quick-add absolute top-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    {showHeart && (
-                        <div className="product-card__heart-button bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-md text-coral hover:text-coral-dark cursor-pointer">
-                            <Heart className="w-5 h-5" />
-                        </div>
-                    )}
-                    <div className="product-card__quick-add-button bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-md text-coral hover:text-coral-dark cursor-pointer">
-                        <ShoppingBag className="w-5 h-5" onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            addToCart(product);
-                        }} />
-                    </div>
-                </div>
             </Link>
 
-            <div className={`product-card__content p-3 md:p-4 flex flex-col flex-grow ${cardBg} transition-colors`}>
-                <p className="product-card__category text-[10px] text-text-muted font-medium tracking-widest uppercase mb-1">{product.category}</p>
+            {/* Content Section */}
+            <div className="product-card__content p-3.5 md:p-4 flex flex-col flex-grow">
                 <Link href={`/product/${product.slug || product.id}`} className="product-card__name-link flex-grow">
-                    <h3 className="product-card__name font-semibold text-sm text-text leading-snug hover:text-coral transition-colors line-clamp-2" title={product.name}>{product.name}</h3>
+                    <h3 className="product-card__name font-semibold text-[13px] md:text-sm text-gray-900 leading-snug hover:text-coral transition-colors line-clamp-2">
+                        {product.name}
+                    </h3>
                 </Link>
-                <div className={`product-card__footer mt-3 pt-3 border-t ${borderColor} flex flex-col gap-2`}>
-                    <div className="product-card__pricing flex items-baseline flex-wrap gap-x-1.5 gap-y-0">
-                        <span className="product-card__price font-bold text-base text-orange">₹{product.price}</span>
+
+                {/* Price & Buy Button Row */}
+                <div className="product-card__footer mt-3 flex items-center justify-between gap-2">
+                    <div className="product-card__pricing flex items-baseline gap-1.5">
+                        <span className="product-card__price bg-gray-100 text-gray-900 font-bold text-sm px-3 py-1 rounded-full">
+                            ₹{product.price}
+                        </span>
                         {hasDiscount && (
-                            <span className="product-card__compare-price text-xs text-text-muted line-through">₹{product.compare_price}</span>
+                            <span className="product-card__compare-price text-[11px] text-gray-400 line-through">
+                                ₹{product.compare_price}
+                            </span>
                         )}
                     </div>
-                    <Button
-                        size="sm"
-                        variant="outline"
-                        className={`product-card__add-button rounded-full w-full text-xs h-8 ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    <button
+                        className={`product-card__buy-button inline-flex items-center gap-1 bg-gray-900 text-white text-xs font-medium pl-3 pr-2 py-1.5 rounded-full hover:bg-coral transition-colors ${
+                            isOutOfStock ? 'opacity-40 pointer-events-none' : ''
+                        }`}
                         disabled={isOutOfStock}
                         onClick={(e) => {
                             e.preventDefault();
+                            e.stopPropagation();
                             if (!isOutOfStock) addToCart(product);
                         }}
                     >
-                        {isOutOfStock ? 'Sold Out' : 'Add to Cart'}
-                    </Button>
+                        {isOutOfStock ? 'Sold Out' : 'Buy Now'}
+                        <ArrowUpRight className="w-3.5 h-3.5" />
+                    </button>
                 </div>
             </div>
         </div>

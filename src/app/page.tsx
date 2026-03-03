@@ -7,7 +7,8 @@ import { ProductCard } from "@/components/product/ProductCard";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getFeaturedProducts, getBestSellingProducts, getProducts } from "@/lib/services/products";
 import { getCategories } from "@/lib/services/categories";
-import type { Category, ProductWithCategory } from "@/types";
+import { getActiveBanners } from "@/lib/services/admin";
+import type { Banner, Category, ProductWithCategory } from "@/types";
 import { ArrowRight, ChevronLeft, ChevronRight, Loader2, ImageOff } from "lucide-react";
 import { useState, useCallback, useEffect } from "react";
 import useEmblaCarousel from "embla-carousel-react";
@@ -31,6 +32,7 @@ export default function Home() {
   const { data: categories, loading: isLoadingCategories } = useSupabaseQuery(getCategories);
   const { data: allProducts, loading: isLoadingProducts } = useSupabaseQuery(getProducts);
   const { data: bestSellingData } = useSupabaseQuery(getBestSellingProducts);
+  const { data: activeBanners } = useSupabaseQuery(getActiveBanners);
 
   // Group products by category name
   const productsByCategory: Record<string, ProductWithCategory[]> = {};
@@ -154,16 +156,28 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 3. THREE BANNERS */}
-      <section className="banners-section bg-white py-12">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <div className="banners-section__grid grid md:grid-cols-3 gap-6">
-            <BannerCard title="Festival Collection" overlay="coral" image="/images/card covers/festival collection.png" />
-            <BannerCard title="25% Off" overlay="orange" image="/images/card covers/offer.png" />
-            <BannerCard title="New Arrivals" overlay="cream" image="/images/card covers/new-arrivals.png" />
+      {/* 3. DYNAMIC BANNERS */}
+      {activeBanners && activeBanners.length > 0 ? (
+        <section className="banners-section bg-white py-12">
+          <div className="container mx-auto px-4 max-w-7xl">
+            <div className="banners-section__grid grid md:grid-cols-3 gap-6">
+              {activeBanners.slice(0, 6).map((banner) => (
+                <DynamicBannerCard key={banner.id} banner={banner} />
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : (
+        <section className="banners-section bg-white py-12">
+          <div className="container mx-auto px-4 max-w-7xl">
+            <div className="banners-section__grid grid md:grid-cols-3 gap-6">
+              <StaticBannerCard title="Festival Collection" overlay="coral" image="/images/card covers/festival collection.png" />
+              <StaticBannerCard title="25% Off" overlay="orange" image="/images/card covers/offer.png" />
+              <StaticBannerCard title="New Arrivals" overlay="cream" image="/images/card covers/new-arrivals.png" />
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* 4. SHOP BY CATEGORY */}
       <section className="categories-carousel-section bg-white py-12">
@@ -303,8 +317,8 @@ export default function Home() {
   );
 }
 
-// Banner Card Component
-function BannerCard({ title, overlay, image }: { title: string; overlay: string; image: string }) {
+// Static Banner Card (fallback)
+function StaticBannerCard({ title, overlay, image }: { title: string; overlay: string; image: string }) {
   const overlayClass = overlay === "coral" ? "bg-coral/40" : overlay === "orange" ? "bg-orange/40" : "bg-cream/40";
   return (
     <div className="banner-card relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg group cursor-pointer">
@@ -314,6 +328,47 @@ function BannerCard({ title, overlay, image }: { title: string; overlay: string;
       </div>
     </div>
   );
+}
+
+// Dynamic Banner Card (from admin)
+function DynamicBannerCard({ banner }: { banner: Banner }) {
+  const getBannerHref = (): string | null => {
+    if (banner.link_type === "none" || !banner.link_value) return null;
+    if (banner.link_type === "product") return `/product/${banner.link_value}`;
+    if (banner.link_type === "category") return `/shop/${banner.link_value}`;
+    return banner.link_value;
+  };
+
+  const href = getBannerHref();
+  const spanClass = banner.size === "hero" ? "md:col-span-3" : banner.size === "wide" ? "md:col-span-2" : "";
+  const aspectClass = banner.size === "hero" ? "aspect-video" : banner.size === "wide" ? "aspect-[3/1]" : banner.size === "tall" ? "aspect-[2/3]" : "aspect-[4/3]";
+
+  const content = (
+    <div className={`banner-card relative ${aspectClass} rounded-2xl overflow-hidden shadow-lg group cursor-pointer ${spanClass}`}>
+      <Image src={banner.image_url} alt={banner.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+      <div className="absolute bottom-0 left-0 right-0 p-5">
+        <h3 className="banner-card__title text-xl md:text-2xl font-bold text-white drop-shadow-md">{banner.title}</h3>
+        {banner.subtitle && (
+          <p className="text-white/80 text-sm mt-1 drop-shadow-sm">{banner.subtitle}</p>
+        )}
+        {href && (
+          <span className="inline-flex items-center gap-1 mt-2 text-white text-sm font-medium bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
+            Shop Now <ArrowRight className="w-3 h-3" />
+          </span>
+        )}
+      </div>
+    </div>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className={`block ${spanClass}`}>
+        {content}
+      </Link>
+    );
+  }
+  return <div className={spanClass}>{content}</div>;
 }
 
 function slugifyCategory(text: string) {

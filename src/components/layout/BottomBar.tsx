@@ -28,11 +28,11 @@ export function BottomBar() {
                 </Link>
 
                 <Link
-                    href="/shop"
-                    className={`bottom-bar__item flex flex-col items-center justify-center gap-0.5 flex-1 py-1 transition-colors ${pathname?.startsWith("/shop") ? "text-coral" : "text-gray-700 hover:text-gray-900"
+                    href="/offers"
+                    className={`bottom-bar__item flex flex-col items-center justify-center gap-0.5 flex-1 py-1 transition-colors ${pathname?.startsWith("/offers") ? "text-coral" : "text-gray-700 hover:text-gray-900"
                         }`}
                 >
-                    <Tag className="h-5 w-5" strokeWidth={pathname?.startsWith("/shop") ? 2.5 : 1.8} />
+                    <Tag className="h-5 w-5" strokeWidth={pathname?.startsWith("/offers") ? 2.5 : 1.8} />
                     <span className="text-[10px] font-medium">Offers</span>
                 </Link>
 
