@@ -5,8 +5,23 @@ import Image from "next/image";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getCategories } from "@/lib/services/categories";
 import { getProducts } from "@/lib/services/products";
-import { Loader2, ImageOff } from "lucide-react";
+import { ProductCard } from "@/components/product/ProductCard";
+import { Loader2, ImageOff, ArrowRight } from "lucide-react";
 import { useState } from "react";
+import type { ProductWithCategory } from "@/types";
+
+function toCardProduct(product: ProductWithCategory) {
+  return {
+    id: product.id,
+    name: product.name,
+    slug: product.slug,
+    price: Number(product.price),
+    compare_price: product.compare_price ? Number(product.compare_price) : null,
+    in_stock: product.in_stock,
+    image: product.image_url || '',
+    category: product.category?.name || '',
+  };
+}
 
 export default function CollectionsPage() {
   const { data: categories, loading: loadingCategories } = useSupabaseQuery(getCategories);
@@ -38,38 +53,56 @@ export default function CollectionsPage() {
         </div>
       </div>
 
-      {/* Collections Grid */}
-      <div className="container mx-auto px-4 max-w-7xl py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-          {allCategories.map((cat) => {
-            const productCount = allProducts.filter(
-              (p) => p.category_id === cat.id
-            ).length;
+      {/* Collections with Products */}
+      <div className="container mx-auto px-4 max-w-7xl py-10 space-y-12">
+        {allCategories.map((cat) => {
+          const categoryProducts = allProducts
+            .filter((p) => p.category_id === cat.id)
+            .slice(0, 4);
 
-            return (
-              <CollectionCard
-                key={cat.id}
-                name={cat.name}
-                slug={cat.slug}
-                description={cat.description || `Browse our collection of ${cat.name.toLowerCase()}`}
-                image={cat.image_url || ''}
-                productCount={productCount}
-              />
-            );
-          })}
-        </div>
+          if (categoryProducts.length === 0) return null;
+
+          const totalCount = allProducts.filter((p) => p.category_id === cat.id).length;
+
+          return (
+            <section key={cat.id} className="collection-section">
+              {/* Category Header */}
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-4">
+                  <CategoryThumb image={cat.image_url || ''} name={cat.name} />
+                  <div>
+                    <h2 className="text-2xl md:text-3xl font-bold text-text font-serif">
+                      {cat.name}
+                    </h2>
+                    <p className="text-text-muted text-sm mt-0.5">
+                      {totalCount} {totalCount === 1 ? "product" : "products"}
+                    </p>
+                  </div>
+                </div>
+                <Link
+                  href={`/shop/${cat.slug}`}
+                  className="flex items-center gap-1.5 text-coral hover:text-coral-dark font-semibold text-sm transition-colors group"
+                >
+                  View All
+                  <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
+              </div>
+
+              {/* Product Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                {categoryProducts.map((product) => (
+                  <ProductCard key={product.id} product={toCardProduct(product)} variant="cream" />
+                ))}
+              </div>
+            </section>
+          );
+        })}
       </div>
     </div>
   );
 }
 
-function CollectionCard({ name, slug, description, image, productCount }: {
-  name: string;
-  slug: string;
-  description: string;
-  image: string;
-  productCount: number;
-}) {
+function CategoryThumb({ image, name }: { image: string; name: string }) {
   const [imageError, setImageError] = useState(false);
 
   let imagePath = image;
@@ -83,39 +116,22 @@ function CollectionCard({ name, slug, description, image, productCount }: {
   const hasImage = !imageError && imageUrl;
 
   return (
-    <Link href={`/shop/${slug}`} className="group block">
-      <div className="relative overflow-hidden rounded-2xl bg-white shadow-sm hover:shadow-lg transition-all duration-300">
-        <div className="relative aspect-[4/3] overflow-hidden">
-          {hasImage ? (
-            <Image
-              src={imageUrl}
-              alt={name}
-              fill
-              className="object-cover group-hover:scale-105 transition-transform duration-500"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              onError={() => setImageError(true)}
-              unoptimized
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center bg-coral/10">
-              <ImageOff className="w-16 h-16 text-coral/30" />
-            </div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+    <div className="hidden md:block w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-coral/10">
+      {hasImage ? (
+        <Image
+          src={imageUrl}
+          alt={name}
+          width={56}
+          height={56}
+          className="w-full h-full object-cover"
+          onError={() => setImageError(true)}
+          unoptimized
+        />
+      ) : (
+        <div className="w-full h-full flex items-center justify-center">
+          <ImageOff className="w-6 h-6 text-coral/30" />
         </div>
-
-        <div className="absolute bottom-0 left-0 right-0 p-5">
-          <h2 className="text-xl md:text-2xl font-bold text-white font-serif mb-1">
-            {name}
-          </h2>
-          <p className="text-white/80 text-sm mb-2">
-            {description}
-          </p>
-          <span className="text-white/70 text-xs">
-            {productCount} {productCount === 1 ? "product" : "products"}
-          </span>
-        </div>
-      </div>
-    </Link>
+      )}
+    </div>
   );
 }

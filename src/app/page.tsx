@@ -64,11 +64,11 @@ export default function Home() {
       }
 
       const headerThreshold = 80;
-      const scrollRange = windowHeight - headerThreshold;
+      const scrollRange = (windowHeight - headerThreshold) * 0.5; // Complete faster
       const currentScroll = windowHeight - logoTop;
 
       if (logoTop <= headerThreshold) {
-        const fadeProgress = Math.max(0, 1 - (headerThreshold - logoTop) / 100);
+        const fadeProgress = Math.max(0, 1 - (headerThreshold - logoTop) / 60);
         setLogoOpacity(fadeProgress);
         setLogoScale(1.5);
       } else if (logoTop < windowHeight && scrollY > 0) {
@@ -110,7 +110,7 @@ export default function Home() {
               alt="Khadi Vasthra Logo"
               width={500}
               height={200}
-              className="hero-section__logo h-auto w-full max-w-md md:max-w-lg lg:max-w-xl object-contain drop-shadow-2xl transition-all duration-300 ease-out"
+              className="hero-section__logo h-auto w-full max-w-md md:max-w-lg lg:max-w-xl object-contain drop-shadow-2xl transition-all duration-100 ease-out"
               style={{
                 transform: `scale(${logoScale})`,
                 opacity: logoOpacity,
