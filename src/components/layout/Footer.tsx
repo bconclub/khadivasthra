@@ -95,7 +95,7 @@ export function Footer() {
                         </div>
                         <div className="footer__contact-item flex items-center space-x-3">
                             <Phone className="footer__contact-icon h-5 w-5 shrink-0 text-coral" />
-                            <span className="footer__contact-text">+91 97455 12345</span>
+                            <a href="tel:+918714090510" className="footer__contact-text hover:text-coral transition-colors">+91 87140 90510</a>
                         </div>
                         <div className="footer__contact-item flex items-center space-x-3">
                             <Instagram className="footer__contact-icon h-5 w-5 shrink-0 text-coral" />
