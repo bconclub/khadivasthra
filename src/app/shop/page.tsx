@@ -124,57 +124,62 @@ export default function ShopPage() {
           {/* Main Content */}
           <div className="flex-1">
             {/* Mobile Filters Toggle & Sort - sticky */}
-            <div className="lg:hidden sticky top-0 z-40 -mx-4 px-4 py-3 flex gap-3 bg-cream/80 backdrop-blur-lg border-b border-white/40">
-              <button
-                onClick={() => setShowFilters(!showFilters)}
-                className="flex-1 flex items-center justify-center gap-2 bg-white/70 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-white/50 text-sm font-medium"
-              >
-                <Filter className="w-4 h-4" />
-                Filters
-                {selectedCategory && <span className="w-1.5 h-1.5 rounded-full bg-coral" />}
-              </button>
-              <div className="flex-1 relative">
-                <select
-                  className="w-full appearance-none bg-white/70 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-white/50 pr-10 text-sm font-medium"
-                  onChange={(e) => setSortBy(e.target.value === "" ? null : e.target.value as typeof sortBy)}
-                  value={sortBy || ""}
+            <div className="lg:hidden sticky top-0 z-40 -mx-4 px-4 bg-cream/80 backdrop-blur-lg border-b border-white/40">
+              <div className="flex gap-3 py-3">
+                <button
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl shadow-sm border text-sm font-medium transition-colors ${
+                    showFilters
+                      ? "bg-coral text-white border-coral"
+                      : "bg-white/70 backdrop-blur-sm border-white/50"
+                  }`}
                 >
-                  <option value="">Sort: Featured</option>
-                  <option value="price-asc">Price: Low to High</option>
-                  <option value="price-desc">Price: High to Low</option>
-                  <option value="newest">Newest First</option>
-                </select>
-                <ArrowUpDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Mobile Filters Panel */}
-            {showFilters && (
-              <div className="lg:hidden mb-6 bg-white rounded-xl p-4 shadow-sm">
-                <h3 className="font-bold text-text mb-3">Categories</h3>
-                <div className="flex flex-wrap gap-2">
-                  <button
-                    onClick={() => { setSelectedCategory(null); setShowFilters(false); }}
-                    className={`px-4 py-2 rounded-full text-sm transition-colors ${
-                      !selectedCategory ? "bg-coral text-white" : "bg-cream text-text"
-                    }`}
+                  <Filter className="w-4 h-4" />
+                  Filters
+                  {selectedCategory && !showFilters && <span className="w-1.5 h-1.5 rounded-full bg-coral" />}
+                </button>
+                <div className="flex-1 relative">
+                  <select
+                    className="w-full appearance-none bg-white/70 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-white/50 pr-10 text-sm font-medium"
+                    onChange={(e) => setSortBy(e.target.value === "" ? null : e.target.value as typeof sortBy)}
+                    value={sortBy || ""}
                   >
-                    All
-                  </button>
-                  {categoryNames.map((cat) => (
-                    <button
-                      key={cat}
-                      onClick={() => { setSelectedCategory(cat); setShowFilters(false); }}
-                      className={`px-4 py-2 rounded-full text-sm transition-colors ${
-                        selectedCategory === cat ? "bg-coral text-white" : "bg-cream text-text"
-                      }`}
-                    >
-                      {cat}
-                    </button>
-                  ))}
+                    <option value="">Sort: Featured</option>
+                    <option value="price-asc">Price: Low to High</option>
+                    <option value="price-desc">Price: High to Low</option>
+                    <option value="newest">Newest First</option>
+                  </select>
+                  <ArrowUpDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 </div>
               </div>
-            )}
+
+              {/* Filter Panel - inside sticky container */}
+              {showFilters && (
+                <div className="pb-3">
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      onClick={() => { setSelectedCategory(null); setShowFilters(false); }}
+                      className={`px-3.5 py-1.5 rounded-full text-sm transition-colors ${
+                        !selectedCategory ? "bg-coral text-white" : "bg-white/80 text-text"
+                      }`}
+                    >
+                      All
+                    </button>
+                    {categoryNames.map((cat) => (
+                      <button
+                        key={cat}
+                        onClick={() => { setSelectedCategory(cat); setShowFilters(false); }}
+                        className={`px-3.5 py-1.5 rounded-full text-sm transition-colors ${
+                          selectedCategory === cat ? "bg-coral text-white" : "bg-white/80 text-text"
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Results Header */}
             <div className="flex items-center justify-between mb-6">
