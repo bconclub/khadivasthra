@@ -5,6 +5,7 @@ export async function getProducts(): Promise<ProductWithCategory[]> {
   const { data, error } = await supabase
     .from('products')
     .select('*, category:categories(*)')
+    .eq('is_active', true)
     .order('created_at', { ascending: false });
   if (error) throw error;
   return data || [];
@@ -25,6 +26,7 @@ export async function getFeaturedProducts(): Promise<ProductWithCategory[]> {
     .from('products')
     .select('*, category:categories(name, slug)')
     .eq('is_featured', true)
+    .eq('is_active', true)
     .limit(8);
   if (error) throw error;
   return (data || []) as ProductWithCategory[];
@@ -35,6 +37,7 @@ export async function getBestSellingProducts(): Promise<ProductWithCategory[]> {
     .from('products')
     .select('*, category:categories(name, slug)')
     .eq('is_best_seller', true)
+    .eq('is_active', true)
     .limit(8);
   if (error) throw error;
   return (data || []) as ProductWithCategory[];
@@ -45,6 +48,7 @@ export async function getProductsByCategory(categoryId: string): Promise<Product
     .from('products')
     .select('*, category:categories(*)')
     .eq('category_id', categoryId)
+    .eq('is_active', true)
     .order('created_at', { ascending: false });
   if (error) throw error;
   return data || [];
@@ -65,6 +69,7 @@ export async function getRelatedProducts(product: Product, limit = 4): Promise<P
     .from('products')
     .select('*, category:categories(name, slug)')
     .eq('category_id', product.category_id)
+    .eq('is_active', true)
     .neq('id', product.id)
     .limit(limit);
   if (error) throw error;
