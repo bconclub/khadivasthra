@@ -5,10 +5,12 @@ import Image from "next/image";
 import { ShoppingBag, Menu, X, Search } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { useCart } from "@/context/CartContext";
+import { useSearch } from "@/context/SearchContext";
 import { Button } from "@/components/ui/button";
 
 export function Header() {
     const { cartCount, openCart } = useCart();
+    const { openSearch } = useSearch();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [showHeaderLogo, setShowHeaderLogo] = useState(false);
@@ -129,6 +131,7 @@ export function Header() {
                         size="icon"
                         className="header__search-button text-white hover:text-cream hover:bg-white/20"
                         aria-label="Search"
+                        onClick={openSearch}
                     >
                         <Search className="h-5 w-5" />
                     </Button>

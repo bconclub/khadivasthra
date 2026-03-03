@@ -3,6 +3,7 @@ import { Playfair_Display, Outfit } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/context/CartContext";
 import { AdminAuthProvider } from "@/context/AdminAuthContext";
+import { SearchProvider } from "@/context/SearchContext";
 import { ToastProvider } from "@/components/ui/ToastProvider";
 import { LayoutWrapper } from "@/components/layout/LayoutWrapper";
 
@@ -38,9 +39,11 @@ export default function RootLayout({
       <body className={`${outfit.variable} ${playfair.variable} font-sans min-h-screen flex flex-col bg-white text-text antialiased`}>
         <AdminAuthProvider>
           <CartProvider>
-            <LayoutWrapper>
-              {children}
-            </LayoutWrapper>
+            <SearchProvider>
+              <LayoutWrapper>
+                {children}
+              </LayoutWrapper>
+            </SearchProvider>
             <ToastProvider />
           </CartProvider>
         </AdminAuthProvider>

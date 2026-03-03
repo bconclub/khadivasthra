@@ -4,10 +4,12 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Tag, ShoppingBag, Search, User } from "lucide-react";
 import { useCart } from "@/context/CartContext";
+import { useSearch } from "@/context/SearchContext";
 
 export function BottomBar() {
     const pathname = usePathname();
     const { cartCount, openCart } = useCart();
+    const { openSearch } = useSearch();
     const isHome = pathname === "/";
 
     // On home page, hide unless cart has items
@@ -49,13 +51,13 @@ export function BottomBar() {
                     <span className="text-[10px] font-medium">Cart</span>
                 </button>
 
-                <Link
-                    href="/shop"
+                <button
+                    onClick={openSearch}
                     className="bottom-bar__item flex flex-col items-center justify-center gap-0.5 flex-1 py-1 text-gray-700 hover:text-gray-900 transition-colors"
                 >
                     <Search className="h-5 w-5" strokeWidth={1.8} />
                     <span className="text-[10px] font-medium">Search</span>
-                </Link>
+                </button>
 
                 <Link
                     href="/account"
