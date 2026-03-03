@@ -98,18 +98,22 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50">
+      <div className="lg:hidden fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50 shadow-sm">
         <div className="flex items-center justify-between px-4 h-14">
           <Link href="/admin" className="text-lg font-bold text-coral font-serif">
             Khadi Vasthra
           </Link>
-          <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="w-10 h-10 flex items-center justify-center rounded-lg bg-gray-100 text-gray-700 hover:bg-coral/10 hover:text-coral transition-colors"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
 
         {mobileMenuOpen && (
-          <div className="bg-white border-t border-gray-100 px-4 py-2">
+          <div className="bg-white border-t border-gray-100 px-4 py-2 shadow-lg max-h-[calc(100vh-3.5rem)] overflow-y-auto">
             {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href));
               return (
@@ -127,13 +131,15 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                 </Link>
               );
             })}
-            <button
-              onClick={handleSignOut}
-              className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-gray-600 w-full"
-            >
-              <LogOut className="w-5 h-5" />
-              Sign Out
-            </button>
+            <div className="border-t border-gray-100 mt-2 pt-2">
+              <button
+                onClick={handleSignOut}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium text-red-500 w-full hover:bg-red-50 transition-colors"
+              >
+                <LogOut className="w-5 h-5" />
+                Sign Out
+              </button>
+            </div>
           </div>
         )}
       </div>

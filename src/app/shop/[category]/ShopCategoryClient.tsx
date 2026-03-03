@@ -101,7 +101,7 @@ export default function ShopCategoryClient({ slug }: { slug: string }) {
         </div>
 
         {sortedProducts.length > 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-5">
             {sortedProducts.map((product) => (
               <ProductCard key={product.id} product={toCardProduct(product)} variant="white" />
             ))}

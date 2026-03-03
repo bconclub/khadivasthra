@@ -89,7 +89,7 @@ export default function CollectionsPage() {
               </div>
 
               {/* Product Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
                 {categoryProducts.map((product) => (
                   <ProductCard key={product.id} product={toCardProduct(product)} variant="cream" />
                 ))}
