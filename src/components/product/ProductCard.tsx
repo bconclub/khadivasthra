@@ -55,7 +55,7 @@ export function ProductCard({ product, variant = "white", showHeart = false }: P
 
     return (
         <div className={`product-card group relative ${cardBg} rounded-xl overflow-hidden shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300 border ${borderColor} hover:border-coral/30 flex flex-col h-full`}>
-            <Link href={`/product/${product.slug || product.id}`} className="product-card__image-link block relative aspect-[2/3] overflow-hidden bg-cream/30">
+            <Link href={`/product/${product.slug || product.id}`} className="product-card__image-link block relative aspect-[3/4] overflow-hidden bg-cream/30">
                 {hasValidImage ? (
                     <Image
                         src={imageUrl}
@@ -104,22 +104,22 @@ export function ProductCard({ product, variant = "white", showHeart = false }: P
                 </div>
             </Link>
 
-            <div className={`product-card__content p-5 flex flex-col flex-grow ${cardBg} transition-colors`}>
-                <p className="product-card__category text-xs text-text-muted font-semibold tracking-wider uppercase mb-2">{product.category}</p>
+            <div className={`product-card__content p-3 md:p-4 flex flex-col flex-grow ${cardBg} transition-colors`}>
+                <p className="product-card__category text-[10px] text-text-muted font-medium tracking-widest uppercase mb-1">{product.category}</p>
                 <Link href={`/product/${product.slug || product.id}`} className="product-card__name-link flex-grow">
-                    <h3 className="product-card__name font-bold text-lg text-text font-serif leading-tight hover:text-coral transition-colors line-clamp-2" title={product.name}>{product.name}</h3>
+                    <h3 className="product-card__name font-semibold text-sm text-text leading-snug hover:text-coral transition-colors line-clamp-2" title={product.name}>{product.name}</h3>
                 </Link>
-                <div className={`product-card__footer mt-4 pt-4 border-t ${borderColor} flex flex-col gap-3`}>
-                    <div className="product-card__pricing flex items-baseline flex-wrap gap-x-2 gap-y-0">
-                        <span className="product-card__price font-bold text-xl text-orange font-serif">₹{product.price}</span>
+                <div className={`product-card__footer mt-3 pt-3 border-t ${borderColor} flex flex-col gap-2`}>
+                    <div className="product-card__pricing flex items-baseline flex-wrap gap-x-1.5 gap-y-0">
+                        <span className="product-card__price font-bold text-base text-orange">₹{product.price}</span>
                         {hasDiscount && (
-                            <span className="product-card__compare-price text-sm text-text-muted line-through">₹{product.compare_price}</span>
+                            <span className="product-card__compare-price text-xs text-text-muted line-through">₹{product.compare_price}</span>
                         )}
                     </div>
                     <Button
                         size="sm"
                         variant="outline"
-                        className={`product-card__add-button rounded-full w-full ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        className={`product-card__add-button rounded-full w-full text-xs h-8 ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : ''}`}
                         disabled={isOutOfStock}
                         onClick={(e) => {
                             e.preventDefault();
