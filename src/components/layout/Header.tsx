@@ -12,38 +12,45 @@ export function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [showHeaderLogo, setShowHeaderLogo] = useState(false);
-    const [showHeader, setShowHeader] = useState(false);
+    const [showHeader, setShowHeader] = useState(true);
+    const [lastScrollY, setLastScrollY] = useState(0);
 
     useEffect(() => {
         const handleScroll = () => {
+            const currentScrollY = window.scrollY;
+
+            // Hide header on scroll down, show on scroll up
+            if (currentScrollY > lastScrollY && currentScrollY > 80) {
+                setShowHeader(false);
+            } else {
+                setShowHeader(true);
+            }
+
+            // Show logo in header once scrolled past hero logo or 100px
             const heroLogo = document.getElementById('hero-logo');
             if (heroLogo) {
                 const rect = heroLogo.getBoundingClientRect();
-                // Show header when hero logo reaches top of viewport (0px)
-                const threshold = 10; // Small buffer
-                const shouldShowHeader = rect.top <= threshold;
-                setShowHeader(shouldShowHeader);
-                setShowHeaderLogo(shouldShowHeader);
+                const shouldShowLogo = rect.top <= 10;
+                setShowHeaderLogo(shouldShowLogo);
             } else {
-                // If no hero logo found, show header after scrolling
-                setShowHeader(window.scrollY > 100);
-                setShowHeaderLogo(window.scrollY > 100);
+                setShowHeaderLogo(currentScrollY > 100);
             }
-            setScrolled(window.scrollY > 50);
+
+            setScrolled(currentScrollY > 50);
+            setLastScrollY(currentScrollY);
         };
 
-        window.addEventListener('scroll', handleScroll);
-        // Check on mount in case page is already scrolled
+        window.addEventListener('scroll', handleScroll, { passive: true });
         handleScroll();
 
         return () => window.removeEventListener('scroll', handleScroll);
-    }, []);
+    }, [lastScrollY]);
 
     return (
         <header className={`header fixed top-0 z-50 w-full transition-all duration-300 ${showHeader
                 ? 'opacity-100 translate-y-0 pointer-events-auto'
                 : 'opacity-0 -translate-y-full pointer-events-none'
-            } bg-black/50 backdrop-blur-md border-b border-white/10 shadow-sm`}>
+            } bg-black/70 backdrop-blur-md border-b border-white/10 shadow-sm`}>
             <div className="header__container container mx-auto px-4 max-w-7xl flex h-16 md:h-20 items-center justify-between relative">
                 {/* Mobile Hamburger - left side, always visible on mobile */}
                 <Button

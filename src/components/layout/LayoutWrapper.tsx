@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { CartDrawer } from "./CartDrawer";
+import { BottomBar } from "./BottomBar";
 
 export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -14,13 +15,14 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  // Regular routes get header/footer + cart drawer
+  // Regular routes get header/footer + cart drawer + bottom bar
   return (
     <>
       <Header />
-      <main className="flex-grow">{children}</main>
+      <main className="flex-grow pb-16 md:pb-0">{children}</main>
       <Footer />
       <CartDrawer />
+      <BottomBar />
     </>
   );
 }
