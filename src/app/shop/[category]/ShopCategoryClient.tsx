@@ -75,7 +75,7 @@ export default function ShopCategoryClient({ slug }: { slug: string }) {
             {category.name}
           </h1>
           <p className="text-text-muted text-lg max-w-2xl">
-            {category.description || `Browse our collection of ${category.name.toLowerCase()}. Each piece is handcrafted by skilled artisans from Aluva, Kerala.`}
+            {category.description || `Browse our collection of ${category.name.toLowerCase()}. Each piece is handcrafted by skilled artisans of Kerala.`}
           </p>
         </div>
       </div>

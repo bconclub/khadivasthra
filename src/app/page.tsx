@@ -119,7 +119,7 @@ export default function Home() {
             />
           </div>
           <p className="hero-section__description text-xl md:text-2xl text-white/95 max-w-2xl mx-auto font-light leading-relaxed drop-shadow-md mb-6">
-            Discover the finest collection of handcrafted Mundus and Dhotis, brought to you directly from the artisans of Aluva.
+            Discover the finest collection of handcrafted Mundus and Dhotis, brought to you directly from the artisans of Kerala.
           </p>
           <div className="hero-section__actions flex flex-col sm:flex-row items-center justify-center gap-6">
             <Link href="/shop" className="hero-section__cta-primary">

@@ -11,9 +11,13 @@ const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=Hi%2C%20I%27m%20inte
 export function BottomBar() {
     const pathname = usePathname();
     const { cartCount, openCart } = useCart();
+    const isHome = pathname === "/";
+
+    // On home page, hide unless cart has items
+    if (isHome && cartCount === 0) return null;
 
     return (
-        <div className="bottom-bar fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/60 backdrop-blur-xl border-t border-white/30 shadow-[0_-4px_20px_rgba(0,0,0,0.06)]">
+        <div className={`bottom-bar fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/60 backdrop-blur-xl border-t border-white/30 shadow-[0_-4px_20px_rgba(0,0,0,0.06)] transition-all duration-300 ${isHome ? 'animate-slide-up' : ''}`}>
             <nav className="flex items-center justify-around h-16 px-2">
                 <Link
                     href="/"

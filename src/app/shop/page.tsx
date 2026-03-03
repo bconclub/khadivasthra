@@ -62,7 +62,7 @@ export default function ShopPage() {
           </h1>
           <p className="text-text-muted text-lg max-w-2xl mx-auto">
             Discover our complete collection of authentic Kerala handloom mundus,
-            crafted by skilled artisans from Aluva.
+            crafted by skilled artisans of Kerala.
           </p>
         </div>
       </div>
