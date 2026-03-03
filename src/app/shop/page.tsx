@@ -53,19 +53,7 @@ export default function ShopPage() {
   }
 
   return (
-    <div className="shop-page min-h-screen bg-cream">
-      {/* Hero Banner */}
-      <div className="bg-coral/10 py-12">
-        <div className="container mx-auto px-4 max-w-7xl text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-text font-serif mb-4">
-            Shop All Products
-          </h1>
-          <p className="text-text-muted text-lg max-w-2xl mx-auto">
-            Discover our complete collection of authentic Kerala handloom mundus,
-            crafted by skilled artisans of Kerala.
-          </p>
-        </div>
-      </div>
+    <div className="shop-page min-h-screen bg-cream pt-4">
 
       <div className="container mx-auto px-4 max-w-7xl py-8">
         <div className="flex flex-col lg:flex-row gap-8">
