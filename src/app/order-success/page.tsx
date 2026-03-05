@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, MessageCircle, ShoppingBag, Truck } from "lucide-react";
+import { CheckCircle2, ShoppingBag, Truck } from "lucide-react";
 import { Suspense, useEffect } from "react";
 import { trackPurchase } from "@/lib/fbq";
 
@@ -19,11 +19,6 @@ function OrderSuccessContent() {
       trackPurchase(orderNumber, totalParam ? parseFloat(totalParam) : 0);
     }
   }, [isPaid, orderNumber, totalParam]);
-
-  const whatsappMessage = isPaid
-    ? `Hi! I just paid for my order on Khadi Vasthra. My order number is: ${orderNumber}.`
-    : `Hi! I just placed an order on Khadi Vasthra. My order number is: ${orderNumber}. Could you confirm the payment details?`;
-  const whatsappUrl = `https://wa.me/918714090510?text=${encodeURIComponent(whatsappMessage)}`;
 
   return (
     <div className="min-h-screen bg-cream flex items-center justify-center px-4">
@@ -49,8 +44,8 @@ function OrderSuccessContent() {
 
           <p className="text-sm text-text-muted mb-8">
             {isPaid
-              ? "You will receive order updates on your phone. For any queries, feel free to reach out on WhatsApp."
-              : "We will reach out to you on WhatsApp to confirm payment and delivery details. You can also contact us directly."}
+              ? "You will receive order updates on your phone."
+              : "We will reach out to you to confirm payment and delivery details."}
           </p>
 
           <div className="space-y-3">
@@ -65,16 +60,6 @@ function OrderSuccessContent() {
                 </Button>
               </Link>
             )}
-
-            <a href={whatsappUrl} target="_blank" rel="noopener noreferrer" className="block">
-              <Button
-                size="lg"
-                variant="secondary"
-                className="w-full flex items-center justify-center gap-2 h-12"
-              >
-                <MessageCircle className="h-5 w-5" /> Chat on WhatsApp
-              </Button>
-            </a>
 
             <Link href="/shop" className="block">
               <Button

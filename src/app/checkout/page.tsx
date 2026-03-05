@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useRazorpay } from "@/hooks/useRazorpay";
 import { Button } from "@/components/ui/button";
-import { createOrder, createRazorpayOrder, verifyRazorpayPayment, checkShippingServiceability } from "@/lib/services/orders";
+import { createOrder, createRazorpayOrder, verifyRazorpayPayment, createShiprocketOrder, checkShippingServiceability } from "@/lib/services/orders";
 import Link from "next/link";
 import { ChevronLeft, Loader2, ShoppingBag, CheckCircle2, XCircle, Truck } from "lucide-react";
 import type { CheckoutFormData, Order, ServiceabilityResult } from "@/types";
@@ -106,6 +106,13 @@ export default function CheckoutPage() {
             response.razorpay_signature
           );
           if (result.verified) {
+            // Ensure Shiprocket order is created (fallback if server-side auto-create failed)
+            try {
+              await createShiprocketOrder(order.id);
+            } catch {
+              // Non-blocking — admin can manually create from orders page
+              console.warn("Shiprocket auto-create fallback failed for order:", order.id);
+            }
             clearCart();
             router.push(`/order-success?order=${order.order_number}&paid=true&total=${order.total}`);
           } else {
@@ -257,18 +264,6 @@ export default function CheckoutPage() {
                       placeholder="+91 XXXXX XXXXX"
                     />
                   </div>
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-medium text-text mb-1">
-                      Email (optional)
-                    </label>
-                    <input
-                      type="email"
-                      value={form.email}
-                      onChange={(e) => updateField("email", e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
-                      placeholder="your@email.com"
-                    />
-                  </div>
                 </div>
               </div>
 
@@ -289,7 +284,19 @@ export default function CheckoutPage() {
                       placeholder="House/Flat No., Street, Area"
                     />
                   </div>
-                  <div className="grid md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-1">
+                      Email (optional)
+                    </label>
+                    <input
+                      type="email"
+                      value={form.email}
+                      onChange={(e) => updateField("email", e.target.value)}
+                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
+                      placeholder="your@email.com"
+                    />
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-text mb-1">
                         City <span className="text-coral">*</span>
@@ -301,18 +308,6 @@ export default function CheckoutPage() {
                         onChange={(e) => updateField("city", e.target.value)}
                         className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
                         placeholder="City"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-text mb-1">
-                        State
-                      </label>
-                      <input
-                        type="text"
-                        value={form.state}
-                        onChange={(e) => updateField("state", e.target.value)}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
-                        placeholder="State"
                       />
                     </div>
                     <div>
