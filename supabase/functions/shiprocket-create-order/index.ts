@@ -16,6 +16,7 @@ const corsHeaders = {
 const SHIPROCKET_BASE = "https://apiv2.shiprocket.in/v1/external";
 
 async function getShiprocketToken(): Promise<string> {
+  console.log("Authenticating with Shiprocket, email:", SHIPROCKET_EMAIL);
   const res = await fetch(`${SHIPROCKET_BASE}/auth/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -26,10 +27,16 @@ async function getShiprocketToken(): Promise<string> {
   });
 
   if (!res.ok) {
-    throw new Error("Failed to authenticate with Shiprocket");
+    const errText = await res.text();
+    console.error("Shiprocket auth failed:", res.status, errText);
+    throw new Error(`Failed to authenticate with Shiprocket (${res.status}): ${errText}`);
   }
 
   const data = await res.json();
+  if (!data.token) {
+    console.error("Shiprocket auth returned no token:", JSON.stringify(data));
+    throw new Error("Shiprocket auth returned no token");
+  }
   return data.token;
 }
 
@@ -69,8 +76,8 @@ serve(async (req) => {
       );
     }
 
-    // Skip if already has a Shiprocket order
-    if (order.shiprocket_order_id) {
+    // Skip if already has a valid Shiprocket order (ignore "undefined" string)
+    if (order.shiprocket_order_id && order.shiprocket_order_id !== "undefined" && order.shiprocket_order_id !== "null") {
       return new Response(
         JSON.stringify({
           shiprocket_order_id: order.shiprocket_order_id,
@@ -82,6 +89,15 @@ serve(async (req) => {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         }
       );
+    }
+
+    // Clear any bad shiprocket data before proceeding
+    if (order.shiprocket_order_id === "undefined" || order.shiprocket_order_id === "null") {
+      console.log("Clearing bad shiprocket_order_id:", order.shiprocket_order_id);
+      await supabase
+        .from("orders")
+        .update({ shiprocket_order_id: null, shipment_id: null, awb_code: null })
+        .eq("id", order_id);
     }
 
     console.log("Processing order:", order.id, "order_number:", order.order_number, "status:", order.status, "payment:", order.payment_status);
@@ -176,9 +192,62 @@ serve(async (req) => {
 
     if (!createRes.ok) {
       const errBody = await createRes.text();
-      console.error("Shiprocket create order error:", errBody);
+      console.error("Shiprocket create order error:", createRes.status, errBody);
+
+      // Parse error to get useful message
+      let shiprocketError = "Failed to create Shiprocket order";
+      let errJson: Record<string, unknown> = {};
+      try {
+        errJson = JSON.parse(errBody);
+        // Shiprocket returns errors in different formats
+        if (errJson?.message) shiprocketError = String(errJson.message);
+        else if (errJson?.errors) shiprocketError = JSON.stringify(errJson.errors);
+        else shiprocketError = errBody;
+      } catch { /* use raw text */ }
+
+      // If the error says order already exists, try to fetch it from Shiprocket
+      const isAlreadyExists = errBody.toLowerCase().includes("already") || createRes.status === 422;
+      if (isAlreadyExists) {
+        console.log("Order may already exist in Shiprocket, attempting to fetch...");
+        try {
+          const searchRes = await fetch(
+            `${SHIPROCKET_BASE}/orders?search=${encodeURIComponent(order.order_number)}`,
+            {
+              headers: { Authorization: `Bearer ${token}` },
+            }
+          );
+          if (searchRes.ok) {
+            const searchData = await searchRes.json();
+            const existingOrder = searchData?.data?.[0];
+            if (existingOrder?.id) {
+              console.log("Found existing Shiprocket order:", existingOrder.id);
+              await supabase
+                .from("orders")
+                .update({
+                  shiprocket_order_id: String(existingOrder.id),
+                  shipment_id: existingOrder.shipments?.[0]?.id ? String(existingOrder.shipments[0].id) : null,
+                })
+                .eq("id", order_id);
+
+              return new Response(
+                JSON.stringify({
+                  shiprocket_order_id: existingOrder.id,
+                  shipment_id: existingOrder.shipments?.[0]?.id || null,
+                  message: "Recovered existing Shiprocket order",
+                }),
+                {
+                  headers: { ...corsHeaders, "Content-Type": "application/json" },
+                }
+              );
+            }
+          }
+        } catch (searchErr) {
+          console.error("Failed to search existing order:", searchErr);
+        }
+      }
+
       return new Response(
-        JSON.stringify({ error: "Failed to create Shiprocket order" }),
+        JSON.stringify({ error: shiprocketError, shiprocket_status: createRes.status, details: errBody }),
         {
           status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -278,7 +347,7 @@ serve(async (req) => {
   } catch (err) {
     console.error("Edge function error:", err);
     return new Response(
-      JSON.stringify({ error: "Internal server error" }),
+      JSON.stringify({ error: err instanceof Error ? err.message : "Internal server error", stack: err instanceof Error ? err.stack : undefined }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
