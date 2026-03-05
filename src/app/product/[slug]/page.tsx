@@ -27,7 +27,10 @@ function toCardProduct(product: ProductWithCategory) {
 
 export default function ProductDetailPage() {
     const params = useParams();
-    const slug = params.slug as string;
+    // Fall back to URL path when rendered from not-found page (new products without static HTML)
+    const slug = (params?.slug as string) || (typeof window !== 'undefined'
+      ? window.location.pathname.split('/').filter(Boolean)[1] || ''
+      : '');
     const { data: product, loading } = useSupabaseQuery(
       () => getProductBySlug(slug), [slug]
     );

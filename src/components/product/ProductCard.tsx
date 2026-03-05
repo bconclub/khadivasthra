@@ -46,13 +46,13 @@ export function ProductCard({ product }: ProductCardProps) {
     return (
         <div className="product-card group relative bg-white rounded-xl md:rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col h-full">
             {/* Image Section */}
-            <Link href={`/product/${product.slug || product.id}`} className="product-card__image-link block relative aspect-[4/5] overflow-hidden bg-white">
+            <Link href={`/product/${product.slug || product.id}`} className="product-card__image-link block relative aspect-[4/5] overflow-hidden">
                 {hasValidImage ? (
                     <Image
                         src={imageUrl}
                         alt={product.name}
                         fill
-                        className="product-card__image object-cover transition-transform duration-700 group-hover:scale-105"
+                        className="product-card__image object-cover scale-105 transition-transform duration-700 group-hover:scale-110"
                         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                         onError={() => setImageError(true)}
                         unoptimized

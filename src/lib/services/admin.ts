@@ -1,5 +1,15 @@
 import { supabase } from '@/lib/supabase';
-import type { Product, Category, Banner, ProductFormData, CategoryFormData, BannerFormData } from '@/types';
+import type { Product, Category, Banner, ProductFormData, CategoryFormData, BannerFormData, ProductWithCategory } from '@/types';
+
+// Admin: get ALL products (including hidden) with category data
+export async function getAllProducts(): Promise<ProductWithCategory[]> {
+  const { data, error } = await supabase
+    .from('products')
+    .select('*, category:categories(*)')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
 
 // Products CRUD
 export async function createProduct(data: ProductFormData): Promise<Product> {
@@ -124,6 +134,33 @@ export async function getActiveBanners(): Promise<Banner[]> {
     .order('display_order', { ascending: true });
   if (error) throw error;
   return data || [];
+}
+
+// Trigger site rebuild via GitHub Actions
+export async function triggerSiteDeploy(): Promise<void> {
+  const repo = process.env.NEXT_PUBLIC_GITHUB_REPO;
+  const token = process.env.NEXT_PUBLIC_GITHUB_DEPLOY_TOKEN;
+
+  if (!repo || !token) {
+    throw new Error('Deploy not configured. Set NEXT_PUBLIC_GITHUB_REPO and NEXT_PUBLIC_GITHUB_DEPLOY_TOKEN.');
+  }
+
+  const res = await fetch(
+    `https://api.github.com/repos/${repo}/actions/workflows/deploy.yml/dispatches`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/vnd.github.v3+json',
+      },
+      body: JSON.stringify({ ref: 'main' }),
+    }
+  );
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`Deploy trigger failed (${res.status}): ${text}`);
+  }
 }
 
 // Dashboard stats

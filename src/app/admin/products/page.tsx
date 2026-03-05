@@ -4,27 +4,51 @@ import { useState } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { ProductForm } from "@/components/admin/ProductForm";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
-import { getProducts } from "@/lib/services/products";
+import { getAllProducts, updateProduct, createProduct, deleteProduct, triggerSiteDeploy } from "@/lib/services/admin";
 import { getCategories } from "@/lib/services/categories";
-import { createProduct, updateProduct, deleteProduct } from "@/lib/services/admin";
 import type { Product } from "@/types";
-import { Plus, Search, Pencil, Trash2, Loader2, Eye, EyeOff, Star } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Loader2, Eye, EyeOff, Star, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 
+type VisibilityFilter = "all" | "visible" | "hidden";
+
 export default function AdminProductsPage() {
-  const { data: products, loading, refetch } = useSupabaseQuery(getProducts);
+  const { data: products, loading, refetch } = useSupabaseQuery(getAllProducts);
   const { data: categories } = useSupabaseQuery(getCategories);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("");
+  const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>("all");
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | undefined>();
+  const [syncing, setSyncing] = useState(false);
+
+  const handleSync = async () => {
+    setSyncing(true);
+    try {
+      await triggerSiteDeploy();
+      toast.success("Site rebuild triggered! Changes will be live in ~2 minutes.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to trigger deploy");
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const allProducts = products || [];
+
+  // Counts for visibility filter tabs
+  const visibleCount = allProducts.filter((p) => p.is_active).length;
+  const hiddenCount = allProducts.filter((p) => !p.is_active).length;
+
   const filtered = allProducts.filter((p) => {
     const matchesSearch = !search || p.name.toLowerCase().includes(search.toLowerCase());
     const matchesCategory = !categoryFilter || p.category_id === categoryFilter;
-    return matchesSearch && matchesCategory;
+    const matchesVisibility =
+      visibilityFilter === "all" ||
+      (visibilityFilter === "visible" && p.is_active) ||
+      (visibilityFilter === "hidden" && !p.is_active);
+    return matchesSearch && matchesCategory && matchesVisibility;
   });
 
   const handleCreate = async (data: Record<string, unknown>) => {
@@ -99,9 +123,20 @@ export default function AdminProductsPage() {
             <h1 className="text-2xl font-bold text-gray-900">Products</h1>
             <p className="text-gray-500 mt-1">{allProducts.length} total products</p>
           </div>
-          <Button variant="primary" onClick={openCreate}>
-            <Plus className="w-4 h-4 mr-2" /> Add Product
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="primary"
+              onClick={handleSync}
+              disabled={syncing}
+              className="!bg-gray-800 hover:!bg-gray-900"
+            >
+              <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
+              {syncing ? 'Syncing...' : 'Publish Site'}
+            </Button>
+            <Button variant="primary" onClick={openCreate}>
+              <Plus className="w-4 h-4 mr-2" /> Add Product
+            </Button>
+          </div>
         </div>
 
         {/* Form Modal */}
@@ -117,7 +152,41 @@ export default function AdminProductsPage() {
           </div>
         )}
 
-        {/* Filters */}
+        {/* Visibility Filter Tabs */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => setVisibilityFilter("all")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              visibilityFilter === "all"
+                ? "bg-coral text-white"
+                : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+            }`}
+          >
+            All ({allProducts.length})
+          </button>
+          <button
+            onClick={() => setVisibilityFilter("visible")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors inline-flex items-center gap-1.5 ${
+              visibilityFilter === "visible"
+                ? "bg-coral text-white"
+                : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+            }`}
+          >
+            <Eye className="w-3.5 h-3.5" /> Visible ({visibleCount})
+          </button>
+          <button
+            onClick={() => setVisibilityFilter("hidden")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors inline-flex items-center gap-1.5 ${
+              visibilityFilter === "hidden"
+                ? "bg-coral text-white"
+                : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+            }`}
+          >
+            <EyeOff className="w-3.5 h-3.5" /> Hidden ({hiddenCount})
+          </button>
+        </div>
+
+        {/* Search & Category Filters */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -169,11 +238,16 @@ export default function AdminProductsPage() {
                     </tr>
                   ) : (
                     filtered.map((product) => (
-                      <tr key={product.id} className={`hover:bg-gray-50 ${!product.is_active ? 'opacity-60' : ''}`}>
+                      <tr key={product.id} className={`hover:bg-gray-50 ${!product.is_active ? 'bg-gray-50/50' : ''}`}>
                         <td className="px-6 py-4">
-                          <div>
-                            <p className="font-medium text-gray-900 line-clamp-1">{product.name}</p>
-                            <p className="text-xs text-gray-400 font-mono">{product.slug}</p>
+                          <div className="flex items-center gap-2">
+                            {!product.is_active && (
+                              <span className="flex-shrink-0 w-2 h-2 rounded-full bg-gray-300" title="Hidden" />
+                            )}
+                            <div>
+                              <p className={`font-medium line-clamp-1 ${product.is_active ? 'text-gray-900' : 'text-gray-500'}`}>{product.name}</p>
+                              <p className="text-xs text-gray-400 font-mono">{product.slug}</p>
+                            </div>
                           </div>
                         </td>
                         <td className="px-6 py-4 text-sm font-medium text-gray-900">
@@ -191,20 +265,20 @@ export default function AdminProductsPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4">
+                          {/* Toggle Switch */}
                           <button
                             onClick={() => toggleActive(product)}
-                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
-                              product.is_active
-                                ? "bg-green-100 text-green-700 hover:bg-green-200"
-                                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
-                            }`}
+                            className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-coral focus:ring-offset-2"
+                            style={{ backgroundColor: product.is_active ? '#22c55e' : '#d1d5db' }}
                             title={product.is_active ? "Click to hide" : "Click to show"}
+                            role="switch"
+                            aria-checked={product.is_active}
                           >
-                            {product.is_active ? (
-                              <><Eye className="w-3.5 h-3.5" /> Visible</>
-                            ) : (
-                              <><EyeOff className="w-3.5 h-3.5" /> Hidden</>
-                            )}
+                            <span
+                              className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
+                                product.is_active ? 'translate-x-6' : 'translate-x-1'
+                              }`}
+                            />
                           </button>
                         </td>
                         <td className="px-6 py-4">
