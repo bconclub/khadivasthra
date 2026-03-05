@@ -127,6 +127,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         stock_quantity: parseInt(stockQuantity) || 0,
         in_stock: (parseInt(stockQuantity) || 0) > 0,
         care_instructions: careInstructions.filter(Boolean),
+        display_order: product?.display_order ?? 0,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save product");

@@ -6,6 +6,7 @@ export async function getProducts(): Promise<ProductWithCategory[]> {
     .from('products')
     .select('*, category:categories(*)')
     .eq('is_active', true)
+    .order('display_order', { ascending: true })
     .order('created_at', { ascending: false });
   if (error) throw error;
   return data || [];
@@ -49,6 +50,7 @@ export async function getProductsByCategory(categoryId: string): Promise<Product
     .select('*, category:categories(*)')
     .eq('category_id', categoryId)
     .eq('is_active', true)
+    .order('display_order', { ascending: true })
     .order('created_at', { ascending: false });
   if (error) throw error;
   return data || [];

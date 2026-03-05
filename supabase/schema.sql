@@ -35,6 +35,7 @@ CREATE TABLE products (
   is_featured BOOLEAN NOT NULL DEFAULT false,
   is_new BOOLEAN NOT NULL DEFAULT false,
   is_best_seller BOOLEAN NOT NULL DEFAULT false,
+  display_order INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );

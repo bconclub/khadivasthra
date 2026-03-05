@@ -4,10 +4,10 @@ import { useState } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { ProductForm } from "@/components/admin/ProductForm";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
-import { getAllProducts, updateProduct, createProduct, deleteProduct, triggerSiteDeploy } from "@/lib/services/admin";
+import { getAllProducts, updateProduct, createProduct, deleteProduct, updateProductOrder, triggerSiteDeploy } from "@/lib/services/admin";
 import { getCategories } from "@/lib/services/categories";
 import type { Product } from "@/types";
-import { Plus, Search, Pencil, Trash2, Loader2, Eye, EyeOff, Star, RefreshCw } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Loader2, Eye, EyeOff, Star, RefreshCw, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 
@@ -102,6 +102,27 @@ export default function AdminProductsPage() {
       refetch();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to update");
+    }
+  };
+
+  const moveProduct = async (productId: string, direction: "up" | "down") => {
+    const list = filtered;
+    const idx = list.findIndex((p) => p.id === productId);
+    if (idx < 0) return;
+    const swapIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (swapIdx < 0 || swapIdx >= list.length) return;
+
+    const currentOrder = list[idx].display_order ?? idx;
+    const swapOrder = list[swapIdx].display_order ?? swapIdx;
+
+    try {
+      await updateProductOrder([
+        { id: list[idx].id, display_order: swapOrder },
+        { id: list[swapIdx].id, display_order: currentOrder },
+      ]);
+      refetch();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to reorder");
     }
   };
 
@@ -221,6 +242,7 @@ export default function AdminProductsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+                    <th className="px-6 py-3">Order</th>
                     <th className="px-6 py-3">Product</th>
                     <th className="px-6 py-3">Price</th>
                     <th className="px-6 py-3">Stock</th>
@@ -232,13 +254,33 @@ export default function AdminProductsPage() {
                 <tbody className="divide-y divide-gray-100">
                   {filtered.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
+                      <td colSpan={7} className="px-6 py-12 text-center text-gray-400">
                         No products found
                       </td>
                     </tr>
                   ) : (
                     filtered.map((product) => (
                       <tr key={product.id} className={`hover:bg-gray-50 ${!product.is_active ? 'bg-gray-50/50' : ''}`}>
+                        <td className="px-6 py-4">
+                          <div className="flex flex-col items-center gap-0.5">
+                            <button
+                              onClick={() => moveProduct(product.id, "up")}
+                              disabled={filtered.indexOf(product) === 0}
+                              className="p-1 text-gray-400 hover:text-coral disabled:opacity-20 disabled:cursor-not-allowed rounded hover:bg-gray-100 transition-colors"
+                              title="Move up"
+                            >
+                              <ArrowUp className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => moveProduct(product.id, "down")}
+                              disabled={filtered.indexOf(product) === filtered.length - 1}
+                              className="p-1 text-gray-400 hover:text-coral disabled:opacity-20 disabled:cursor-not-allowed rounded hover:bg-gray-100 transition-colors"
+                              title="Move down"
+                            >
+                              <ArrowDown className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
                             {!product.is_active && (

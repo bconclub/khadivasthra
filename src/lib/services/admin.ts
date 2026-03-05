@@ -6,6 +6,7 @@ export async function getAllProducts(): Promise<ProductWithCategory[]> {
   const { data, error } = await supabase
     .from('products')
     .select('*, category:categories(*)')
+    .order('display_order', { ascending: true })
     .order('created_at', { ascending: false });
   if (error) throw error;
   return data || [];
@@ -58,6 +59,16 @@ export async function updateProduct(id: string, data: Partial<ProductFormData>):
 export async function deleteProduct(id: string): Promise<void> {
   const { error } = await supabase.from('products').delete().eq('id', id);
   if (error) throw error;
+}
+
+export async function updateProductOrder(updates: { id: string; display_order: number }[]): Promise<void> {
+  // Update each product's display_order
+  const promises = updates.map(({ id, display_order }) =>
+    supabase.from('products').update({ display_order }).eq('id', id)
+  );
+  const results = await Promise.all(promises);
+  const err = results.find((r) => r.error);
+  if (err?.error) throw err.error;
 }
 
 // Categories CRUD

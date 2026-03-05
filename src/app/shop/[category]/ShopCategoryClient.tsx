@@ -8,6 +8,7 @@ import { getCategoryBySlug } from "@/lib/services/categories";
 import type { ProductWithCategory } from "@/types";
 import { ArrowUpDown, ChevronLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 function toCardProduct(product: ProductWithCategory) {
   return {
@@ -65,20 +66,48 @@ export default function ShopCategoryClient({ slug }: { slug: string }) {
 
   return (
     <div className="shop-category-page min-h-screen bg-cream">
-      <div className="bg-coral/10 py-12">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <Link href="/shop" className="inline-flex items-center gap-2 text-coral hover:underline mb-4">
-            <ChevronLeft className="w-4 h-4" />
-            Back to Shop
-          </Link>
-          <h1 className="text-4xl md:text-5xl font-bold text-text font-serif mb-4">
-            {category.name}
-          </h1>
-          <p className="text-text-muted text-lg max-w-2xl">
-            {category.description || `Browse our collection of ${category.name.toLowerCase()}. Each piece is handcrafted by skilled artisans of Kerala.`}
-          </p>
+      {category.image_url ? (
+        <div className="relative h-48 md:h-72 overflow-hidden">
+          <Image
+            src={category.image_url}
+            alt={category.name}
+            fill
+            className="object-cover"
+            priority
+            unoptimized
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-black/20" />
+          <div className="absolute inset-0 flex flex-col justify-end">
+            <div className="container mx-auto px-4 max-w-7xl pb-8">
+              <Link href="/shop" className="inline-flex items-center gap-2 text-white/80 hover:text-white mb-3 text-sm">
+                <ChevronLeft className="w-4 h-4" />
+                Back to Shop
+              </Link>
+              <h1 className="text-3xl md:text-5xl font-bold text-white font-serif mb-2">
+                {category.name}
+              </h1>
+              <p className="text-white/80 text-base md:text-lg max-w-2xl">
+                {category.description || `Browse our collection of ${category.name.toLowerCase()}. Each piece is handcrafted by skilled artisans of Kerala.`}
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="bg-coral/10 py-12">
+          <div className="container mx-auto px-4 max-w-7xl">
+            <Link href="/shop" className="inline-flex items-center gap-2 text-coral hover:underline mb-4">
+              <ChevronLeft className="w-4 h-4" />
+              Back to Shop
+            </Link>
+            <h1 className="text-4xl md:text-5xl font-bold text-text font-serif mb-4">
+              {category.name}
+            </h1>
+            <p className="text-text-muted text-lg max-w-2xl">
+              {category.description || `Browse our collection of ${category.name.toLowerCase()}. Each piece is handcrafted by skilled artisans of Kerala.`}
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="container mx-auto px-4 max-w-7xl py-8">
         {/* Sort bar - sticky on mobile */}
