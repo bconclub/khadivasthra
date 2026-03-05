@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ShoppingBag, Menu, X, Search } from "lucide-react";
 import React, { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useSearch } from "@/context/SearchContext";
 import { Button } from "@/components/ui/button";
@@ -11,11 +12,15 @@ import { Button } from "@/components/ui/button";
 export function Header() {
     const { cartCount, openCart } = useCart();
     const { openSearch } = useSearch();
+    const pathname = usePathname();
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [scrolled, setScrolled] = useState(false);
     const [showHeaderLogo, setShowHeaderLogo] = useState(false);
     const [showHeader, setShowHeader] = useState(false);
     const lastScrollYRef = React.useRef(0);
+
+    // Keep header always visible on desktop for shop/product pages
+    const isShopPage = pathname?.startsWith('/shop') || pathname?.startsWith('/product') || pathname?.startsWith('/collections') || pathname?.startsWith('/offers');
 
     useEffect(() => {
         const handleScroll = () => {
@@ -47,9 +52,12 @@ export function Header() {
     }, []);
 
     return (
-        <header className={`header fixed top-0 z-50 w-full transition-all duration-300 ${showHeader
-                ? 'opacity-100 translate-y-0 pointer-events-auto'
-                : 'opacity-0 -translate-y-full pointer-events-none'
+        <header className={`header fixed top-0 z-50 w-full transition-all duration-300 ${
+                isShopPage
+                ? `md:opacity-100 md:translate-y-0 md:pointer-events-auto ${showHeader ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-full pointer-events-none'}`
+                : showHeader
+                    ? 'opacity-100 translate-y-0 pointer-events-auto'
+                    : 'opacity-0 -translate-y-full pointer-events-none'
             } bg-black/70 backdrop-blur-md border-b border-white/10 shadow-sm`}>
             <div className="header__container container mx-auto px-4 max-w-7xl flex h-16 md:h-20 items-center justify-between relative">
                 {/* Mobile Hamburger - left side, always visible on mobile */}
@@ -62,8 +70,8 @@ export function Header() {
                     {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
                 </Button>
 
-                {/* Desktop Logo - shows after scroll */}
-                <div className={`hidden md:block transition-all duration-300 min-w-0 ${showHeaderLogo
+                {/* Desktop Logo - shows after scroll, or always on shop pages */}
+                <div className={`hidden md:block transition-all duration-300 min-w-0 ${showHeaderLogo || isShopPage
                         ? 'opacity-100 translate-y-0 w-auto'
                         : 'opacity-0 -translate-y-2 w-0 pointer-events-none overflow-hidden'
                     }`}>
