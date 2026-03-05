@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Tag, ShoppingBag, Search, User } from "lucide-react";
+import { Home, Tag, ShoppingBag, Search } from "lucide-react";
 import { useCart } from "@/context/CartContext";
 import { useSearch } from "@/context/SearchContext";
 
@@ -59,14 +59,6 @@ export function BottomBar() {
                     <span className="text-[10px] font-medium">Search</span>
                 </button>
 
-                <Link
-                    href="/account"
-                    className={`bottom-bar__item flex flex-col items-center justify-center gap-0.5 flex-1 py-1 transition-colors ${pathname?.startsWith("/account") ? "text-coral" : "text-gray-700 hover:text-gray-900"
-                        }`}
-                >
-                    <User className="h-5 w-5" strokeWidth={pathname?.startsWith("/account") ? 2.5 : 1.8} />
-                    <span className="text-[10px] font-medium">Account</span>
-                </Link>
             </nav>
         </div>
     );
