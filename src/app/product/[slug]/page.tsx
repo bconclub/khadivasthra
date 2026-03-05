@@ -11,6 +11,7 @@ import { getProductBySlug, getRelatedProducts, recordProductView } from "@/lib/s
 import type { ProductWithCategory } from "@/types";
 import { Minus, Plus, ShoppingBag, Truck, ShieldCheck, Ruler, Droplets, Info, ImageOff, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { trackViewContent } from "@/lib/fbq";
 
 function toCardProduct(product: ProductWithCategory) {
   return {
@@ -44,10 +45,11 @@ export default function ProductDetailPage() {
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const { addToCart } = useCart();
 
-    // Record product view
+    // Record product view + Meta Pixel ViewContent
     useEffect(() => {
       if (product?.id) {
         recordProductView(product.id);
+        trackViewContent({ id: product.id, name: product.name, price: Number(product.price), category: product.category?.name });
       }
     }, [product?.id]);
 

@@ -9,6 +9,7 @@ import { createOrder, createRazorpayOrder, verifyRazorpayPayment, checkShippingS
 import Link from "next/link";
 import { ChevronLeft, Loader2, ShoppingBag, CheckCircle2, XCircle, Truck } from "lucide-react";
 import type { CheckoutFormData, Order, ServiceabilityResult } from "@/types";
+import { trackInitiateCheckout } from "@/lib/fbq";
 
 type PaymentStep = "form" | "creating" | "paying";
 
@@ -106,7 +107,7 @@ export default function CheckoutPage() {
           );
           if (result.verified) {
             clearCart();
-            router.push(`/order-success?order=${order.order_number}&paid=true`);
+            router.push(`/order-success?order=${order.order_number}&paid=true&total=${order.total}`);
           } else {
             setError("Payment verification failed. Please contact support.");
             setPaymentStep("form");
@@ -158,6 +159,7 @@ export default function CheckoutPage() {
 
     setSubmitting(true);
     setPaymentStep("creating");
+    trackInitiateCheckout(items.map((i) => ({ id: i.id, price: i.price, quantity: i.quantity })), orderTotal);
 
     try {
       const order = pendingOrder || await createOrder(form, items, cartTotal, shippingCost);

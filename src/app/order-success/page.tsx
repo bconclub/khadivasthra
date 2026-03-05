@@ -4,12 +4,21 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, MessageCircle, ShoppingBag, Truck } from "lucide-react";
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
+import { trackPurchase } from "@/lib/fbq";
 
 function OrderSuccessContent() {
   const searchParams = useSearchParams();
   const orderNumber = searchParams.get("order") || "";
   const isPaid = searchParams.get("paid") === "true";
+  const totalParam = searchParams.get("total");
+
+  // Fire Meta Pixel Purchase event once
+  useEffect(() => {
+    if (isPaid && orderNumber) {
+      trackPurchase(orderNumber, totalParam ? parseFloat(totalParam) : 0);
+    }
+  }, [isPaid, orderNumber, totalParam]);
 
   const whatsappMessage = isPaid
     ? `Hi! I just paid for my order on Khadi Vasthra. My order number is: ${orderNumber}.`

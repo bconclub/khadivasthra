@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
 import type { CartItem } from "@/types";
+import { trackAddToCart } from "@/lib/fbq";
 
 export type { CartItem };
 
@@ -75,6 +76,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 },
             ];
         });
+        trackAddToCart({ id: product.id, name: product.name, price: product.price }, quantity);
         // Auto-open cart drawer when item is added
         setIsCartOpen(true);
     };
