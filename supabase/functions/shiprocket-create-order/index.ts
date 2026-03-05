@@ -187,15 +187,28 @@ serve(async (req) => {
     }
 
     const createData = await createRes.json();
-    const shiprocketOrderId = String(createData.order_id);
-    const shipmentId = String(createData.shipment_id);
+    console.log("Shiprocket response:", JSON.stringify(createData));
+
+    const shiprocketOrderId = createData.order_id;
+    const shipmentId = createData.shipment_id;
+
+    if (!shiprocketOrderId) {
+      console.error("Shiprocket returned no order_id:", JSON.stringify(createData));
+      return new Response(
+        JSON.stringify({ error: "Shiprocket returned no order_id", details: createData }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
 
     // Update order with Shiprocket IDs
     await supabase
       .from("orders")
       .update({
-        shiprocket_order_id: shiprocketOrderId,
-        shipment_id: shipmentId,
+        shiprocket_order_id: String(shiprocketOrderId),
+        shipment_id: shipmentId ? String(shipmentId) : null,
       })
       .eq("id", order_id);
 

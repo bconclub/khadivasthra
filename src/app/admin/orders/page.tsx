@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getOrders, updateOrderStatus, createShiprocketOrder } from "@/lib/services/orders";
+import { supabase } from "@/lib/supabase";
 import type { OrderStatus } from "@/types";
 import { Loader2, ChevronDown, ChevronUp, Truck, ExternalLink } from "lucide-react";
 import toast from "react-hot-toast";
@@ -52,6 +53,12 @@ export default function AdminOrdersPage() {
   const handleCreateShipment = async (orderId: string) => {
     setCreatingShipment(orderId);
     try {
+      // Clear any bad "undefined" shiprocket_order_id so edge function doesn't skip
+      await supabase
+        .from("orders")
+        .update({ shiprocket_order_id: null, shipment_id: null })
+        .eq("id", orderId);
+
       const result = await createShiprocketOrder(orderId);
       toast.success(`Shipment created${result.awb_code ? ` - AWB: ${result.awb_code}` : ""}`);
       refetch();
@@ -191,7 +198,7 @@ export default function AdminOrdersPage() {
                         <h3 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-1">
                           <Truck className="w-4 h-4" /> Shipping Details
                         </h3>
-                        {order.shiprocket_order_id ? (
+                        {order.shiprocket_order_id && order.shiprocket_order_id !== "undefined" ? (
                           <div className="space-y-2 text-sm">
                             <p><span className="text-gray-500">Shiprocket ID:</span> {order.shiprocket_order_id}</p>
                             {order.awb_code && (
