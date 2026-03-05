@@ -17,10 +17,12 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
+  const isShopPage = pathname?.startsWith('/shop') || pathname?.startsWith('/product') || pathname?.startsWith('/collections') || pathname?.startsWith('/offers');
+
   return (
     <>
       <Header />
-      <main className="flex-grow pb-16 md:pb-0">{children}</main>
+      <main className={`flex-grow pb-16 md:pb-0 ${isShopPage ? 'md:pt-20' : ''}`}>{children}</main>
       <Footer />
       <CartDrawer />
       <BottomBar />
