@@ -19,13 +19,38 @@ const outfit = Outfit({
   display: 'swap',
 });
 
+const siteUrl = "https://khadivasthra.com";
+
 export const metadata: Metadata = {
-  title: "Khadi Vasthra - Kerala Handloom Mundus & Dhotis | Since 1990",
+  metadataBase: new URL(siteUrl),
+  title: "Khadi Vasthra - Kerala Handloom Mundus & Dhotis | Since 2007",
   description: "Premium traditional Kerala mundus and dhotis. Shop authentic Khadi mundus online from Aluva, Kerala.",
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',
     apple: '/favicon.ico',
+  },
+  openGraph: {
+    title: "Khadi Vasthra - Kerala Handloom Mundus & Dhotis",
+    description: "Premium traditional Kerala mundus and dhotis. Shop authentic Khadi mundus online from Aluva, Kerala. Since 2007.",
+    url: siteUrl,
+    siteName: "Khadi Vasthra",
+    images: [
+      {
+        url: "/og-image.webp",
+        width: 1200,
+        height: 630,
+        alt: "Khadi Vasthra - Premium Kerala Handloom",
+      },
+    ],
+    locale: "en_IN",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Khadi Vasthra - Kerala Handloom Mundus & Dhotis",
+    description: "Premium traditional Kerala mundus and dhotis. Shop authentic Khadi mundus online from Aluva, Kerala.",
+    images: ["/og-image.webp"],
   },
 };
 

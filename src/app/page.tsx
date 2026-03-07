@@ -291,14 +291,14 @@ export default function Home() {
             </div>
             <div className="about-section__text space-y-4">
               <span className="about-section__badge inline-block px-4 py-2 bg-orange text-white text-sm font-semibold uppercase tracking-wider rounded-full">
-                Since 1990
+                Since 2007
               </span>
               <h2 className="about-section__title text-3xl md:text-4xl font-bold text-text font-serif leading-tight">
                 Preserving Kerala&apos;s Handloom Heritage
               </h2>
               <p className="about-section__description text-base text-text-muted leading-relaxed">
                 Khadi Vasthra is more than just a store; it&apos;s a celebration of Kerala&apos;s rich textile heritage.
-                Located in the heart of Aluva, we have been bridging the gap between traditional weavers and modern lifestyles since 1990.
+                Located in the heart of Aluva, we have been bridging the gap between traditional weavers and modern lifestyles since 2007.
               </p>
               <p className="about-section__description text-base text-text-muted leading-relaxed">
                 Every thread in our mundus tells a story of patience, skill, and dedication. We take pride in sourcing directly
