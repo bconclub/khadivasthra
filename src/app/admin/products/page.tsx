@@ -162,15 +162,11 @@ export default function AdminProductsPage() {
 
         {/* Form Modal */}
         {showForm && (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center overflow-y-auto pt-8 pb-8 px-4">
-            <div className="bg-white rounded-xl p-6 max-w-2xl w-full shadow-xl">
-              <ProductForm
-                product={editingProduct}
-                onSubmit={editingProduct ? handleUpdate : handleCreate}
-                onCancel={closeForm}
-              />
-            </div>
-          </div>
+          <ProductForm
+            product={editingProduct}
+            onSubmit={editingProduct ? handleUpdate : handleCreate}
+            onCancel={closeForm}
+          />
         )}
 
         {/* Visibility Filter Tabs */}
