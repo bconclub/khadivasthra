@@ -154,6 +154,16 @@ export default function CheckoutPage() {
       return;
     }
 
+    if (!/^\d{10}$/.test(form.phone)) {
+      setError("Please enter a valid 10-digit phone number.");
+      return;
+    }
+
+    if (!/^\d{6}$/.test(form.pincode)) {
+      setError("Please enter a valid 6-digit pincode.");
+      return;
+    }
+
     if (!shippingInfo?.available) {
       setError("Please enter a valid pincode where delivery is available.");
       return;
@@ -258,10 +268,11 @@ export default function CheckoutPage() {
                     <input
                       type="tel"
                       required
+                      maxLength={10}
                       value={form.phone}
-                      onChange={(e) => updateField("phone", e.target.value)}
+                      onChange={(e) => updateField("phone", e.target.value.replace(/\D/g, "").slice(0, 10))}
                       className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
-                      placeholder="+91 XXXXX XXXXX"
+                      placeholder="10-digit phone number"
                     />
                   </div>
                 </div>
@@ -316,9 +327,11 @@ export default function CheckoutPage() {
                       </label>
                       <input
                         type="text"
+                        inputMode="numeric"
                         required
+                        maxLength={6}
                         value={form.pincode}
-                        onChange={(e) => updateField("pincode", e.target.value)}
+                        onChange={(e) => updateField("pincode", e.target.value.replace(/\D/g, "").slice(0, 6))}
                         className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
                         placeholder="6-digit pincode"
                       />
