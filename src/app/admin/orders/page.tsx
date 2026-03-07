@@ -4,9 +4,10 @@ import { useState } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getOrders, updateOrderStatus, createShiprocketOrder } from "@/lib/services/orders";
+import { deleteOrder } from "@/lib/services/admin";
 import { supabase } from "@/lib/supabase";
 import type { OrderStatus } from "@/types";
-import { Loader2, ChevronDown, ChevronUp, Truck, ExternalLink } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp, Truck, ExternalLink, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 const STATUS_OPTIONS: OrderStatus[] = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
@@ -66,6 +67,17 @@ export default function AdminOrdersPage() {
       toast.error(err instanceof Error ? err.message : "Failed to create shipment");
     } finally {
       setCreatingShipment(null);
+    }
+  };
+
+  const handleDeleteOrder = async (orderId: string, orderNumber: string) => {
+    if (!confirm(`Delete order ${orderNumber}? This cannot be undone.`)) return;
+    try {
+      await deleteOrder(orderId);
+      toast.success(`Order ${orderNumber} deleted`);
+      refetch();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to delete order");
     }
   };
 
@@ -256,17 +268,26 @@ export default function AdminOrdersPage() {
                         </div>
 
                         <h3 className="text-sm font-semibold text-gray-700 mb-2">Update Status</h3>
-                        <select
-                          value={order.status}
-                          onChange={(e) => handleStatusChange(order.id, e.target.value as OrderStatus)}
-                          className="px-3 py-2 rounded-lg border border-gray-200 text-sm focus:ring-2 focus:ring-coral focus:border-transparent"
-                        >
-                          {STATUS_OPTIONS.map((s) => (
-                            <option key={s} value={s} className="capitalize">
-                              {s}
-                            </option>
-                          ))}
-                        </select>
+                        <div className="flex items-center gap-3">
+                          <select
+                            value={order.status}
+                            onChange={(e) => handleStatusChange(order.id, e.target.value as OrderStatus)}
+                            className="px-3 py-2 rounded-lg border border-gray-200 text-sm focus:ring-2 focus:ring-coral focus:border-transparent"
+                          >
+                            {STATUS_OPTIONS.map((s) => (
+                              <option key={s} value={s} className="capitalize">
+                                {s}
+                              </option>
+                            ))}
+                          </select>
+                          <button
+                            onClick={() => handleDeleteOrder(order.id, order.order_number)}
+                            className="px-3 py-2 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors flex items-center gap-1.5"
+                            title="Delete order"
+                          >
+                            <Trash2 className="w-4 h-4" /> Delete
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>

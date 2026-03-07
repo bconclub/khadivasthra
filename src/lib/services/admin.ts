@@ -174,37 +174,56 @@ export async function triggerSiteDeploy(): Promise<void> {
   }
 }
 
+// Delete an order
+export async function deleteOrder(id: string): Promise<void> {
+  const { error } = await supabase.from('orders').delete().eq('id', id);
+  if (error) throw error;
+}
+
 // Dashboard stats
 export async function getDashboardStats() {
   const [
     { count: totalProducts },
     { count: totalCategories },
-    { count: featuredProducts },
-    { count: inStockProducts },
     { count: totalOrders },
     { count: pendingOrders },
+    { count: confirmedOrders },
+    { count: totalViews },
+    { count: cancelledOrders },
   ] = await Promise.all([
     supabase.from('products').select('*', { count: 'exact', head: true }),
     supabase.from('categories').select('*', { count: 'exact', head: true }),
-    supabase.from('products').select('*', { count: 'exact', head: true }).eq('is_featured', true),
-    supabase.from('products').select('*', { count: 'exact', head: true }).eq('in_stock', true),
     supabase.from('orders').select('*', { count: 'exact', head: true }),
     supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+    supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'confirmed'),
+    supabase.from('product_views').select('*', { count: 'exact', head: true }),
+    supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'cancelled'),
   ]);
 
+  // Get all orders for revenue calculations
   const { data: orders } = await supabase
     .from('orders')
-    .select('total')
-    .in('status', ['confirmed', 'shipped', 'delivered']);
-  const totalRevenue = orders?.reduce((sum, o) => sum + Number(o.total), 0) || 0;
+    .select('total, status, payment_status');
+
+  const totalRevenue = orders
+    ?.filter(o => ['confirmed', 'shipped', 'delivered'].includes(o.status))
+    .reduce((sum, o) => sum + Number(o.total), 0) || 0;
+
+  const totalOrderValue = orders?.reduce((sum, o) => sum + Number(o.total), 0) || 0;
+
+  // Lost carts: orders that are pending + unpaid (customer started checkout but didn't pay)
+  const lostCarts = orders?.filter(o => o.status === 'pending' && o.payment_status !== 'paid').length || 0;
 
   return {
     totalProducts: totalProducts || 0,
     totalCategories: totalCategories || 0,
-    featuredProducts: featuredProducts || 0,
-    inStockProducts: inStockProducts || 0,
     totalOrders: totalOrders || 0,
     pendingOrders: pendingOrders || 0,
+    confirmedOrders: confirmedOrders || 0,
+    cancelledOrders: cancelledOrders || 0,
     totalRevenue,
+    totalOrderValue,
+    totalViews: totalViews || 0,
+    lostCarts,
   };
 }
