@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+Disallow: /admin/
+Disallow: /cart/
+Disallow: /checkout/
+Disallow: /order-success/
+Disallow: /status/
+
+Sitemap: https://khadivasthra.com/sitemap.xml
