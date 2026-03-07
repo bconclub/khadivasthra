@@ -6,7 +6,7 @@ import { getDashboardStats } from "@/lib/services/admin";
 import { getOrders } from "@/lib/services/orders";
 import {
   Package, FolderOpen, ShoppingCart, IndianRupee, Loader2, Eye,
-  BarChart3, ShoppingBasket, TrendingUp, Clock, CheckCircle2,
+  BarChart3, ShoppingBasket, TrendingUp, Clock, CheckCircle2, XCircle,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -31,41 +31,48 @@ export default function AdminDashboardPage() {
             <Loader2 className="w-6 h-6 animate-spin text-coral" />
           </div>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard
-              label="Total Traffic"
-              value={(stats?.totalViews ?? 0).toLocaleString()}
-              icon={BarChart3}
-              color="bg-cyan-50 text-cyan-600"
-              subtitle="Product views"
-            />
-            <StatCard
-              label="Orders"
-              value={stats?.totalOrders ?? 0}
-              icon={ShoppingCart}
-              color="bg-purple-50 text-purple-600"
-              href="/admin/orders"
-              subtitle={`${stats?.pendingOrders ?? 0} pending, ${stats?.confirmedOrders ?? 0} confirmed`}
-            />
-            <StatCard
-              label="Lost Carts"
-              value={stats?.lostCarts ?? 0}
-              icon={ShoppingBasket}
-              color="bg-amber-50 text-amber-600"
-              subtitle="Unpaid checkouts"
-            />
-            <StatCard
-              label="Revenue"
-              value={`₹${(stats?.totalRevenue ?? 0).toLocaleString()}`}
-              icon={IndianRupee}
-              color="bg-green-50 text-green-600"
-              subtitle={`₹${(stats?.totalOrderValue ?? 0).toLocaleString()} total order value`}
-            />
-
-            <MiniStat icon={Package} label="Products" value={stats?.totalProducts ?? 0} href="/admin/products" />
-            <MiniStat icon={FolderOpen} label="Categories" value={stats?.totalCategories ?? 0} href="/admin/categories" />
-            <MiniStat icon={Clock} label="Pending" value={stats?.pendingOrders ?? 0} />
-            <MiniStat icon={CheckCircle2} label="Confirmed" value={stats?.confirmedOrders ?? 0} />
+          <div className="space-y-4">
+            {/* Primary Stats */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatCard
+                label="Total Traffic"
+                value={(stats?.totalViews ?? 0).toLocaleString()}
+                icon={BarChart3}
+                color="bg-cyan-50 text-cyan-600"
+                subtitle="Product views"
+              />
+              <StatCard
+                label="Orders"
+                value={stats?.totalOrders ?? 0}
+                icon={ShoppingCart}
+                color="bg-purple-50 text-purple-600"
+                href="/admin/orders"
+                subtitle={`${stats?.pendingOrders ?? 0} pending, ${stats?.confirmedOrders ?? 0} confirmed`}
+              />
+              <StatCard
+                label="Cart Abandon"
+                value={stats?.abandonedCarts ?? 0}
+                icon={ShoppingBasket}
+                color="bg-red-50 text-red-600"
+                subtitle={`₹${(stats?.abandonedValue ?? 0).toLocaleString()} lost`}
+              />
+              <StatCard
+                label="Revenue"
+                value={`₹${(stats?.totalRevenue ?? 0).toLocaleString()}`}
+                icon={IndianRupee}
+                color="bg-green-50 text-green-600"
+                subtitle={`₹${(stats?.totalOrderValue ?? 0).toLocaleString()} total`}
+              />
+            </div>
+            {/* Secondary Stats */}
+            <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
+              <MiniStat icon={Package} label="Products" value={stats?.totalProducts ?? 0} href="/admin/products" />
+              <MiniStat icon={FolderOpen} label="Categories" value={stats?.totalCategories ?? 0} href="/admin/categories" />
+              <MiniStat icon={Clock} label="Pending" value={stats?.pendingOrders ?? 0} />
+              <MiniStat icon={CheckCircle2} label="Confirmed" value={stats?.confirmedOrders ?? 0} />
+              <MiniStat icon={XCircle} label="Cancelled" value={stats?.cancelledOrders ?? 0} />
+              <MiniStat icon={TrendingUp} label="Order Value" value={`₹${(stats?.totalOrderValue ?? 0).toLocaleString()}`} />
+            </div>
           </div>
         )}
 

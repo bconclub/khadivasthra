@@ -211,8 +211,10 @@ export async function getDashboardStats() {
 
   const totalOrderValue = orders?.reduce((sum, o) => sum + Number(o.total), 0) || 0;
 
-  // Lost carts: orders that are pending + unpaid (customer started checkout but didn't pay)
-  const lostCarts = orders?.filter(o => o.status === 'pending' && o.payment_status !== 'paid').length || 0;
+  // Abandoned carts: orders that are pending or cancelled + never paid
+  const abandonedOrders = orders?.filter(o => (o.status === 'pending' || o.status === 'cancelled') && o.payment_status !== 'paid') || [];
+  const abandonedCarts = abandonedOrders.length;
+  const abandonedValue = abandonedOrders.reduce((sum, o) => sum + Number(o.total), 0);
 
   return {
     totalProducts: totalProducts || 0,
@@ -224,6 +226,7 @@ export async function getDashboardStats() {
     totalRevenue,
     totalOrderValue,
     totalViews: totalViews || 0,
-    lostCarts,
+    abandonedCarts,
+    abandonedValue,
   };
 }
