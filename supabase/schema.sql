@@ -36,6 +36,10 @@ CREATE TABLE products (
   is_new BOOLEAN NOT NULL DEFAULT false,
   is_best_seller BOOLEAN NOT NULL DEFAULT false,
   display_order INTEGER NOT NULL DEFAULT 0,
+  weight NUMERIC(6,2) NOT NULL DEFAULT 0.2,
+  length NUMERIC(6,2) NOT NULL DEFAULT 13,
+  breadth NUMERIC(6,2) NOT NULL DEFAULT 7,
+  height NUMERIC(6,2) NOT NULL DEFAULT 3,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );

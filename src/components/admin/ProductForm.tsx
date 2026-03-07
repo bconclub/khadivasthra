@@ -56,6 +56,10 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const [careInstructions, setCareInstructions] = useState<string[]>(
     product?.care_instructions || ["Hand wash cold", "Dry in shade"]
   );
+  const [weight, setWeight] = useState(product?.weight?.toString() || "0.2");
+  const [length, setLength] = useState(product?.length?.toString() || "13");
+  const [breadth, setBreadth] = useState(product?.breadth?.toString() || "7");
+  const [height, setHeight] = useState(product?.height?.toString() || "3");
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
@@ -128,6 +132,10 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         in_stock: (parseInt(stockQuantity) || 0) > 0,
         care_instructions: careInstructions.filter(Boolean),
         display_order: product?.display_order ?? 0,
+        weight: parseFloat(weight) || 0.2,
+        length: parseFloat(length) || 13,
+        breadth: parseFloat(breadth) || 7,
+        height: parseFloat(height) || 3,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save product");
@@ -290,6 +298,61 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
           <p className={`text-xs mt-1 ${(parseInt(stockQuantity) || 0) > 0 ? 'text-green-600' : 'text-red-500'}`}>
             {(parseInt(stockQuantity) || 0) > 0 ? `${stockQuantity} in stock` : 'Out of stock'}
           </p>
+        </div>
+      </div>
+
+      {/* Weight & Dimensions */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Weight & Dimensions (for shipping)</label>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Weight (kg)</label>
+            <input
+              type="number"
+              step="0.1"
+              min="0.1"
+              value={weight}
+              onChange={(e) => setWeight(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
+              placeholder="0.5"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Length (cm)</label>
+            <input
+              type="number"
+              step="1"
+              min="1"
+              value={length}
+              onChange={(e) => setLength(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
+              placeholder="30"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Breadth (cm)</label>
+            <input
+              type="number"
+              step="1"
+              min="1"
+              value={breadth}
+              onChange={(e) => setBreadth(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
+              placeholder="20"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-gray-500 mb-1">Height (cm)</label>
+            <input
+              type="number"
+              step="1"
+              min="1"
+              value={height}
+              onChange={(e) => setHeight(e.target.value)}
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
+              placeholder="5"
+            />
+          </div>
         </div>
       </div>
 

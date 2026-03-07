@@ -118,11 +118,28 @@ serve(async (req) => {
       );
     }
 
-    const totalQuantity = items.reduce(
-      (sum: number, item: { quantity: number }) => sum + (item.quantity || 1),
-      0
-    );
-    const weight = Math.max(0.5, totalQuantity * 0.5);
+    // Fetch product dimensions for accurate shipping weight/size
+    const productIds = items.map((item: { product_id: string }) => item.product_id).filter(Boolean);
+    const { data: products } = await supabase
+      .from("products")
+      .select("id, weight, length, breadth, height")
+      .in("id", productIds);
+
+    let totalWeight = 0;
+    let maxLength = 13, maxBreadth = 7, maxHeight = 3;
+
+    for (const item of items) {
+      const product = products?.find((p: { id: string }) => p.id === item.product_id);
+      const itemWeight = product?.weight || 0.2;
+      totalWeight += itemWeight * (item.quantity || 1);
+      if (product) {
+        maxLength = Math.max(maxLength, product.length || 13);
+        maxBreadth = Math.max(maxBreadth, product.breadth || 7);
+        maxHeight = Math.max(maxHeight, product.height || 3);
+      }
+    }
+    // Shiprocket minimum weight is 0.5 kg
+    const weight = Math.max(0.5, totalWeight);
 
     // Split customer name into first/last
     const nameParts = (order.customer_name || "").trim().split(" ");
@@ -178,9 +195,9 @@ serve(async (req) => {
       order_items: shiprocketItems,
       payment_method: "Prepaid",
       sub_total: order.subtotal || 0,
-      length: 30,
-      breadth: 20,
-      height: 5,
+      length: maxLength,
+      breadth: maxBreadth,
+      height: maxHeight,
       weight,
     };
 
