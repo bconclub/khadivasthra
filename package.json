@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --webpack",
     "generate:feeds": "npx tsx --env-file=.env.local scripts/generate-feeds.ts",
-    "build": "npx tsx --env-file=.env.local scripts/generate-feeds.ts && next build --webpack",
+    "build": "npx tsx scripts/generate-feeds.ts && next build --webpack",
     "build:static": "next build",
     "start": "next start",
     "lint": "eslint",
