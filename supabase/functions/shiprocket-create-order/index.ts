@@ -281,23 +281,23 @@ serve(async (req) => {
 
     console.log("Extracted order_id:", shiprocketOrderId, "shipment_id:", shipmentId);
 
-    // If Shiprocket returned status_code indicating error even with 200
-    if (createData.status_code === 0 || createData.status === "ERROR" || createData.status === 0) {
-      console.error("Shiprocket returned error status:", JSON.stringify(createData));
-      const errMsg = createData.message || createData.packaging_error || createData.errors || "Shiprocket returned error";
-      return new Response(
-        JSON.stringify({ error: typeof errMsg === 'string' ? errMsg : JSON.stringify(errMsg), details: createData }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }
-      );
-    }
+    // If Shiprocket returned error status even with 200 OK
+    const hasError = createData.status_code === 0
+      || createData.status === "ERROR"
+      || createData.status === 0
+      || (createData.status_code && createData.status_code !== 1)
+      || createData.errors
+      || createData.packaging_error;
 
-    if (!shiprocketOrderId) {
-      console.error("Shiprocket returned no order_id. Full response:", JSON.stringify(createData));
+    if (hasError || !shiprocketOrderId) {
+      const errMsg = createData.message || createData.packaging_error || createData.errors || "Shiprocket returned no order_id";
+      console.error("Shiprocket error or no order_id. Full response:", JSON.stringify(createData));
       return new Response(
-        JSON.stringify({ error: "Shiprocket returned no order_id", details: createData }),
+        JSON.stringify({
+          error: typeof errMsg === 'string' ? errMsg : JSON.stringify(errMsg),
+          details: createData,
+          payload_sent: shiprocketPayload,
+        }),
         {
           status: 500,
           headers: { ...corsHeaders, "Content-Type": "application/json" },

@@ -97,8 +97,10 @@ async function invokeEdgeFunction(functionName: string, body: Record<string, unk
   const data = await res.json();
 
   if (!res.ok) {
-    console.error(`Edge function ${functionName} error:`, res.status, data);
-    throw new Error(data?.error || `Edge function failed (${res.status})`);
+    console.error(`Edge function ${functionName} error:`, res.status, JSON.stringify(data, null, 2));
+    // Include Shiprocket details in error message for debugging
+    const details = data?.details ? ` | Details: ${JSON.stringify(data.details)}` : '';
+    throw new Error((data?.error || `Edge function failed (${res.status})`) + details);
   }
 
   if (data?.error) {
