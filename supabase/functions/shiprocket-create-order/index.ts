@@ -129,6 +129,15 @@ serve(async (req) => {
     const firstName = nameParts[0] || "Customer";
     const lastName = nameParts.slice(1).join(" ") || "";
 
+    // Clean phone: strip +91, spaces, dashes — Shiprocket needs 10 digits
+    let cleanPhone = (order.customer_phone || "").replace(/[\s\-+]/g, "");
+    if (cleanPhone.startsWith("91") && cleanPhone.length > 10) {
+      cleanPhone = cleanPhone.slice(cleanPhone.length - 10);
+    }
+    if (cleanPhone.length !== 10) {
+      console.warn("Phone not 10 digits after cleanup:", cleanPhone, "original:", order.customer_phone);
+    }
+
     // Format order date
     const orderDate = new Date(order.created_at)
       .toISOString()
@@ -164,7 +173,7 @@ serve(async (req) => {
       billing_state: order.customer_state || "Kerala",
       billing_country: "India",
       billing_email: order.customer_email || "noreply@khadivasthra.com",
-      billing_phone: order.customer_phone || "0000000000",
+      billing_phone: cleanPhone || "0000000000",
       shipping_is_billing: true,
       order_items: shiprocketItems,
       payment_method: "Prepaid",
