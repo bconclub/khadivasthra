@@ -4,7 +4,7 @@ import { AdminShell } from "@/components/admin/AdminShell";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getDashboardStats } from "@/lib/services/admin";
 import { getOrders } from "@/lib/services/orders";
-import { Package, FolderOpen, ShoppingCart, DollarSign, Loader2, Eye } from "lucide-react";
+import { Package, FolderOpen, ShoppingCart, IndianRupee, Loader2, Eye } from "lucide-react";
 import Link from "next/link";
 
 export default function AdminDashboardPage() {
@@ -52,7 +52,7 @@ export default function AdminDashboardPage() {
             <StatCard
               label="Revenue"
               value={`₹${stats?.totalRevenue?.toLocaleString() ?? 0}`}
-              icon={DollarSign}
+              icon={IndianRupee}
               color="bg-orange-50 text-orange-600"
             />
           </div>
