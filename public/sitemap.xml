@@ -31,6 +31,11 @@
     <priority>0.3</priority>
   </url>
   <url>
+    <loc>https://khadivasthra.com/return-policy/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  <url>
     <loc>https://khadivasthra.com/shop/white-mundus/</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -179,8 +184,8 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://khadivasthra.com/product/green-border-rose-colour-kavi/</loc>
-    <lastmod>2026-02-25</lastmod>
+    <loc>https://khadivasthra.com/product/green-kara-colour-kavi/</loc>
+    <lastmod>2026-03-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -197,25 +202,7 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://khadivasthra.com/product/green-kara-colour-kavi/</loc>
-    <lastmod>2026-02-25</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
     <loc>https://khadivasthra.com/product/brown-boarder-khadi-kavi/</loc>
-    <lastmod>2026-02-25</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://khadivasthra.com/product/black-border-colour-kavi/</loc>
-    <lastmod>2026-02-25</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://khadivasthra.com/product/violet-and-green-border-khadi-kavi/</loc>
     <lastmod>2026-02-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -227,19 +214,19 @@
     <priority>0.7</priority>
   </url>
   <url>
+    <loc>https://khadivasthra.com/product/black-border-colour-kavi/</loc>
+    <lastmod>2026-03-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://khadivasthra.com/product/green-border-rose-colour-kavi/</loc>
+    <lastmod>2026-03-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://khadivasthra.com/product/blue-kara-kavi-mundu/</loc>
-    <lastmod>2026-02-25</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://khadivasthra.com/product/yellow-border-stitch-saral-kavi/</loc>
-    <lastmod>2026-02-25</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://khadivasthra.com/product/black-border-kavi/</loc>
     <lastmod>2026-02-25</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
@@ -263,44 +250,50 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://khadivasthra.com/product/magenta-border-kavi/</loc>
-    <lastmod>2026-02-25</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://khadivasthra.com/product/black-kara-neriya-kavi/</loc>
-    <lastmod>2026-02-25</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://khadivasthra.com/product/maroon-border-and-kara-kavi/</loc>
-    <lastmod>2026-02-25</lastmod>
+    <loc>https://khadivasthra.com/product/yellow-border-stitch-saral-kavi/</loc>
+    <lastmod>2026-03-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://khadivasthra.com/product/sky-blue-border-and-kara-kavi/</loc>
-    <lastmod>2026-02-25</lastmod>
+    <lastmod>2026-03-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://khadivasthra.com/product/maroon-border-and-kara-kavi/</loc>
+    <lastmod>2026-03-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://khadivasthra.com/product/black-kara-neriya-kavi/</loc>
+    <lastmod>2026-03-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://khadivasthra.com/product/magenta-border-kavi/</loc>
+    <lastmod>2026-03-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://khadivasthra.com/product/black-border-kavi/</loc>
+    <lastmod>2026-03-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://khadivasthra.com/product/black-border-kavi-2/</loc>
-    <lastmod>2026-03-06</lastmod>
+    <lastmod>2026-03-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://khadivasthra.com/product/geometric-kara-kavi-mundu/</loc>
     <lastmod>2026-03-07</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  <url>
-    <loc>https://khadivasthra.com/product/saral-kavi/</loc>
-    <lastmod>2026-03-04</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>
   </url>
@@ -342,6 +335,18 @@
   </url>
   <url>
     <loc>https://khadivasthra.com/product/krishna-print-kavi-brown-border/</loc>
+    <lastmod>2026-03-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://khadivasthra.com/product/saral-kavi/</loc>
+    <lastmod>2026-03-07</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://khadivasthra.com/product/violet-and-green-border-khadi-kavi/</loc>
     <lastmod>2026-03-07</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.7</priority>

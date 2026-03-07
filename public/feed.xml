@@ -323,15 +323,15 @@
       <g:identifier_exists>false</g:identifier_exists>
     </item>
     <item>
-      <g:id>490f593b-0ee1-4099-b62f-e52e4726db11</g:id>
-      <g:title>Green Border Rose Colour Kavi </g:title>
-      <g:description>Green Border Rose Colour Kavi </g:description>
-      <g:link>https://khadivasthra.com/product/green-border-rose-colour-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772025590266.jpg</g:image_link>
+      <g:id>41e81a36-746a-4a5b-9666-4446927c5761</g:id>
+      <g:title>Green Kara Colour Kavi </g:title>
+      <g:description>Green Kara Colour Kavi </g:description>
+      <g:link>https://khadivasthra.com/product/green-kara-colour-kavi/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772026130261.jpg</g:image_link>
       <g:availability>in stock</g:availability>
       <g:condition>new</g:condition>
-      <g:price>380.00 INR</g:price>
-      <g:sale_price>342.00 INR</g:sale_price>
+      <g:price>440.00 INR</g:price>
+      <g:sale_price>396.00 INR</g:sale_price>
       <g:brand>Khadi Vasthra</g:brand>
       <g:google_product_category>5388</g:google_product_category>
       <g:product_type>Kavi Mundus</g:product_type>
@@ -374,23 +374,6 @@
       <g:identifier_exists>false</g:identifier_exists>
     </item>
     <item>
-      <g:id>41e81a36-746a-4a5b-9666-4446927c5761</g:id>
-      <g:title>Green Kara Colour Kavi </g:title>
-      <g:description>Green Kara Colour Kavi </g:description>
-      <g:link>https://khadivasthra.com/product/green-kara-colour-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772026130261.jpg</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>390.00 INR</g:price>
-      <g:sale_price>351.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
       <g:id>a67aa76d-016c-40ad-b2b2-744279bd934f</g:id>
       <g:title>Brown Boarder  Khadi Kavi</g:title>
       <g:description>Brown Boarder  Khadi Kavi</g:description>
@@ -400,41 +383,6 @@
       <g:condition>new</g:condition>
       <g:price>440.00 INR</g:price>
       <g:sale_price>396.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>fdb61484-40ab-40bb-99ec-cae32ecb45b3</g:id>
-      <g:title>Black Border Colour Kavi </g:title>
-      <g:description>Black Border Colour Kavi </g:description>
-      <g:link>https://khadivasthra.com/product/black-border-colour-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/black-border-colour-kavi/1772027769731.jpg</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>360.00 INR</g:price>
-      <g:sale_price>324.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>e2f45f90-c874-4af6-b0f8-19f9108110d4</g:id>
-      <g:title>Violet and Green Border Khadi Kavi</g:title>
-      <g:description>Violet and Green Border Khadi Kavi</g:description>
-      <g:link>https://khadivasthra.com/product/violet-and-green-border-khadi-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772031951631.jpg</g:image_link>
-      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772031956361.jpg</g:additional_image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>360.00 INR</g:price>
-      <g:sale_price>324.00 INR</g:sale_price>
       <g:brand>Khadi Vasthra</g:brand>
       <g:google_product_category>5388</g:google_product_category>
       <g:product_type>Kavi Mundus</g:product_type>
@@ -460,45 +408,45 @@
       <g:identifier_exists>false</g:identifier_exists>
     </item>
     <item>
+      <g:id>fdb61484-40ab-40bb-99ec-cae32ecb45b3</g:id>
+      <g:title>Black Border Colour Kavi </g:title>
+      <g:description>Black Border Colour Kavi </g:description>
+      <g:link>https://khadivasthra.com/product/black-border-colour-kavi/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/black-border-colour-kavi/1772027769731.jpg</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>410.00 INR</g:price>
+      <g:sale_price>369.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:google_product_category>5388</g:google_product_category>
+      <g:product_type>Kavi Mundus</g:product_type>
+      <g:shipping_weight>0.20 kg</g:shipping_weight>
+      <g:material>100% Cotton</g:material>
+      <g:identifier_exists>false</g:identifier_exists>
+    </item>
+    <item>
+      <g:id>490f593b-0ee1-4099-b62f-e52e4726db11</g:id>
+      <g:title>Green Border Rose Colour Kavi </g:title>
+      <g:description>Green Border Rose Colour Kavi </g:description>
+      <g:link>https://khadivasthra.com/product/green-border-rose-colour-kavi/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772025590266.jpg</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>430.00 INR</g:price>
+      <g:sale_price>387.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:google_product_category>5388</g:google_product_category>
+      <g:product_type>Kavi Mundus</g:product_type>
+      <g:shipping_weight>0.20 kg</g:shipping_weight>
+      <g:material>100% Cotton</g:material>
+      <g:identifier_exists>false</g:identifier_exists>
+    </item>
+    <item>
       <g:id>c782c520-e742-495b-a802-650b4c8f3ec5</g:id>
       <g:title>Blue Kara Kavi Mundu</g:title>
       <g:description>Blue Kara Kavi Mundu</g:description>
       <g:link>https://khadivasthra.com/product/blue-kara-kavi-mundu/</g:link>
       <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/blue/1772033467340.jpg</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>390.00 INR</g:price>
-      <g:sale_price>351.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>ba8666d1-3c28-4a4d-b06e-12b8cce424af</g:id>
-      <g:title> Yellow Border Stitch Saral kavi</g:title>
-      <g:description> Yellow Border Stitch Saral kavi</g:description>
-      <g:link>https://khadivasthra.com/product/yellow-border-stitch-saral-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772033572029.jpg</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>328.00 INR</g:price>
-      <g:sale_price>295.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>746045f4-6455-4e7f-9253-8e0c5fa5c739</g:id>
-      <g:title>Black Border Kavi</g:title>
-      <g:description>Black Border Kavi</g:description>
-      <g:link>https://khadivasthra.com/product/black-border-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772033718557.jpg</g:image_link>
       <g:availability>in stock</g:availability>
       <g:condition>new</g:condition>
       <g:price>390.00 INR</g:price>
@@ -562,15 +510,15 @@
       <g:identifier_exists>false</g:identifier_exists>
     </item>
     <item>
-      <g:id>8584b16a-8b5d-47e8-b344-e0c7cc87330e</g:id>
-      <g:title>Magenta Border Kavi</g:title>
-      <g:description>Magenta Border Kavi</g:description>
-      <g:link>https://khadivasthra.com/product/magenta-border-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772034272625.jpg</g:image_link>
+      <g:id>ba8666d1-3c28-4a4d-b06e-12b8cce424af</g:id>
+      <g:title> Yellow Border Stitch Saral kavi</g:title>
+      <g:description> Yellow Border Stitch Saral kavi</g:description>
+      <g:link>https://khadivasthra.com/product/yellow-border-stitch-saral-kavi/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772033572029.jpg</g:image_link>
       <g:availability>in stock</g:availability>
       <g:condition>new</g:condition>
-      <g:price>390.00 INR</g:price>
-      <g:sale_price>351.00 INR</g:sale_price>
+      <g:price>378.00 INR</g:price>
+      <g:sale_price>340.00 INR</g:sale_price>
       <g:brand>Khadi Vasthra</g:brand>
       <g:google_product_category>5388</g:google_product_category>
       <g:product_type>Kavi Mundus</g:product_type>
@@ -579,15 +527,15 @@
       <g:identifier_exists>false</g:identifier_exists>
     </item>
     <item>
-      <g:id>7afe8284-3246-4cac-86c9-67569f10ad08</g:id>
-      <g:title>Black Kara Neriya Kavi</g:title>
-      <g:description>Black Kara Neriya Kavi</g:description>
-      <g:link>https://khadivasthra.com/product/black-kara-neriya-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772034330261.jpg</g:image_link>
+      <g:id>db96ec4c-4336-4bf7-b471-45512c969894</g:id>
+      <g:title>Sky Blue Border and Kara Kavi</g:title>
+      <g:description>Sky Blue Border and Kara Kavi</g:description>
+      <g:link>https://khadivasthra.com/product/sky-blue-border-and-kara-kavi/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772034622827.jpg</g:image_link>
       <g:availability>in stock</g:availability>
       <g:condition>new</g:condition>
-      <g:price>290.00 INR</g:price>
-      <g:sale_price>261.00 INR</g:sale_price>
+      <g:price>480.00 INR</g:price>
+      <g:sale_price>432.00 INR</g:sale_price>
       <g:brand>Khadi Vasthra</g:brand>
       <g:google_product_category>5388</g:google_product_category>
       <g:product_type>Kavi Mundus</g:product_type>
@@ -603,6 +551,40 @@
       <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772034455971.jpg</g:image_link>
       <g:availability>in stock</g:availability>
       <g:condition>new</g:condition>
+      <g:price>480.00 INR</g:price>
+      <g:sale_price>432.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:google_product_category>5388</g:google_product_category>
+      <g:product_type>Kavi Mundus</g:product_type>
+      <g:shipping_weight>0.20 kg</g:shipping_weight>
+      <g:material>100% Cotton</g:material>
+      <g:identifier_exists>false</g:identifier_exists>
+    </item>
+    <item>
+      <g:id>7afe8284-3246-4cac-86c9-67569f10ad08</g:id>
+      <g:title>Black Kara Neriya Kavi</g:title>
+      <g:description>Black Kara Neriya Kavi</g:description>
+      <g:link>https://khadivasthra.com/product/black-kara-neriya-kavi/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772034330261.jpg</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>340.00 INR</g:price>
+      <g:sale_price>306.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:google_product_category>5388</g:google_product_category>
+      <g:product_type>Kavi Mundus</g:product_type>
+      <g:shipping_weight>0.20 kg</g:shipping_weight>
+      <g:material>100% Cotton</g:material>
+      <g:identifier_exists>false</g:identifier_exists>
+    </item>
+    <item>
+      <g:id>8584b16a-8b5d-47e8-b344-e0c7cc87330e</g:id>
+      <g:title>Magenta Border Kavi</g:title>
+      <g:description>Magenta Border Kavi</g:description>
+      <g:link>https://khadivasthra.com/product/magenta-border-kavi/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772034272625.jpg</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
       <g:price>440.00 INR</g:price>
       <g:sale_price>396.00 INR</g:sale_price>
       <g:brand>Khadi Vasthra</g:brand>
@@ -613,11 +595,11 @@
       <g:identifier_exists>false</g:identifier_exists>
     </item>
     <item>
-      <g:id>db96ec4c-4336-4bf7-b471-45512c969894</g:id>
-      <g:title>Sky Blue Border and Kara Kavi</g:title>
-      <g:description>Sky Blue Border and Kara Kavi</g:description>
-      <g:link>https://khadivasthra.com/product/sky-blue-border-and-kara-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772034622827.jpg</g:image_link>
+      <g:id>746045f4-6455-4e7f-9253-8e0c5fa5c739</g:id>
+      <g:title>Black Border Kavi</g:title>
+      <g:description>Black Border Kavi</g:description>
+      <g:link>https://khadivasthra.com/product/black-border-kavi/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772033718557.jpg</g:image_link>
       <g:availability>in stock</g:availability>
       <g:condition>new</g:condition>
       <g:price>440.00 INR</g:price>
@@ -637,8 +619,8 @@
       <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772033817506.jpg</g:image_link>
       <g:availability>in stock</g:availability>
       <g:condition>new</g:condition>
-      <g:price>390.00 INR</g:price>
-      <g:sale_price>351.00 INR</g:sale_price>
+      <g:price>440.00 INR</g:price>
+      <g:sale_price>396.00 INR</g:sale_price>
       <g:brand>Khadi Vasthra</g:brand>
       <g:google_product_category>5388</g:google_product_category>
       <g:product_type>Kavi Mundus</g:product_type>
@@ -656,23 +638,6 @@
       <g:condition>new</g:condition>
       <g:price>480.00 INR</g:price>
       <g:sale_price>432.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>7907fb4b-14d4-4bea-af05-9a531b9a5ec9</g:id>
-      <g:title>5 - Saral Kavi</g:title>
-      <g:description>Saral Kavi Mundu</g:description>
-      <g:link>https://khadivasthra.com/product/saral-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772610233508.jpg</g:image_link>
-      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/saral-kavi/1772610607399.jpg</g:additional_image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>999.00 INR</g:price>
       <g:brand>Khadi Vasthra</g:brand>
       <g:google_product_category>5388</g:google_product_category>
       <g:product_type>Kavi Mundus</g:product_type>
@@ -791,6 +756,41 @@
       <g:condition>new</g:condition>
       <g:price>400.00 INR</g:price>
       <g:sale_price>360.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:google_product_category>5388</g:google_product_category>
+      <g:product_type>Kavi Mundus</g:product_type>
+      <g:shipping_weight>0.20 kg</g:shipping_weight>
+      <g:material>100% Cotton</g:material>
+      <g:identifier_exists>false</g:identifier_exists>
+    </item>
+    <item>
+      <g:id>7907fb4b-14d4-4bea-af05-9a531b9a5ec9</g:id>
+      <g:title>5 - Saral Kavi</g:title>
+      <g:description>Saral Kavi Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/saral-kavi/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772610233508.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/saral-kavi/1772610607399.jpg</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1099.00 INR</g:price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:google_product_category>5388</g:google_product_category>
+      <g:product_type>Kavi Mundus</g:product_type>
+      <g:shipping_weight>0.20 kg</g:shipping_weight>
+      <g:material>100% Cotton</g:material>
+      <g:identifier_exists>false</g:identifier_exists>
+    </item>
+    <item>
+      <g:id>e2f45f90-c874-4af6-b0f8-19f9108110d4</g:id>
+      <g:title>Violet and Green Border Khadi Kavi</g:title>
+      <g:description>Violet and Green Border Khadi Kavi</g:description>
+      <g:link>https://khadivasthra.com/product/violet-and-green-border-khadi-kavi/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772031951631.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772031956361.jpg</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>410.00 INR</g:price>
+      <g:sale_price>369.00 INR</g:sale_price>
       <g:brand>Khadi Vasthra</g:brand>
       <g:google_product_category>5388</g:google_product_category>
       <g:product_type>Kavi Mundus</g:product_type>

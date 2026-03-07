@@ -173,6 +173,7 @@ function generateSitemap(products: Product[], categories: Category[]): string {
     { path: "/offers/", priority: "0.8", changefreq: "weekly" },
     { path: "/contact/", priority: "0.5", changefreq: "monthly" },
     { path: "/track/", priority: "0.3", changefreq: "monthly" },
+    { path: "/return-policy/", priority: "0.4", changefreq: "monthly" },
   ];
 
   for (const page of staticPages) {
