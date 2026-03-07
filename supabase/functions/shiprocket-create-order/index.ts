@@ -164,7 +164,7 @@ serve(async (req) => {
     const shiprocketPayload = {
       order_id: order.order_number,
       order_date: orderDate,
-      pickup_location: "Primary",
+      pickup_location: "warehouse",
       billing_customer_name: firstName,
       billing_last_name: lastName || ".",
       billing_address: order.customer_address || "NA",
