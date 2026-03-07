@@ -7,7 +7,8 @@ import { getOrders, updateOrderStatus, createShiprocketOrder, checkPaymentStatus
 import { deleteOrder } from "@/lib/services/admin";
 import { supabase } from "@/lib/supabase";
 import type { OrderStatus } from "@/types";
-import { Loader2, ChevronDown, ChevronUp, Truck, ExternalLink, Trash2, CreditCard } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp, Truck, ExternalLink, Trash2, CreditCard, Package } from "lucide-react";
+import Image from "next/image";
 import toast from "react-hot-toast";
 
 const STATUS_OPTIONS: OrderStatus[] = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
@@ -150,33 +151,53 @@ export default function AdminOrdersPage() {
               <div key={order.id} className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                 {/* Order Header */}
                 <div
-                  className="px-6 py-4 flex items-center justify-between cursor-pointer hover:bg-gray-50"
+                  className="px-4 md:px-6 py-3 flex items-center gap-3 md:gap-4 cursor-pointer hover:bg-gray-50"
                   onClick={() => toggleExpand(order.id)}
                 >
-                  <div className="flex items-center gap-6 flex-wrap">
-                    <span className="font-mono text-sm font-medium text-coral">
-                      {order.order_number}
-                    </span>
-                    <span className="text-sm text-gray-900 font-medium">
-                      {order.customer_name}
-                    </span>
-                    <span className="text-sm font-medium text-gray-900">
-                      ₹{Number(order.total).toLocaleString()}
-                    </span>
-                    <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${STATUS_STYLES[order.status] || "bg-gray-100 text-gray-700"}`}>
-                      {order.status}
-                    </span>
-                    <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${PAYMENT_STYLES[order.payment_status] || "bg-gray-100 text-gray-700"}`}>
-                      {order.payment_status === "paid" ? "Paid" : order.payment_status === "failed" ? "Pay Failed" : "Unpaid"}
-                    </span>
-                    <span className="text-xs text-gray-400">
-                      {new Date(order.created_at).toLocaleDateString()}
-                    </span>
+                  {/* Product thumbnail */}
+                  <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-200">
+                    {order.items?.[0]?.product_image ? (
+                      <Image
+                        src={order.items[0].product_image}
+                        alt=""
+                        width={40}
+                        height={40}
+                        className="w-full h-full object-cover"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-300">
+                        <Package className="w-5 h-5" />
+                      </div>
+                    )}
                   </div>
+                  {/* Order info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="font-mono text-xs text-coral font-medium">{order.order_number}</span>
+                      <span className="text-sm text-gray-900 font-medium truncate">{order.customer_name}</span>
+                    </div>
+                    <p className="text-xs text-gray-400 truncate">
+                      {order.items?.map((i) => `${i.product_name} x${i.quantity}`).join(", ")}
+                    </p>
+                  </div>
+                  {/* Amount */}
+                  <span className="text-sm font-semibold text-gray-900 whitespace-nowrap">₹{Number(order.total).toLocaleString()}</span>
+                  {/* Badges */}
+                  <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${STATUS_STYLES[order.status] || "bg-gray-100 text-gray-700"}`}>
+                    {order.status}
+                  </span>
+                  <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${PAYMENT_STYLES[order.payment_status] || "bg-gray-100 text-gray-700"}`}>
+                    {order.payment_status === "paid" ? "Paid" : order.payment_status === "failed" ? "Failed" : "Unpaid"}
+                  </span>
+                  {/* Date */}
+                  <span className="text-xs text-gray-400 whitespace-nowrap hidden md:block">
+                    {new Date(order.created_at).toLocaleDateString()}
+                  </span>
                   {expandedOrder === order.id ? (
-                    <ChevronUp className="w-5 h-5 text-gray-400" />
+                    <ChevronUp className="w-4 h-4 text-gray-400 flex-shrink-0" />
                   ) : (
-                    <ChevronDown className="w-5 h-5 text-gray-400" />
+                    <ChevronDown className="w-4 h-4 text-gray-400 flex-shrink-0" />
                   )}
                 </div>
 
@@ -281,13 +302,30 @@ export default function AdminOrdersPage() {
                       {/* Order Items & Status */}
                       <div>
                         <h3 className="text-sm font-semibold text-gray-700 mb-3">Order Items</h3>
-                        <div className="space-y-2 mb-4">
+                        <div className="space-y-3 mb-4">
                           {order.items?.map((item, i) => (
-                            <div key={i} className="flex justify-between text-sm">
-                              <span className="text-gray-600">
-                                {item.product_name} x {item.quantity}
-                              </span>
-                              <span className="font-medium text-gray-900">
+                            <div key={i} className="flex items-center gap-3">
+                              <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-200">
+                                {item.product_image ? (
+                                  <Image
+                                    src={item.product_image}
+                                    alt={item.product_name}
+                                    width={48}
+                                    height={48}
+                                    className="w-full h-full object-cover"
+                                    unoptimized
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                    <Package className="w-5 h-5" />
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm text-gray-900 font-medium truncate">{item.product_name}</p>
+                                <p className="text-xs text-gray-400">Qty: {item.quantity} x ₹{Number(item.price).toLocaleString()}</p>
+                              </div>
+                              <span className="text-sm font-medium text-gray-900 whitespace-nowrap">
                                 ₹{Number(item.subtotal).toLocaleString()}
                               </span>
                             </div>

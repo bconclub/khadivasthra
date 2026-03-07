@@ -6,9 +6,10 @@ import { getDashboardStats } from "@/lib/services/admin";
 import { getOrders } from "@/lib/services/orders";
 import {
   Package, FolderOpen, ShoppingCart, IndianRupee, Loader2, Eye,
-  BarChart3, ShoppingBasket, XCircle, TrendingUp, Clock, CheckCircle2,
+  BarChart3, ShoppingBasket, TrendingUp, Clock, CheckCircle2,
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function AdminDashboardPage() {
   const { data: stats, loading: loadingStats } = useSupabaseQuery(getDashboardStats);
@@ -30,80 +31,42 @@ export default function AdminDashboardPage() {
             <Loader2 className="w-6 h-6 animate-spin text-coral" />
           </div>
         ) : (
-          <>
-            {/* Primary Stats Row */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <StatCard
-                label="Total Traffic"
-                value={(stats?.totalViews ?? 0).toLocaleString()}
-                icon={BarChart3}
-                color="bg-cyan-50 text-cyan-600"
-                subtitle="Product views"
-              />
-              <StatCard
-                label="Orders"
-                value={stats?.totalOrders ?? 0}
-                icon={ShoppingCart}
-                color="bg-purple-50 text-purple-600"
-                href="/admin/orders"
-              />
-              <StatCard
-                label="Lost Carts"
-                value={stats?.lostCarts ?? 0}
-                icon={ShoppingBasket}
-                color="bg-amber-50 text-amber-600"
-                subtitle="Unpaid checkouts"
-              />
-              <StatCard
-                label="Revenue"
-                value={`₹${(stats?.totalRevenue ?? 0).toLocaleString()}`}
-                icon={IndianRupee}
-                color="bg-green-50 text-green-600"
-                subtitle="Paid orders"
-              />
-            </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard
+              label="Total Traffic"
+              value={(stats?.totalViews ?? 0).toLocaleString()}
+              icon={BarChart3}
+              color="bg-cyan-50 text-cyan-600"
+              subtitle="Product views"
+            />
+            <StatCard
+              label="Orders"
+              value={stats?.totalOrders ?? 0}
+              icon={ShoppingCart}
+              color="bg-purple-50 text-purple-600"
+              href="/admin/orders"
+              subtitle={`${stats?.pendingOrders ?? 0} pending, ${stats?.confirmedOrders ?? 0} confirmed`}
+            />
+            <StatCard
+              label="Lost Carts"
+              value={stats?.lostCarts ?? 0}
+              icon={ShoppingBasket}
+              color="bg-amber-50 text-amber-600"
+              subtitle="Unpaid checkouts"
+            />
+            <StatCard
+              label="Revenue"
+              value={`₹${(stats?.totalRevenue ?? 0).toLocaleString()}`}
+              icon={IndianRupee}
+              color="bg-green-50 text-green-600"
+              subtitle={`₹${(stats?.totalOrderValue ?? 0).toLocaleString()} total order value`}
+            />
 
-            {/* Secondary Stats Row */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-              <StatCard
-                label="Products"
-                value={stats?.totalProducts ?? 0}
-                icon={Package}
-                color="bg-blue-50 text-blue-600"
-                href="/admin/products"
-                small
-              />
-              <StatCard
-                label="Categories"
-                value={stats?.totalCategories ?? 0}
-                icon={FolderOpen}
-                color="bg-green-50 text-green-600"
-                href="/admin/categories"
-                small
-              />
-              <StatCard
-                label="Pending"
-                value={stats?.pendingOrders ?? 0}
-                icon={Clock}
-                color="bg-yellow-50 text-yellow-600"
-                small
-              />
-              <StatCard
-                label="Confirmed"
-                value={stats?.confirmedOrders ?? 0}
-                icon={CheckCircle2}
-                color="bg-blue-50 text-blue-600"
-                small
-              />
-              <StatCard
-                label="Total Order Value"
-                value={`₹${(stats?.totalOrderValue ?? 0).toLocaleString()}`}
-                icon={TrendingUp}
-                color="bg-orange-50 text-orange-600"
-                small
-              />
-            </div>
-          </>
+            <MiniStat icon={Package} label="Products" value={stats?.totalProducts ?? 0} href="/admin/products" />
+            <MiniStat icon={FolderOpen} label="Categories" value={stats?.totalCategories ?? 0} href="/admin/categories" />
+            <MiniStat icon={Clock} label="Pending" value={stats?.pendingOrders ?? 0} />
+            <MiniStat icon={CheckCircle2} label="Confirmed" value={stats?.confirmedOrders ?? 0} />
+          </div>
         )}
 
         {/* Recent Orders */}
@@ -124,43 +87,47 @@ export default function AdminDashboardPage() {
               No orders yet
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    <th className="px-6 py-3">Order</th>
-                    <th className="px-6 py-3">Customer</th>
-                    <th className="px-6 py-3">Total</th>
-                    <th className="px-6 py-3">Status</th>
-                    <th className="px-6 py-3">Payment</th>
-                    <th className="px-6 py-3">Date</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {recentOrders.map((order) => (
-                    <tr key={order.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-3 text-sm font-mono text-coral">
-                        {order.order_number}
-                      </td>
-                      <td className="px-6 py-3 text-sm text-gray-900">
-                        {order.customer_name}
-                      </td>
-                      <td className="px-6 py-3 text-sm font-medium text-gray-900">
-                        ₹{Number(order.total).toLocaleString()}
-                      </td>
-                      <td className="px-6 py-3">
-                        <OrderStatusBadge status={order.status} />
-                      </td>
-                      <td className="px-6 py-3">
-                        <PaymentBadge status={order.payment_status} />
-                      </td>
-                      <td className="px-6 py-3 text-sm text-gray-500">
-                        {new Date(order.created_at).toLocaleDateString()}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="divide-y divide-gray-100">
+              {recentOrders.map((order) => (
+                <Link key={order.id} href="/admin/orders" className="flex items-center gap-4 px-6 py-3.5 hover:bg-gray-50 transition-colors">
+                  {/* Product thumbnail */}
+                  <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0 border border-gray-200">
+                    {order.items?.[0]?.product_image ? (
+                      <Image
+                        src={order.items[0].product_image}
+                        alt=""
+                        width={40}
+                        height={40}
+                        className="w-full h-full object-cover"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-300">
+                        <Package className="w-5 h-5" />
+                      </div>
+                    )}
+                  </div>
+                  {/* Order info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs text-coral font-medium">{order.order_number}</span>
+                      <span className="text-sm text-gray-900 font-medium truncate">{order.customer_name}</span>
+                    </div>
+                    <p className="text-xs text-gray-400 truncate">
+                      {order.items?.map((i) => i.product_name).join(", ")}
+                    </p>
+                  </div>
+                  {/* Amount */}
+                  <span className="text-sm font-semibold text-gray-900 whitespace-nowrap">₹{Number(order.total).toLocaleString()}</span>
+                  {/* Badges */}
+                  <StatusBadge status={order.status} />
+                  <PaymentBadge status={order.payment_status} />
+                  {/* Date */}
+                  <span className="text-xs text-gray-400 whitespace-nowrap hidden lg:block">
+                    {new Date(order.created_at).toLocaleDateString()}
+                  </span>
+                </Link>
+              ))}
             </div>
           )}
         </div>
@@ -189,31 +156,44 @@ export default function AdminDashboardPage() {
   );
 }
 
-function StatCard({ label, value, icon: Icon, color, href, subtitle, small }: {
+function StatCard({ label, value, icon: Icon, color, href, subtitle }: {
   label: string;
   value: number | string;
   icon: React.ComponentType<{ className?: string }>;
   color: string;
   href?: string;
   subtitle?: string;
-  small?: boolean;
 }) {
   const content = (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow p-4">
-      <div className="flex items-center justify-between mb-2">
-        <div className={`inline-flex p-2 rounded-lg ${color}`}>
-          <Icon className={small ? "w-4 h-4" : "w-5 h-5"} />
-        </div>
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-md transition-shadow p-5">
+      <div className={`inline-flex p-2.5 rounded-lg ${color} mb-3`}>
+        <Icon className="w-5 h-5" />
       </div>
-      <p className={`font-bold text-gray-900 ${small ? "text-lg" : "text-2xl"}`}>{value}</p>
+      <p className="text-2xl font-bold text-gray-900">{value}</p>
       <p className="text-xs text-gray-500 mt-0.5">{label}</p>
-      {subtitle && <p className="text-[10px] text-gray-400">{subtitle}</p>}
+      {subtitle && <p className="text-[10px] text-gray-400 mt-0.5">{subtitle}</p>}
     </div>
   );
   return href ? <Link href={href}>{content}</Link> : content;
 }
 
-function OrderStatusBadge({ status }: { status: string }) {
+function MiniStat({ icon: Icon, label, value, href }: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: number | string;
+  href?: string;
+}) {
+  const content = (
+    <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 flex items-center gap-3 hover:bg-gray-100 transition-colors">
+      <Icon className="w-4 h-4 text-gray-400" />
+      <span className="text-sm text-gray-500">{label}</span>
+      <span className="text-sm font-bold text-gray-900 ml-auto">{value}</span>
+    </div>
+  );
+  return href ? <Link href={href}>{content}</Link> : content;
+}
+
+function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
     pending: "bg-yellow-100 text-yellow-700",
     confirmed: "bg-blue-100 text-blue-700",
@@ -222,7 +202,7 @@ function OrderStatusBadge({ status }: { status: string }) {
     cancelled: "bg-red-100 text-red-700",
   };
   return (
-    <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${styles[status] || "bg-gray-100 text-gray-700"}`}>
+    <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${styles[status] || "bg-gray-100 text-gray-700"}`}>
       {status}
     </span>
   );
@@ -235,7 +215,7 @@ function PaymentBadge({ status }: { status: string }) {
     failed: "bg-red-100 text-red-700",
   };
   return (
-    <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${styles[status] || "bg-gray-100 text-gray-700"}`}>
+    <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${styles[status] || "bg-gray-100 text-gray-700"}`}>
       {status === "paid" ? "Paid" : status === "failed" ? "Failed" : "Unpaid"}
     </span>
   );
