@@ -153,3 +153,9 @@ export async function trackShipment(
 ): Promise<TrackingResult> {
   return invokeEdgeFunction('shiprocket-track', { order_number: orderNumber });
 }
+
+export async function checkPaymentStatus(
+  orderId: string
+): Promise<{ payment_status: string; reconciled: boolean; message: string; razorpay_payment_id?: string }> {
+  return invokeEdgeFunction('check-payment-status', { order_id: orderId });
+}

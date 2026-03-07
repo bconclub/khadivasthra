@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
-import { getOrders, updateOrderStatus, createShiprocketOrder } from "@/lib/services/orders";
+import { getOrders, updateOrderStatus, createShiprocketOrder, checkPaymentStatus } from "@/lib/services/orders";
 import { deleteOrder } from "@/lib/services/admin";
 import { supabase } from "@/lib/supabase";
 import type { OrderStatus } from "@/types";
-import { Loader2, ChevronDown, ChevronUp, Truck, ExternalLink, Trash2 } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp, Truck, ExternalLink, Trash2, CreditCard } from "lucide-react";
 import toast from "react-hot-toast";
 
 const STATUS_OPTIONS: OrderStatus[] = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
@@ -31,6 +31,7 @@ export default function AdminOrdersPage() {
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [creatingShipment, setCreatingShipment] = useState<string | null>(null);
+  const [checkingPayment, setCheckingPayment] = useState<string | null>(null);
 
   const allOrders = orders || [];
   const filtered = statusFilter
@@ -78,6 +79,23 @@ export default function AdminOrdersPage() {
       refetch();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to delete order");
+    }
+  };
+
+  const handleCheckPayment = async (orderId: string) => {
+    setCheckingPayment(orderId);
+    try {
+      const result = await checkPaymentStatus(orderId);
+      if (result.reconciled) {
+        toast.success(`Payment confirmed! ${result.message}`);
+        refetch();
+      } else {
+        toast(`${result.message}`, { icon: "ℹ️" });
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to check payment");
+    } finally {
+      setCheckingPayment(null);
     }
   };
 
@@ -203,6 +221,19 @@ export default function AdminOrdersPage() {
                             <p><span className="text-gray-500">Payment ID:</span> {order.razorpay_payment_id}</p>
                           )}
                         </div>
+                        {order.payment_status !== "paid" && order.razorpay_order_id && (
+                          <button
+                            onClick={() => handleCheckPayment(order.id)}
+                            disabled={checkingPayment === order.id}
+                            className="px-4 py-2 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors disabled:opacity-50 flex items-center gap-2"
+                          >
+                            {checkingPayment === order.id ? (
+                              <><Loader2 className="w-4 h-4 animate-spin" /> Checking...</>
+                            ) : (
+                              <><CreditCard className="w-4 h-4" /> Check Payment</>
+                            )}
+                          </button>
+                        )}
                       </div>
 
                       {/* Shipping Details */}
