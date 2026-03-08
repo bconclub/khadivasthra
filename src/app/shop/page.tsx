@@ -46,12 +46,15 @@ export default function ShopPage() {
     ? allProducts.filter((p) => p.category?.name === selectedCategory)
     : allProducts;
 
-  // Sort products
+  // Sort products — default: best sellers & featured first
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sortBy === "price-asc") return Number(a.price) - Number(b.price);
     if (sortBy === "price-desc") return Number(b.price) - Number(a.price);
     if (sortBy === "newest") return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
-    return 0;
+    // Default: best sellers first, then featured, then rest
+    const scoreA = (a.is_best_seller ? 2 : 0) + (a.is_featured ? 1 : 0);
+    const scoreB = (b.is_best_seller ? 2 : 0) + (b.is_featured ? 1 : 0);
+    return scoreB - scoreA;
   });
 
   if (loadingProducts) {
