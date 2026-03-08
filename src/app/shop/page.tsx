@@ -6,7 +6,7 @@ import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getProducts } from "@/lib/services/products";
 import { getCategories } from "@/lib/services/categories";
 import type { ProductWithCategory } from "@/types";
-import { ArrowUpDown, Filter, Loader2 } from "lucide-react";
+import { ArrowUpDown, Loader2 } from "lucide-react";
 
 function toCardProduct(product: ProductWithCategory) {
   return {
@@ -26,7 +26,7 @@ export default function ShopPage() {
   const { data: categories } = useSupabaseQuery(getCategories);
   const [sortBy, setSortBy] = useState<"price-asc" | "price-desc" | "newest" | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [showFilters, setShowFilters] = useState(false);
+
 
   const allProducts = products || [];
   const categoryNames = categories?.map(c => c.name) || [];
@@ -111,21 +111,32 @@ export default function ShopPage() {
 
           {/* Main Content */}
           <div className="flex-1">
-            {/* Mobile Filters Toggle & Sort - sticky */}
+            {/* Mobile Category Tags & Sort - sticky */}
             <div className="lg:hidden sticky top-0 z-40 -mx-4 px-4 bg-cream/80 backdrop-blur-lg border-b border-white/40">
-              <div className="flex gap-3 py-3">
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl shadow-sm border text-sm font-medium transition-colors ${
-                    showFilters
-                      ? "bg-coral text-white border-coral"
-                      : "bg-white/70 backdrop-blur-sm border-white/50"
-                  }`}
-                >
-                  <Filter className="w-4 h-4" />
-                  Filters
-                  {selectedCategory && !showFilters && <span className="w-1.5 h-1.5 rounded-full bg-coral" />}
-                </button>
+              <div className="overflow-x-auto scrollbar-hide py-3 -mx-1">
+                <div className="flex gap-2 px-1 w-max">
+                  <button
+                    onClick={() => setSelectedCategory(null)}
+                    className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                      !selectedCategory ? "bg-coral text-white shadow-sm" : "bg-white/80 text-text"
+                    }`}
+                  >
+                    All
+                  </button>
+                  {categoryNames.map((cat) => (
+                    <button
+                      key={cat}
+                      onClick={() => setSelectedCategory(cat)}
+                      className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                        selectedCategory === cat ? "bg-coral text-white shadow-sm" : "bg-white/80 text-text"
+                      }`}
+                    >
+                      {cat}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex gap-3 pb-3">
                 <div className="flex-1 relative">
                   <select
                     className="w-full appearance-none bg-white/70 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-white/50 pr-10 text-sm font-medium"
@@ -140,33 +151,6 @@ export default function ShopPage() {
                   <ArrowUpDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                 </div>
               </div>
-
-              {/* Filter Panel - inside sticky container */}
-              {showFilters && (
-                <div className="pb-3">
-                  <div className="flex flex-wrap gap-2">
-                    <button
-                      onClick={() => { setSelectedCategory(null); setShowFilters(false); }}
-                      className={`px-3.5 py-1.5 rounded-full text-sm transition-colors ${
-                        !selectedCategory ? "bg-coral text-white" : "bg-white/80 text-text"
-                      }`}
-                    >
-                      All
-                    </button>
-                    {categoryNames.map((cat) => (
-                      <button
-                        key={cat}
-                        onClick={() => { setSelectedCategory(cat); setShowFilters(false); }}
-                        className={`px-3.5 py-1.5 rounded-full text-sm transition-colors ${
-                          selectedCategory === cat ? "bg-coral text-white" : "bg-white/80 text-text"
-                        }`}
-                      >
-                        {cat}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Results Header */}

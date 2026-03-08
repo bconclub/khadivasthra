@@ -40,6 +40,14 @@
     scroll-behavior: smooth;
   }
 
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
   body {
     color: var(--color-text-DEFAULT);
     background: var(--color-white);
