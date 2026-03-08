@@ -18,6 +18,7 @@ export function Header() {
     const [showHeaderLogo, setShowHeaderLogo] = useState(false);
     const [showHeader, setShowHeader] = useState(false);
     const lastScrollYRef = React.useRef(0);
+    const scrollDeltaRef = React.useRef(0);
 
     // Keep header always visible on desktop for shop/product pages
     const isShopPage = pathname?.startsWith('/shop') || pathname?.startsWith('/product') || pathname?.startsWith('/collections') || pathname?.startsWith('/offers');
@@ -26,11 +27,19 @@ export function Header() {
         const handleScroll = () => {
             const currentScrollY = window.scrollY;
             const lastY = lastScrollYRef.current;
+            const delta = currentScrollY - lastY;
 
-            // Only show header when scrolling UP and past initial threshold
-            if (currentScrollY < lastY && currentScrollY > 80) {
+            // Accumulate scroll delta in same direction, reset on direction change
+            if ((delta > 0 && scrollDeltaRef.current > 0) || (delta < 0 && scrollDeltaRef.current < 0)) {
+                scrollDeltaRef.current += delta;
+            } else {
+                scrollDeltaRef.current = delta;
+            }
+
+            // Only toggle after 15px of consistent scroll in one direction
+            if (scrollDeltaRef.current < -15 && currentScrollY > 80) {
                 setShowHeader(true);
-            } else if (currentScrollY > lastY || currentScrollY <= 80) {
+            } else if (scrollDeltaRef.current > 15 || currentScrollY <= 80) {
                 setShowHeader(false);
             }
 
@@ -52,7 +61,7 @@ export function Header() {
     }, []);
 
     return (
-        <header className={`header fixed top-0 z-50 w-full transition-all duration-300 ${
+        <header className={`header fixed top-0 z-50 w-full transition-all duration-400 ease-in-out ${
                 isShopPage
                 ? `md:opacity-100 md:translate-y-0 md:pointer-events-auto ${showHeader ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-full pointer-events-none'}`
                 : showHeader

@@ -29,11 +29,22 @@ export default function ShopPage() {
   const [showSortMenu, setShowSortMenu] = useState(false);
   const [headerVisible, setHeaderVisible] = useState(false);
   const lastScrollY = useRef(0);
+  const scrollDelta = useRef(0);
 
   useEffect(() => {
     const handleScroll = () => {
       const y = window.scrollY;
-      setHeaderVisible(y < lastScrollY.current && y > 80);
+      const delta = y - lastScrollY.current;
+      if ((delta > 0 && scrollDelta.current > 0) || (delta < 0 && scrollDelta.current < 0)) {
+        scrollDelta.current += delta;
+      } else {
+        scrollDelta.current = delta;
+      }
+      if (scrollDelta.current < -15 && y > 80) {
+        setHeaderVisible(true);
+      } else if (scrollDelta.current > 15 || y <= 80) {
+        setHeaderVisible(false);
+      }
       lastScrollY.current = y;
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
