@@ -51,10 +51,10 @@ export default function Home() {
 
   // Multilingual logo cycling — starts Tamil, cycles once, lands on Malayalam
   const heroLogos = [
-    "/logo_languages/Khaid Vasthra Logo-02.png", // Tamil
-    "/logo_languages/Khaid Vasthra Logo-03.png", // Telugu
-    "/logo_languages/Khaid Vasthra Logo-04.png", // English
-    "/logo_languages/Khaid Vasthra Logo-01.png", // Malayalam (final)
+    "/logo_languages/Tamil.webp",      // Tamil
+    "/logo_languages/Kannada.webp",    // Kannada
+    "/logo_languages/English.webp",    // English
+    "/logo_languages/Malayalam.webp",  // Malayalam (final)
   ];
   const [logoIndex, setLogoIndex] = useState(0);
 
