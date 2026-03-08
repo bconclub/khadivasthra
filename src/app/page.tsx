@@ -49,23 +49,22 @@ export default function Home() {
   const [logoScale, setLogoScale] = useState(1);
   const [logoOpacity, setLogoOpacity] = useState(1);
 
-  // Multilingual logo cycling — runs once then stays on Malayalam
+  // Multilingual logo cycling — starts Tamil, cycles once, lands on Malayalam
   const heroLogos = [
-    "/logo_languages/Khaid Vasthra Logo-01.png", // Malayalam
     "/logo_languages/Khaid Vasthra Logo-02.png", // Tamil
     "/logo_languages/Khaid Vasthra Logo-03.png", // Telugu
-    "/Khadi Vasthra White Transparnt.png",        // English (main)
+    "/logo_languages/Khaid Vasthra Logo-04.png", // English
+    "/logo_languages/Khaid Vasthra Logo-01.png", // Malayalam (final)
   ];
   const [logoIndex, setLogoIndex] = useState(0);
 
   useEffect(() => {
-    // Total cycle: 0 → 1 → 2 → 3 → back to 0, then stop
     let step = 0;
-    const totalSteps = heroLogos.length; // 4 transitions (back to 0)
+    const lastIndex = heroLogos.length - 1;
     const interval = setInterval(() => {
       step++;
-      if (step >= totalSteps) {
-        setLogoIndex(0); // back to Malayalam
+      if (step >= lastIndex) {
+        setLogoIndex(lastIndex); // land on Malayalam
         clearInterval(interval);
       } else {
         setLogoIndex(step);
@@ -130,7 +129,7 @@ export default function Home() {
           <span className="hero-section__badge inline-block px-4 py-1.5 border border-white/30 rounded-full text-sm tracking-widest uppercase font-medium bg-white/20 backdrop-blur-sm text-white mb-4">
             Authentic Kerala Handloom
           </span>
-          <div id="hero-logo" className="hero-section__logo-wrapper relative flex justify-center mb-4 h-32 md:h-44 lg:h-52"
+          <div id="hero-logo" className="hero-section__logo-wrapper relative flex justify-center items-center mb-4 w-full max-w-md md:max-w-lg lg:max-w-xl mx-auto aspect-[5/2]"
             style={{ transform: `scale(${logoScale})`, opacity: logoOpacity, transition: "transform 100ms ease-out, opacity 100ms ease-out" }}
           >
             {heroLogos.map((src, i) => (
@@ -138,9 +137,8 @@ export default function Home() {
                 key={src}
                 src={src}
                 alt="Khadi Vasthra"
-                width={500}
-                height={200}
-                className="absolute inset-0 w-full h-full object-contain drop-shadow-2xl transition-opacity duration-300 ease-in-out"
+                fill
+                className="object-contain drop-shadow-2xl transition-opacity duration-300 ease-in-out"
                 style={{ opacity: i === logoIndex ? 1 : 0 }}
                 priority={i === 0}
                 unoptimized
