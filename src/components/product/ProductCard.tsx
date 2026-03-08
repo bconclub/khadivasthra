@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/context/CartContext";
-import { ShoppingBag, ImageOff } from "lucide-react";
+import { Plus, ImageOff } from "lucide-react";
 import { useState } from "react";
 
 interface ProductCardProps {
@@ -108,7 +108,7 @@ export function ProductCard({ product }: ProductCardProps) {
                         )}
                     </div>
                     <button
-                        className={`product-card__add-button flex-shrink-0 inline-flex items-center gap-1 bg-coral text-white text-[11px] md:text-xs font-medium px-2 md:px-3 py-1.5 rounded-full hover:bg-coral-dark transition-colors ${
+                        className={`product-card__add-button flex-shrink-0 inline-flex items-center justify-center w-8 h-8 md:w-9 md:h-9 bg-coral text-white rounded-full hover:bg-coral-dark transition-colors shadow-sm ${
                             isOutOfStock ? 'opacity-40 pointer-events-none' : ''
                         }`}
                         disabled={isOutOfStock}
@@ -117,9 +117,9 @@ export function ProductCard({ product }: ProductCardProps) {
                             e.stopPropagation();
                             if (!isOutOfStock) addToCart(product);
                         }}
+                        aria-label={isOutOfStock ? 'Sold Out' : 'Add to Cart'}
                     >
-                        <ShoppingBag className="w-3 h-3" />
-                        <span className="hidden sm:inline">{isOutOfStock ? 'Sold Out' : 'Add to Cart'}</span>
+                        <Plus className="w-4 h-4 md:w-5 md:h-5" strokeWidth={2.5} />
                     </button>
                 </div>
             </div>
