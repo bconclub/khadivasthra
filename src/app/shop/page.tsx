@@ -122,7 +122,7 @@ export default function ShopPage() {
           {/* Main Content */}
           <div className="flex-1">
             {/* Mobile Category Tags & Sort - sticky */}
-            <div className="lg:hidden sticky top-0 z-40 -mx-4 px-4 bg-cream/80 backdrop-blur-lg border-b border-white/40">
+            <div className="lg:hidden sticky top-16 z-40 -mx-4 px-4 bg-cream/80 backdrop-blur-lg border-b border-white/40">
               <div className="flex items-center gap-2 py-3">
                 <div className="flex-1 overflow-x-auto scrollbar-hide -mx-1">
                   <div className="flex gap-2 px-1 w-max">
