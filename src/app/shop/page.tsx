@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ProductCard } from "@/components/product/ProductCard";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getProducts } from "@/lib/services/products";
@@ -27,7 +27,18 @@ export default function ShopPage() {
   const [sortBy, setSortBy] = useState<"price-asc" | "price-desc" | "newest" | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showSortMenu, setShowSortMenu] = useState(false);
+  const [headerVisible, setHeaderVisible] = useState(false);
+  const lastScrollY = useRef(0);
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const y = window.scrollY;
+      setHeaderVisible(y < lastScrollY.current && y > 80);
+      lastScrollY.current = y;
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const allProducts = products || [];
 
@@ -125,7 +136,7 @@ export default function ShopPage() {
           {/* Main Content */}
           <div className="flex-1">
             {/* Mobile Category Tags & Sort - sticky */}
-            <div className="lg:hidden sticky top-16 z-40 -mx-4 px-4 bg-cream border-b border-gray-200">
+            <div className={`lg:hidden sticky z-40 -mx-4 px-4 bg-cream border-b border-gray-200 transition-all duration-300 ${headerVisible ? 'top-16' : 'top-0'}`}>
               <div className="flex items-center gap-2 py-3">
                 <div className="flex-1 overflow-x-auto scrollbar-hide -mx-1">
                   <div className="flex gap-2 px-1 w-max">
@@ -135,22 +146,24 @@ export default function ShopPage() {
                         !selectedCategory ? "bg-coral text-white shadow-sm" : "bg-white/80 text-text"
                       }`}
                     >
-                      All
+                      All <span className="text-xs opacity-75">{allProducts.length}</span>
                     </button>
-                    {categoryNames.map((cat) => (
-                      <button
-                        key={cat}
-                        onClick={() => setSelectedCategory(cat)}
-                        className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                          selectedCategory === cat ? "bg-coral text-white shadow-sm" : "bg-white/80 text-text"
-                        }`}
-                      >
-                        {cat}
-                      </button>
-                    ))}
+                    {categoryNames.map((cat) => {
+                      const count = allProducts.filter(p => p.category?.name === cat).length;
+                      return (
+                        <button
+                          key={cat}
+                          onClick={() => setSelectedCategory(cat)}
+                          className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                            selectedCategory === cat ? "bg-coral text-white shadow-sm" : "bg-white/80 text-text"
+                          }`}
+                        >
+                          {cat} <span className="text-xs opacity-75">{count}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
-                <span className="flex-shrink-0 text-xs text-text-muted">{sortedProducts.length}</span>
                 <div className="relative flex-shrink-0">
                   <button
                     onClick={() => setShowSortMenu(!showSortMenu)}
