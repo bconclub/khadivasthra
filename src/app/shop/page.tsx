@@ -153,11 +153,11 @@ export default function ShopPage() {
                   <div className="flex gap-2 px-1 w-max">
                     <button
                       onClick={() => setSelectedCategory(null)}
-                      className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                      className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1 ${
                         !selectedCategory ? "bg-coral text-white shadow-sm" : "bg-white/80 text-text"
                       }`}
                     >
-                      All <span className="text-xs opacity-75">{allProducts.length}</span>
+                      All <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold ml-1 ${!selectedCategory ? 'bg-white text-coral' : 'bg-gray-200 text-text-muted'}`}>{allProducts.length}</span>
                     </button>
                     {categoryNames.map((cat) => {
                       const count = allProducts.filter(p => p.category?.name === cat).length;
@@ -165,11 +165,11 @@ export default function ShopPage() {
                         <button
                           key={cat}
                           onClick={() => setSelectedCategory(cat)}
-                          className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                          className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1 ${
                             selectedCategory === cat ? "bg-coral text-white shadow-sm" : "bg-white/80 text-text"
                           }`}
                         >
-                          {cat} <span className="text-xs opacity-75">{count}</span>
+                          {cat} <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold ${selectedCategory === cat ? 'bg-white text-coral' : 'bg-gray-200 text-text-muted'}`}>{count}</span>
                         </button>
                       );
                     })}
