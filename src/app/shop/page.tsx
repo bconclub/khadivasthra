@@ -6,7 +6,7 @@ import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getProducts } from "@/lib/services/products";
 import { getCategories } from "@/lib/services/categories";
 import type { ProductWithCategory } from "@/types";
-import { ArrowUpDown, Loader2 } from "lucide-react";
+import { ArrowUpDown, Loader2, Check } from "lucide-react";
 
 function toCardProduct(product: ProductWithCategory) {
   return {
@@ -26,10 +26,20 @@ export default function ShopPage() {
   const { data: categories } = useSupabaseQuery(getCategories);
   const [sortBy, setSortBy] = useState<"price-asc" | "price-desc" | "newest" | null>(null);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [showSortMenu, setShowSortMenu] = useState(false);
 
 
   const allProducts = products || [];
-  const categoryNames = categories?.map(c => c.name) || [];
+
+  // Only show categories that have products, sorted by product count (most first)
+  const categoriesWithProducts = (categories || [])
+    .filter(c => allProducts.some(p => p.category?.name === c.name))
+    .sort((a, b) => {
+      const countA = allProducts.filter(p => p.category?.name === a.name).length;
+      const countB = allProducts.filter(p => p.category?.name === b.name).length;
+      return countB - countA;
+    });
+  const categoryNames = categoriesWithProducts.map(c => c.name);
 
   // Filter products
   let filteredProducts = selectedCategory
@@ -113,42 +123,61 @@ export default function ShopPage() {
           <div className="flex-1">
             {/* Mobile Category Tags & Sort - sticky */}
             <div className="lg:hidden sticky top-0 z-40 -mx-4 px-4 bg-cream/80 backdrop-blur-lg border-b border-white/40">
-              <div className="overflow-x-auto scrollbar-hide py-3 -mx-1">
-                <div className="flex gap-2 px-1 w-max">
-                  <button
-                    onClick={() => setSelectedCategory(null)}
-                    className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                      !selectedCategory ? "bg-coral text-white shadow-sm" : "bg-white/80 text-text"
-                    }`}
-                  >
-                    All
-                  </button>
-                  {categoryNames.map((cat) => (
+              <div className="flex items-center gap-2 py-3">
+                <div className="flex-1 overflow-x-auto scrollbar-hide -mx-1">
+                  <div className="flex gap-2 px-1 w-max">
                     <button
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
+                      onClick={() => setSelectedCategory(null)}
                       className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                        selectedCategory === cat ? "bg-coral text-white shadow-sm" : "bg-white/80 text-text"
+                        !selectedCategory ? "bg-coral text-white shadow-sm" : "bg-white/80 text-text"
                       }`}
                     >
-                      {cat}
+                      All
                     </button>
-                  ))}
+                    {categoryNames.map((cat) => (
+                      <button
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat)}
+                        className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                          selectedCategory === cat ? "bg-coral text-white shadow-sm" : "bg-white/80 text-text"
+                        }`}
+                      >
+                        {cat}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-              <div className="flex gap-3 pb-3">
-                <div className="flex-1 relative">
-                  <select
-                    className="w-full appearance-none bg-white/70 backdrop-blur-sm px-4 py-2.5 rounded-xl shadow-sm border border-white/50 pr-10 text-sm font-medium"
-                    onChange={(e) => setSortBy(e.target.value === "" ? null : e.target.value as typeof sortBy)}
-                    value={sortBy || ""}
+                <div className="relative flex-shrink-0">
+                  <button
+                    onClick={() => setShowSortMenu(!showSortMenu)}
+                    className={`w-9 h-9 flex items-center justify-center rounded-full transition-colors ${
+                      sortBy ? "bg-coral text-white" : "bg-white/80 text-text"
+                    }`}
                   >
-                    <option value="">Sort: Featured</option>
-                    <option value="price-asc">Price: Low to High</option>
-                    <option value="price-desc">Price: High to Low</option>
-                    <option value="newest">Newest First</option>
-                  </select>
-                  <ArrowUpDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    <ArrowUpDown className="w-4 h-4" />
+                  </button>
+                  {showSortMenu && (
+                    <>
+                      <div className="fixed inset-0 z-40" onClick={() => setShowSortMenu(false)} />
+                      <div className="absolute right-0 top-full mt-2 z-50 bg-white rounded-xl shadow-lg border border-gray-100 py-1 min-w-[180px]">
+                        {[
+                          { value: null, label: "Featured" },
+                          { value: "price-asc", label: "Price: Low → High" },
+                          { value: "price-desc", label: "Price: High → Low" },
+                          { value: "newest", label: "Newest First" },
+                        ].map((option) => (
+                          <button
+                            key={option.label}
+                            onClick={() => { setSortBy(option.value as typeof sortBy); setShowSortMenu(false); }}
+                            className="w-full text-left px-4 py-2.5 text-sm flex items-center justify-between hover:bg-cream/50 transition-colors"
+                          >
+                            {option.label}
+                            {sortBy === option.value && <Check className="w-4 h-4 text-coral" />}
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>
