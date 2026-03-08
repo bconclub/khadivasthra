@@ -51,7 +51,6 @@ export default function Home() {
 
   // Multilingual logo cycling — starts Tamil, cycles once, lands on Malayalam
   const heroLogos = [
-    "/logo_languages/Tamil.webp",      // Tamil
     "/logo_languages/Kannada.webp",    // Kannada
     "/logo_languages/English.webp",    // English
     "/logo_languages/Malayalam.webp",  // Malayalam (final)
