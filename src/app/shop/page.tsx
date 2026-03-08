@@ -150,6 +150,7 @@ export default function ShopPage() {
                     ))}
                   </div>
                 </div>
+                <span className="flex-shrink-0 text-xs text-text-muted">{sortedProducts.length}</span>
                 <div className="relative flex-shrink-0">
                   <button
                     onClick={() => setShowSortMenu(!showSortMenu)}
@@ -185,8 +186,8 @@ export default function ShopPage() {
               </div>
             </div>
 
-            {/* Results Header */}
-            <div className="flex items-center justify-between mb-6">
+            {/* Results Header - desktop only */}
+            <div className="hidden lg:flex items-center justify-between mb-6">
               <p className="text-text-muted">
                 Showing <span className="font-semibold text-text">{sortedProducts.length}</span> products
                 {selectedCategory && (
