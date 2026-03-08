@@ -49,6 +49,31 @@ export default function Home() {
   const [logoScale, setLogoScale] = useState(1);
   const [logoOpacity, setLogoOpacity] = useState(1);
 
+  // Multilingual logo cycling — runs once then stays on Malayalam
+  const heroLogos = [
+    "/logo_languages/Khaid Vasthra Logo-01.png", // Malayalam
+    "/logo_languages/Khaid Vasthra Logo-02.png", // Tamil
+    "/logo_languages/Khaid Vasthra Logo-03.png", // Telugu
+    "/Khadi Vasthra White Transparnt.png",        // English (main)
+  ];
+  const [logoIndex, setLogoIndex] = useState(0);
+
+  useEffect(() => {
+    // Total cycle: 0 → 1 → 2 → 3 → back to 0, then stop
+    let step = 0;
+    const totalSteps = heroLogos.length; // 4 transitions (back to 0)
+    const interval = setInterval(() => {
+      step++;
+      if (step >= totalSteps) {
+        setLogoIndex(0); // back to Malayalam
+        clearInterval(interval);
+      } else {
+        setLogoIndex(step);
+      }
+    }, 600);
+    return () => clearInterval(interval);
+  }, [heroLogos.length]);
+
   useEffect(() => {
     const handleScroll = () => {
       const heroLogo = document.getElementById('hero-logo');
@@ -66,7 +91,7 @@ export default function Home() {
       }
 
       const headerThreshold = 80;
-      const scrollRange = (windowHeight - headerThreshold) * 0.5; // Complete faster
+      const scrollRange = (windowHeight - headerThreshold) * 0.5;
       const currentScroll = windowHeight - logoTop;
 
       if (logoTop <= headerThreshold) {
@@ -105,20 +130,22 @@ export default function Home() {
           <span className="hero-section__badge inline-block px-4 py-1.5 border border-white/30 rounded-full text-sm tracking-widest uppercase font-medium bg-white/20 backdrop-blur-sm text-white mb-4">
             Authentic Kerala Handloom
           </span>
-          <div className="hero-section__logo-wrapper flex justify-center mb-4">
-            <Image
-              id="hero-logo"
-              src="/Khadi Vasthra White Transparnt.png"
-              alt="Khadi Vasthra Logo"
-              width={500}
-              height={200}
-              className="hero-section__logo h-auto w-full max-w-md md:max-w-lg lg:max-w-xl object-contain drop-shadow-2xl transition-all duration-100 ease-out"
-              style={{
-                transform: `scale(${logoScale})`,
-                opacity: logoOpacity,
-              }}
-              priority
-            />
+          <div id="hero-logo" className="hero-section__logo-wrapper relative flex justify-center mb-4 h-32 md:h-44 lg:h-52"
+            style={{ transform: `scale(${logoScale})`, opacity: logoOpacity, transition: "transform 100ms ease-out, opacity 100ms ease-out" }}
+          >
+            {heroLogos.map((src, i) => (
+              <Image
+                key={src}
+                src={src}
+                alt="Khadi Vasthra"
+                width={500}
+                height={200}
+                className="absolute inset-0 w-full h-full object-contain drop-shadow-2xl transition-opacity duration-300 ease-in-out"
+                style={{ opacity: i === logoIndex ? 1 : 0 }}
+                priority={i === 0}
+                unoptimized
+              />
+            ))}
           </div>
           <p className="hero-section__description text-xl md:text-2xl text-white/95 max-w-2xl mx-auto font-light leading-relaxed drop-shadow-md mb-6">
             Discover the finest collection of handcrafted Mundus and Dhotis, brought to you directly from the artisans of Kerala.
