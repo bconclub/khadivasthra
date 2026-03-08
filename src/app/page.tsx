@@ -69,7 +69,7 @@ export default function Home() {
       } else {
         setLogoIndex(step);
       }
-    }, 600);
+    }, 1400);
     return () => clearInterval(interval);
   }, [heroLogos.length]);
 
@@ -129,7 +129,7 @@ export default function Home() {
           <span className="hero-section__badge inline-block px-4 py-1.5 border border-white/30 rounded-full text-sm tracking-widest uppercase font-medium bg-white/20 backdrop-blur-sm text-white mb-4">
             Authentic Kerala Handloom
           </span>
-          <div id="hero-logo" className="hero-section__logo-wrapper relative flex justify-center items-center mb-4 w-full max-w-2xl md:max-w-4xl lg:max-w-5xl mx-auto aspect-[5/2]"
+          <div id="hero-logo" className="hero-section__logo-wrapper relative flex justify-center items-center mb-4 w-full max-w-[90vw] md:max-w-4xl lg:max-w-5xl mx-auto aspect-[5/2]"
             style={{ transform: `scale(${logoScale})`, opacity: logoOpacity, transition: "transform 100ms ease-out, opacity 100ms ease-out" }}
           >
             {heroLogos.map((src, i) => (
@@ -138,7 +138,7 @@ export default function Home() {
                 src={src}
                 alt="Khadi Vasthra"
                 fill
-                className="object-contain drop-shadow-2xl transition-opacity duration-300 ease-in-out"
+                className="object-contain drop-shadow-2xl transition-opacity duration-700 ease-in-out"
                 style={{ opacity: i === logoIndex ? 1 : 0 }}
                 priority={i === 0}
                 unoptimized
