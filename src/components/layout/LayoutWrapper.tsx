@@ -6,6 +6,7 @@ import { Footer } from "./Footer";
 import { CartDrawer } from "./CartDrawer";
 import { BottomBar } from "./BottomBar";
 import { SearchOverlay } from "./SearchOverlay";
+import { Preloader } from "./Preloader";
 import { useSearch } from "@/context/SearchContext";
 
 export function LayoutWrapper({ children }: { children: React.ReactNode }) {
@@ -21,6 +22,7 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      <Preloader />
       <Header />
       <main className={`flex-grow pb-16 md:pb-0 ${isShopPage ? 'md:pt-20' : ''}`}>{children}</main>
       <Footer />
