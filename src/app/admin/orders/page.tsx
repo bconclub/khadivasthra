@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getOrders, updateOrderStatus, createShiprocketOrder, checkPaymentStatus } from "@/lib/services/orders";
 import { deleteOrder } from "@/lib/services/admin";
 import { supabase } from "@/lib/supabase";
-import type { OrderStatus } from "@/types";
-import { Loader2, ChevronDown, ChevronUp, Truck, ExternalLink, Trash2, CreditCard, Package } from "lucide-react";
+import type { OrderStatus, Product, PaymentMethod } from "@/types";
+import { Loader2, ChevronDown, ChevronUp, Truck, ExternalLink, Trash2, CreditCard, Package, Plus, Search, X, Minus } from "lucide-react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 
@@ -28,12 +28,303 @@ const PAYMENT_STYLES: Record<string, string> = {
   cod: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
 };
 
+// --- Create Order Modal ---
+interface OrderLineItem {
+  product: Product;
+  quantity: number;
+}
+
+function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [address, setAddress] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("Kerala");
+  const [pincode, setPincode] = useState("");
+  const [notes, setNotes] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cod");
+  const [lineItems, setLineItems] = useState<OrderLineItem[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+
+  // Product search
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [showSearch, setShowSearch] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  const searchProducts = useCallback(async (query: string) => {
+    if (query.length < 2) { setSearchResults([]); return; }
+    const { data } = await supabase
+      .from("products")
+      .select("*")
+      .eq("is_active", true)
+      .ilike("name", `%${query}%`)
+      .limit(8);
+    setSearchResults(data || []);
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => searchProducts(searchQuery), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery, searchProducts]);
+
+  // Close search dropdown on outside click
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowSearch(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const addProduct = (product: Product) => {
+    const existing = lineItems.find((li) => li.product.id === product.id);
+    if (existing) {
+      setLineItems(lineItems.map((li) => li.product.id === product.id ? { ...li, quantity: li.quantity + 1 } : li));
+    } else {
+      setLineItems([...lineItems, { product, quantity: 1 }]);
+    }
+    setSearchQuery("");
+    setSearchResults([]);
+    setShowSearch(false);
+  };
+
+  const updateQty = (productId: string, delta: number) => {
+    setLineItems(lineItems.map((li) => {
+      if (li.product.id !== productId) return li;
+      const newQty = li.quantity + delta;
+      return newQty < 1 ? li : { ...li, quantity: newQty };
+    }));
+  };
+
+  const removeItem = (productId: string) => {
+    setLineItems(lineItems.filter((li) => li.product.id !== productId));
+  };
+
+  const subtotal = lineItems.reduce((sum, li) => sum + li.product.price * li.quantity, 0);
+
+  const handleSubmit = async () => {
+    if (!name.trim() || !phone.trim() || !address.trim() || !city.trim() || !pincode.trim()) {
+      toast.error("Please fill all required customer fields");
+      return;
+    }
+    if (lineItems.length === 0) {
+      toast.error("Add at least one product");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+      const random = Math.floor(Math.random() * 1000).toString().padStart(3, "0");
+      const orderNumber = `KV-${dateStr}-${random}`;
+
+      const isCod = paymentMethod === "cod";
+
+      const items = lineItems.map((li) => ({
+        product_id: li.product.id,
+        product_name: li.product.name,
+        product_image: li.product.image_url || null,
+        price: li.product.price,
+        quantity: li.quantity,
+        subtotal: li.product.price * li.quantity,
+      }));
+
+      const { error } = await supabase.from("orders").insert({
+        order_number: orderNumber,
+        customer_name: name.trim(),
+        customer_phone: phone.trim(),
+        customer_email: email.trim() || null,
+        customer_address: address.trim(),
+        customer_city: city.trim(),
+        customer_state: state.trim() || "Kerala",
+        customer_pincode: pincode.trim(),
+        items,
+        subtotal,
+        shipping: 0,
+        total: subtotal,
+        status: "confirmed",
+        payment_status: isCod ? "cod" : "paid",
+        payment_method: paymentMethod,
+        notes: notes.trim() || null,
+      });
+
+      if (error) throw error;
+
+      toast.success(`Order ${orderNumber} created`);
+      onCreated();
+      onClose();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to create order");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const inputCls = "w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-coral focus:border-transparent";
+  const labelCls = "block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1";
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 overflow-y-auto p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl my-8 border border-gray-200 dark:border-gray-700">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">Create Order</h2>
+          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"><X className="w-5 h-5 text-gray-400" /></button>
+        </div>
+
+        <div className="px-6 py-4 space-y-5 max-h-[70vh] overflow-y-auto">
+          {/* Customer Details */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Customer Details</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelCls}>Name *</label>
+                <input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} placeholder="Customer name" />
+              </div>
+              <div>
+                <label className={labelCls}>Phone *</label>
+                <input className={inputCls} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="10-digit phone" />
+              </div>
+              <div className="col-span-2">
+                <label className={labelCls}>Email</label>
+                <input className={inputCls} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="Email (optional)" />
+              </div>
+              <div className="col-span-2">
+                <label className={labelCls}>Address *</label>
+                <input className={inputCls} value={address} onChange={(e) => setAddress(e.target.value)} placeholder="Full address" />
+              </div>
+              <div>
+                <label className={labelCls}>City *</label>
+                <input className={inputCls} value={city} onChange={(e) => setCity(e.target.value)} placeholder="City" />
+              </div>
+              <div>
+                <label className={labelCls}>State</label>
+                <input className={inputCls} value={state} onChange={(e) => setState(e.target.value)} placeholder="State" />
+              </div>
+              <div>
+                <label className={labelCls}>Pincode *</label>
+                <input className={inputCls} value={pincode} onChange={(e) => setPincode(e.target.value)} placeholder="6-digit pincode" />
+              </div>
+              <div>
+                <label className={labelCls}>Payment Method</label>
+                <select className={inputCls} value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}>
+                  <option value="cod">Cash on Delivery</option>
+                  <option value="online">Paid Online</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Product Selection */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Products</h3>
+            <div ref={searchRef} className="relative mb-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  className={`${inputCls} pl-9`}
+                  value={searchQuery}
+                  onChange={(e) => { setSearchQuery(e.target.value); setShowSearch(true); }}
+                  onFocus={() => setShowSearch(true)}
+                  placeholder="Search products to add..."
+                />
+              </div>
+              {showSearch && searchResults.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 shadow-lg max-h-48 overflow-y-auto">
+                  {searchResults.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => addProduct(p)}
+                      className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-left"
+                    >
+                      <div className="w-8 h-8 rounded bg-gray-100 dark:bg-gray-600 overflow-hidden flex-shrink-0">
+                        {p.image_url ? (
+                          <Image src={p.image_url} alt="" width={32} height={32} className="w-full h-full object-cover" unoptimized />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center"><Package className="w-4 h-4 text-gray-300" /></div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-900 dark:text-white truncate">{p.name}</p>
+                        <p className="text-xs text-gray-400">₹{p.price.toLocaleString()}{!p.in_stock ? " · Out of stock" : ""}</p>
+                      </div>
+                      <Plus className="w-4 h-4 text-coral flex-shrink-0" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Selected items */}
+            {lineItems.length === 0 ? (
+              <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-4">No products added yet</p>
+            ) : (
+              <div className="space-y-2">
+                {lineItems.map((li) => (
+                  <div key={li.product.id} className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-2">
+                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-600 flex-shrink-0">
+                      {li.product.image_url ? (
+                        <Image src={li.product.image_url} alt="" width={40} height={40} className="w-full h-full object-cover" unoptimized />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center"><Package className="w-4 h-4 text-gray-300" /></div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-900 dark:text-white truncate">{li.product.name}</p>
+                      <p className="text-xs text-gray-400">₹{li.product.price.toLocaleString()} each</p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => updateQty(li.product.id, -1)} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600"><Minus className="w-3.5 h-3.5 text-gray-500" /></button>
+                      <span className="w-6 text-center text-sm font-medium text-gray-900 dark:text-white">{li.quantity}</span>
+                      <button onClick={() => updateQty(li.product.id, 1)} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600"><Plus className="w-3.5 h-3.5 text-gray-500" /></button>
+                    </div>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white w-20 text-right">₹{(li.product.price * li.quantity).toLocaleString()}</span>
+                    <button onClick={() => removeItem(li.product.id)} className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30"><X className="w-3.5 h-3.5 text-red-500" /></button>
+                  </div>
+                ))}
+                <div className="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-600 text-sm font-bold text-gray-900 dark:text-white">
+                  <span>Total</span>
+                  <span>₹{subtotal.toLocaleString()}</span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Notes */}
+          <div>
+            <label className={labelCls}>Notes</label>
+            <textarea className={`${inputCls} resize-none`} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Order notes (optional)" />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+          <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Cancel</button>
+          <button
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="px-5 py-2 bg-coral text-white rounded-lg text-sm font-medium hover:bg-coral/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+          >
+            {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Creating...</> : <><Plus className="w-4 h-4" /> Create Order</>}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- Main Orders Page ---
 export default function AdminOrdersPage() {
   const { data: orders, loading, refetch } = useSupabaseQuery(getOrders);
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [creatingShipment, setCreatingShipment] = useState<string | null>(null);
   const [checkingPayment, setCheckingPayment] = useState<string | null>(null);
+  const [showCreateOrder, setShowCreateOrder] = useState(false);
 
   const allOrders = orders || [];
   const filtered = statusFilter
@@ -109,7 +400,17 @@ export default function AdminOrdersPage() {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Orders</h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1">{allOrders.length} total orders</p>
           </div>
+          <button
+            onClick={() => setShowCreateOrder(true)}
+            className="px-4 py-2 bg-coral text-white rounded-lg text-sm font-medium hover:bg-coral/90 transition-colors flex items-center gap-2"
+          >
+            <Plus className="w-4 h-4" /> Create Order
+          </button>
         </div>
+
+        {showCreateOrder && (
+          <CreateOrderModal onClose={() => setShowCreateOrder(false)} onCreated={refetch} />
+        )}
 
         {/* Status Filter */}
         <div className="flex gap-2 flex-wrap">
