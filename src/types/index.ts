@@ -64,7 +64,8 @@ export interface OrderItem {
 }
 
 export type OrderStatus = 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
-export type PaymentStatus = 'pending' | 'paid' | 'failed';
+export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'cod';
+export type PaymentMethod = 'online' | 'cod';
 
 export interface Order {
   id: string;
@@ -86,6 +87,7 @@ export interface Order {
   razorpay_payment_id: string | null;
   razorpay_signature: string | null;
   payment_status: PaymentStatus;
+  payment_method: PaymentMethod;
   shiprocket_order_id: string | null;
   shipment_id: string | null;
   awb_code: string | null;
@@ -108,6 +110,8 @@ export interface ServiceabilityResult {
   rates: ShippingRate[];
   cheapest_rate: number;
   fastest_etd: string;
+  cod_available: boolean;
+  cod_cheapest_rate: number;
 }
 
 export interface TrackingScan {

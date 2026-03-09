@@ -56,15 +56,16 @@ serve(async (req) => {
     // Weight: 0.5kg per item
     const weight = Math.max(0.5, total_items * 0.5);
 
-    const params = new URLSearchParams({
+    // Check prepaid serviceability
+    const prepaidParams = new URLSearchParams({
       pickup_postcode: PICKUP_POSTCODE,
       delivery_postcode: delivery_pincode,
       weight: weight.toString(),
-      cod: "0", // Prepaid only (Razorpay)
+      cod: "0",
     });
 
     const res = await fetch(
-      `${SHIPROCKET_BASE}/courier/serviceability/?${params}`,
+      `${SHIPROCKET_BASE}/courier/serviceability/?${prepaidParams}`,
       {
         headers: { Authorization: `Bearer ${token}` },
       }
@@ -79,6 +80,8 @@ serve(async (req) => {
           rates: [],
           cheapest_rate: 0,
           fastest_etd: "",
+          cod_available: false,
+          cod_cheapest_rate: 0,
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -99,6 +102,8 @@ serve(async (req) => {
           rates: [],
           cheapest_rate: 0,
           fastest_etd: "",
+          cod_available: false,
+          cod_cheapest_rate: 0,
         }),
         {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -135,12 +140,46 @@ serve(async (req) => {
       ) => a.estimated_delivery_days - b.estimated_delivery_days
     )[0];
 
+    // Also check COD serviceability
+    let codAvailable = false;
+    let codCheapestRate = 0;
+
+    try {
+      const codParams = new URLSearchParams({
+        pickup_postcode: PICKUP_POSTCODE,
+        delivery_postcode: delivery_pincode,
+        weight: weight.toString(),
+        cod: "1",
+      });
+
+      const codRes = await fetch(
+        `${SHIPROCKET_BASE}/courier/serviceability/?${codParams}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+
+      if (codRes.ok) {
+        const codData = await codRes.json();
+        const codCouriers = codData?.data?.available_courier_companies || [];
+        if (codCouriers.length > 0) {
+          codAvailable = true;
+          const codRates = codCouriers.map((c: { rate: number }) => c.rate);
+          codCheapestRate = Math.min(...codRates);
+        }
+      }
+    } catch (codErr) {
+      console.error("COD serviceability check error:", codErr);
+    }
+
     return new Response(
       JSON.stringify({
         available: true,
         rates,
         cheapest_rate: rates[0].rate,
         fastest_etd: fastest.etd,
+        cod_available: codAvailable,
+        cod_cheapest_rate: codCheapestRate,
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

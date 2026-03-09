@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import type { Order, OrderItem, CheckoutFormData, CartItem, ServiceabilityResult, TrackingResult } from '@/types';
+import type { Order, OrderItem, CheckoutFormData, CartItem, ServiceabilityResult, TrackingResult, PaymentMethod } from '@/types';
 
 function generateOrderNumber(): string {
   const date = new Date();
@@ -12,7 +12,8 @@ export async function createOrder(
   formData: CheckoutFormData,
   cartItems: CartItem[],
   subtotal: number,
-  shippingCost: number = 0
+  shippingCost: number = 0,
+  paymentMethod: PaymentMethod = 'online'
 ): Promise<Order> {
   const items: OrderItem[] = cartItems.map(item => ({
     product_id: item.id,
@@ -22,6 +23,8 @@ export async function createOrder(
     quantity: item.quantity,
     subtotal: item.price * item.quantity,
   }));
+
+  const isCod = paymentMethod === 'cod';
 
   const order = {
     order_number: generateOrderNumber(),
@@ -36,7 +39,9 @@ export async function createOrder(
     subtotal,
     shipping: shippingCost,
     total: subtotal + shippingCost,
-    status: 'pending' as const,
+    status: isCod ? 'confirmed' as const : 'pending' as const,
+    payment_status: isCod ? 'cod' as const : 'pending' as const,
+    payment_method: paymentMethod,
     notes: formData.notes || null,
   };
 

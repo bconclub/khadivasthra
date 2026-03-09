@@ -7,8 +7,8 @@ import { useRazorpay } from "@/hooks/useRazorpay";
 import { Button } from "@/components/ui/button";
 import { createOrder, createRazorpayOrder, verifyRazorpayPayment, createShiprocketOrder, checkShippingServiceability } from "@/lib/services/orders";
 import Link from "next/link";
-import { ChevronLeft, Loader2, ShoppingBag, CheckCircle2, XCircle, Truck } from "lucide-react";
-import type { CheckoutFormData, Order, ServiceabilityResult } from "@/types";
+import { ChevronLeft, Loader2, ShoppingBag, CheckCircle2, XCircle, Truck, CreditCard, Banknote } from "lucide-react";
+import type { CheckoutFormData, Order, ServiceabilityResult, PaymentMethod } from "@/types";
 import { trackInitiateCheckout } from "@/lib/fbq";
 
 type PaymentStep = "form" | "creating" | "paying";
@@ -21,6 +21,7 @@ export default function CheckoutPage() {
   const [error, setError] = useState("");
   const [paymentStep, setPaymentStep] = useState<PaymentStep>("form");
   const [pendingOrder, setPendingOrder] = useState<Order | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("online");
   const [form, setForm] = useState<CheckoutFormData>({
     name: "",
     phone: "",
@@ -39,8 +40,14 @@ export default function CheckoutPage() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  const shippingCost = shippingInfo?.available ? shippingInfo.cheapest_rate : 0;
+  const isCod = paymentMethod === "cod";
+  const shippingCost = shippingInfo?.available
+    ? (isCod ? shippingInfo.cod_cheapest_rate : shippingInfo.cheapest_rate)
+    : 0;
   const orderTotal = cartTotal + shippingCost;
+
+  // If COD is selected but not available for this pincode, fall back to online
+  const codAvailable = shippingInfo?.cod_available ?? false;
 
   // Check pincode serviceability with debounce
   useEffect(() => {
@@ -62,6 +69,10 @@ export default function CheckoutPage() {
         setShippingInfo(result);
         if (!result.available) {
           setPincodeError("Delivery not available to this pincode.");
+        }
+        // If COD was selected but not available for new pincode, switch to online
+        if (!result.cod_available && paymentMethod === "cod") {
+          setPaymentMethod("online");
         }
       } catch {
         setPincodeError("Could not check delivery availability.");
@@ -106,11 +117,9 @@ export default function CheckoutPage() {
             response.razorpay_signature
           );
           if (result.verified) {
-            // Ensure Shiprocket order is created (fallback if server-side auto-create failed)
             try {
               await createShiprocketOrder(order.id);
             } catch {
-              // Non-blocking — admin can manually create from orders page
               console.warn("Shiprocket auto-create fallback failed for order:", order.id);
             }
             clearCart();
@@ -138,6 +147,31 @@ export default function CheckoutPage() {
         escape: false,
       },
     });
+  };
+
+  const handleCodOrder = async () => {
+    setSubmitting(true);
+    setPaymentStep("creating");
+    trackInitiateCheckout(items.map((i) => ({ id: i.id, price: i.price, quantity: i.quantity })), orderTotal);
+
+    try {
+      const order = await createOrder(form, items, cartTotal, shippingCost, "cod");
+
+      // Create Shiprocket shipment directly (COD order is already confirmed)
+      try {
+        await createShiprocketOrder(order.id);
+      } catch {
+        console.warn("Shiprocket auto-create failed for COD order:", order.id);
+      }
+
+      clearCart();
+      router.push(`/order-success?order=${order.order_number}&paid=false&total=${order.total}`);
+    } catch (err) {
+      console.error("COD order error:", err);
+      setError(err instanceof Error ? err.message : "Failed to place order. Please try again.");
+      setPaymentStep("form");
+      setSubmitting(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -169,6 +203,17 @@ export default function CheckoutPage() {
       return;
     }
 
+    // COD flow
+    if (isCod) {
+      if (!codAvailable) {
+        setError("Cash on Delivery is not available for this pincode. Please choose online payment.");
+        return;
+      }
+      await handleCodOrder();
+      return;
+    }
+
+    // Online payment flow
     if (!razorpayLoaded) {
       setError("Payment system is loading. Please wait a moment and try again.");
       return;
@@ -179,7 +224,7 @@ export default function CheckoutPage() {
     trackInitiateCheckout(items.map((i) => ({ id: i.id, price: i.price, quantity: i.quantity })), orderTotal);
 
     try {
-      const order = pendingOrder || await createOrder(form, items, cartTotal, shippingCost);
+      const order = pendingOrder || await createOrder(form, items, cartTotal, shippingCost, "online");
       if (!pendingOrder) setPendingOrder(order);
 
       await initiatePayment(order);
@@ -224,8 +269,9 @@ export default function CheckoutPage() {
     );
   }
 
-  const buttonText =
-    paymentStep === "creating"
+  const buttonText = isCod
+    ? paymentStep === "creating" ? "Placing Order..." : "Place Order (COD)"
+    : paymentStep === "creating"
       ? "Creating Order..."
       : paymentStep === "paying"
         ? "Complete Payment..."
@@ -335,7 +381,6 @@ export default function CheckoutPage() {
                         className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
                         placeholder="6-digit pincode"
                       />
-                      {/* Pincode serviceability feedback */}
                       {checkingPincode && (
                         <p className="text-xs text-text-muted mt-1 flex items-center gap-1">
                           <Loader2 className="w-3 h-3 animate-spin" /> Checking delivery availability...
@@ -367,6 +412,54 @@ export default function CheckoutPage() {
                   </div>
                 </div>
               </div>
+
+              {/* Payment Method */}
+              {shippingInfo?.available && (
+                <div className="bg-white rounded-xl p-6 shadow-sm border border-cream/30">
+                  <h2 className="text-lg font-bold text-text mb-4">Payment Method</h2>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod("online")}
+                      className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${
+                        paymentMethod === "online"
+                          ? "border-coral bg-coral/5"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      <CreditCard className={`w-5 h-5 ${paymentMethod === "online" ? "text-coral" : "text-gray-400"}`} />
+                      <div className="text-left">
+                        <p className={`text-sm font-semibold ${paymentMethod === "online" ? "text-coral" : "text-text"}`}>
+                          Pay Online
+                        </p>
+                        <p className="text-xs text-text-muted">UPI, Card, Net Banking</p>
+                      </div>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => codAvailable && setPaymentMethod("cod")}
+                      disabled={!codAvailable}
+                      className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all ${
+                        !codAvailable
+                          ? "border-gray-100 bg-gray-50 opacity-50 cursor-not-allowed"
+                          : paymentMethod === "cod"
+                            ? "border-coral bg-coral/5"
+                            : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      <Banknote className={`w-5 h-5 ${paymentMethod === "cod" ? "text-coral" : "text-gray-400"}`} />
+                      <div className="text-left">
+                        <p className={`text-sm font-semibold ${paymentMethod === "cod" ? "text-coral" : "text-text"}`}>
+                          Cash on Delivery
+                        </p>
+                        <p className="text-xs text-text-muted">
+                          {codAvailable ? "Pay when delivered" : "Not available"}
+                        </p>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Order Summary */}
@@ -413,6 +506,11 @@ export default function CheckoutPage() {
                     <span>Total</span>
                     <span>₹{orderTotal}</span>
                   </div>
+                  {isCod && (
+                    <p className="text-xs text-text-muted flex items-center gap-1">
+                      <Banknote className="w-3 h-3" /> Pay ₹{orderTotal} at delivery
+                    </p>
+                  )}
                 </div>
 
                 {error && (
@@ -421,7 +519,7 @@ export default function CheckoutPage() {
                   </div>
                 )}
 
-                {pendingOrder && paymentStep === "form" ? (
+                {pendingOrder && paymentStep === "form" && !isCod ? (
                   <Button
                     type="button"
                     size="lg"
@@ -438,13 +536,13 @@ export default function CheckoutPage() {
                     size="lg"
                     variant="primary"
                     className="w-full h-14 text-lg font-semibold"
-                    disabled={submitting || !razorpayLoaded || (!shippingInfo?.available && !pendingOrder)}
+                    disabled={submitting || (!isCod && !razorpayLoaded) || (!shippingInfo?.available && !pendingOrder)}
                   >
                     {submitting ? (
                       <>
                         <Loader2 className="w-5 h-5 animate-spin mr-2" /> {buttonText}
                       </>
-                    ) : !razorpayLoaded ? (
+                    ) : !isCod && !razorpayLoaded ? (
                       "Loading payment..."
                     ) : (
                       buttonText
@@ -453,7 +551,8 @@ export default function CheckoutPage() {
                 )}
 
                 <p className="text-xs text-text-muted text-center mt-3">
-                  Secure payment powered by Razorpay. Having trouble?{" "}
+                  {isCod ? "Pay cash when your order is delivered." : "Secure payment powered by Razorpay."}{" "}
+                  Having trouble?{" "}
                   <a
                     href="https://wa.me/918714090510"
                     target="_blank"

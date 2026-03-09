@@ -25,6 +25,7 @@ const PAYMENT_STYLES: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
   paid: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
   failed: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+  cod: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
 };
 
 export default function AdminOrdersPage() {
@@ -188,7 +189,7 @@ export default function AdminOrdersPage() {
                     {order.status}
                   </span>
                   <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${PAYMENT_STYLES[order.payment_status] || "bg-gray-100 text-gray-700"}`}>
-                    {order.payment_status === "paid" ? "Paid" : order.payment_status === "failed" ? "Failed" : "Unpaid"}
+                    {order.payment_status === "paid" ? "Paid" : order.payment_status === "cod" ? "COD" : order.payment_status === "failed" ? "Failed" : "Unpaid"}
                   </span>
                   {/* Date */}
                   <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap hidden md:block">
@@ -282,7 +283,7 @@ export default function AdminOrdersPage() {
                               </a>
                             )}
                           </div>
-                        ) : order.payment_status === "paid" ? (
+                        ) : (order.payment_status === "paid" || order.payment_status === "cod") ? (
                           <button
                             onClick={() => handleCreateShipment(order.id)}
                             disabled={creatingShipment === order.id}
