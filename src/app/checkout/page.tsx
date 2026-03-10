@@ -45,8 +45,8 @@ export default function CheckoutPage() {
     : 0;
   const orderTotal = cartTotal + shippingCost;
 
-  // COD availability: pincode must support COD and cart total must be ≥ ₹700
-  const COD_MINIMUM = 700;
+  // COD availability: pincode must support COD and cart total must be ≥ ₹1000
+  const COD_MINIMUM = 1000;
   const codAvailable = (shippingInfo?.cod_available ?? false) && cartTotal >= COD_MINIMUM;
 
   // Check pincode serviceability with debounce
