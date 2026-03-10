@@ -3,11 +3,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
-import { getOrders, updateOrderStatus, createShiprocketOrder, checkPaymentStatus } from "@/lib/services/orders";
+import { getOrders, updateOrderStatus, updateOrder, createShiprocketOrder, checkPaymentStatus } from "@/lib/services/orders";
 import { deleteOrder } from "@/lib/services/admin";
 import { supabase } from "@/lib/supabase";
-import type { OrderStatus, Product, PaymentMethod } from "@/types";
-import { Loader2, ChevronDown, ChevronUp, Truck, ExternalLink, Trash2, CreditCard, Package, Plus, Search, X, Minus } from "lucide-react";
+import type { Order, OrderStatus, Product, PaymentMethod, PaymentStatus } from "@/types";
+import { Loader2, ChevronDown, ChevronUp, Truck, ExternalLink, Trash2, CreditCard, Package, Plus, Search, X, Minus, Pencil } from "lucide-react";
 import Image from "next/image";
 import toast from "react-hot-toast";
 
@@ -317,6 +317,205 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
   );
 }
 
+// --- Edit Order Modal ---
+const PAYMENT_STATUS_OPTIONS: PaymentStatus[] = ["pending", "paid", "failed", "cod"];
+
+function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: () => void; onUpdated: () => void }) {
+  const [name, setName] = useState(order.customer_name);
+  const [phone, setPhone] = useState(order.customer_phone);
+  const [email, setEmail] = useState(order.customer_email || "");
+  const [address, setAddress] = useState(order.customer_address);
+  const [city, setCity] = useState(order.customer_city);
+  const [state, setState] = useState(order.customer_state);
+  const [pincode, setPincode] = useState(order.customer_pincode);
+  const [status, setStatus] = useState<OrderStatus>(order.status);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>(order.payment_status);
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(order.payment_method);
+  const [notes, setNotes] = useState(order.notes || "");
+  const [shipping, setShipping] = useState(Number(order.shipping));
+  const [submitting, setSubmitting] = useState(false);
+
+  const subtotal = Number(order.subtotal);
+  const total = subtotal + shipping;
+
+  const handleSubmit = async () => {
+    if (!name.trim() || !phone.trim() || !address.trim() || !city.trim() || !pincode.trim()) {
+      toast.error("Please fill all required customer fields");
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await updateOrder(order.id, {
+        customer_name: name.trim(),
+        customer_phone: phone.trim(),
+        customer_email: email.trim() || null,
+        customer_address: address.trim(),
+        customer_city: city.trim(),
+        customer_state: state.trim() || "Kerala",
+        customer_pincode: pincode.trim(),
+        status,
+        payment_status: paymentStatus,
+        payment_method: paymentMethod,
+        shipping,
+        total,
+        notes: notes.trim() || null,
+      });
+
+      toast.success(`Order ${order.order_number} updated`);
+      onUpdated();
+      onClose();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update order");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const inputCls = "w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-coral focus:border-transparent";
+  const labelCls = "block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1";
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 overflow-y-auto p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl my-8 border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">Edit Order {order.order_number}</h2>
+          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"><X className="w-5 h-5 text-gray-400" /></button>
+        </div>
+
+        <div className="px-6 py-4 space-y-5 max-h-[70vh] overflow-y-auto">
+          {/* Customer Details */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Customer Details</h3>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className={labelCls}>Name *</label>
+                <input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} />
+              </div>
+              <div>
+                <label className={labelCls}>Phone *</label>
+                <input className={inputCls} value={phone} onChange={(e) => setPhone(e.target.value)} />
+              </div>
+              <div className="col-span-2">
+                <label className={labelCls}>Email</label>
+                <input className={inputCls} value={email} onChange={(e) => setEmail(e.target.value)} />
+              </div>
+              <div className="col-span-2">
+                <label className={labelCls}>Address *</label>
+                <input className={inputCls} value={address} onChange={(e) => setAddress(e.target.value)} />
+              </div>
+              <div>
+                <label className={labelCls}>City *</label>
+                <input className={inputCls} value={city} onChange={(e) => setCity(e.target.value)} />
+              </div>
+              <div>
+                <label className={labelCls}>State</label>
+                <input className={inputCls} value={state} onChange={(e) => setState(e.target.value)} />
+              </div>
+              <div>
+                <label className={labelCls}>Pincode *</label>
+                <input className={inputCls} value={pincode} onChange={(e) => setPincode(e.target.value)} />
+              </div>
+            </div>
+          </div>
+
+          {/* Order Status & Payment */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Status & Payment</h3>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className={labelCls}>Order Status</label>
+                <select className={inputCls} value={status} onChange={(e) => setStatus(e.target.value as OrderStatus)}>
+                  {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>Payment Status</label>
+                <select className={inputCls} value={paymentStatus} onChange={(e) => setPaymentStatus(e.target.value as PaymentStatus)}>
+                  {PAYMENT_STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>Payment Method</label>
+                <select className={inputCls} value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}>
+                  <option value="cod">COD</option>
+                  <option value="online">Online</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Shipping & Totals */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Pricing</h3>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className={labelCls}>Subtotal</label>
+                <p className="px-3 py-2 text-sm text-gray-900 dark:text-white">₹{subtotal.toLocaleString()}</p>
+              </div>
+              <div>
+                <label className={labelCls}>Shipping</label>
+                <input
+                  type="number"
+                  className={inputCls}
+                  value={shipping}
+                  onChange={(e) => setShipping(Number(e.target.value) || 0)}
+                  min={0}
+                />
+              </div>
+              <div>
+                <label className={labelCls}>Total</label>
+                <p className="px-3 py-2 text-sm font-bold text-gray-900 dark:text-white">₹{total.toLocaleString()}</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Order Items (read-only) */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Items</h3>
+            <div className="space-y-2">
+              {order.items?.map((item, i) => (
+                <div key={i} className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-2">
+                  <div className="w-8 h-8 rounded bg-gray-100 dark:bg-gray-600 overflow-hidden flex-shrink-0">
+                    {item.product_image ? (
+                      <Image src={item.product_image} alt="" width={32} height={32} className="w-full h-full object-cover" unoptimized />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center"><Package className="w-4 h-4 text-gray-300" /></div>
+                    )}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-gray-900 dark:text-white truncate">{item.product_name}</p>
+                  </div>
+                  <span className="text-xs text-gray-500">x{item.quantity}</span>
+                  <span className="text-sm font-medium text-gray-900 dark:text-white">₹{Number(item.subtotal).toLocaleString()}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div>
+            <label className={labelCls}>Notes</label>
+            <textarea className={`${inputCls} resize-none`} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Order notes (optional)" />
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+          <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Cancel</button>
+          <button
+            onClick={handleSubmit}
+            disabled={submitting}
+            className="px-5 py-2 bg-coral text-white rounded-lg text-sm font-medium hover:bg-coral/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+          >
+            {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving...</> : "Save Changes"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // --- Main Orders Page ---
 export default function AdminOrdersPage() {
   const { data: orders, loading, refetch } = useSupabaseQuery(getOrders);
@@ -325,6 +524,7 @@ export default function AdminOrdersPage() {
   const [creatingShipment, setCreatingShipment] = useState<string | null>(null);
   const [checkingPayment, setCheckingPayment] = useState<string | null>(null);
   const [showCreateOrder, setShowCreateOrder] = useState(false);
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
 
   const allOrders = orders || [];
   const filtered = statusFilter
@@ -410,6 +610,9 @@ export default function AdminOrdersPage() {
 
         {showCreateOrder && (
           <CreateOrderModal onClose={() => setShowCreateOrder(false)} onCreated={refetch} />
+        )}
+        {editingOrder && (
+          <EditOrderModal order={editingOrder} onClose={() => setEditingOrder(null)} onUpdated={refetch} />
         )}
 
         {/* Status Filter */}
@@ -651,6 +854,13 @@ export default function AdminOrdersPage() {
                               </option>
                             ))}
                           </select>
+                          <button
+                            onClick={() => setEditingOrder(order)}
+                            className="px-3 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors flex items-center gap-1.5"
+                            title="Edit order"
+                          >
+                            <Pencil className="w-4 h-4" /> Edit
+                          </button>
                           <button
                             onClick={() => handleDeleteOrder(order.id, order.order_number)}
                             className="px-3 py-2 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/50 transition-colors flex items-center gap-1.5"

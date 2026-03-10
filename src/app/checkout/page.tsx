@@ -30,7 +30,6 @@ export default function CheckoutPage() {
     city: "",
     state: "Kerala",
     pincode: "",
-    notes: "",
   });
 
   // Shipping serviceability state
@@ -46,8 +45,9 @@ export default function CheckoutPage() {
     : 0;
   const orderTotal = cartTotal + shippingCost;
 
-  // If COD is selected but not available for this pincode, fall back to online
-  const codAvailable = shippingInfo?.cod_available ?? false;
+  // COD availability: pincode must support COD and cart total must be ≥ ₹700
+  const COD_MINIMUM = 700;
+  const codAvailable = (shippingInfo?.cod_available ?? false) && cartTotal >= COD_MINIMUM;
 
   // Check pincode serviceability with debounce
   useEffect(() => {
@@ -398,18 +398,6 @@ export default function CheckoutPage() {
                       )}
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-text mb-1">
-                      Order Notes (optional)
-                    </label>
-                    <textarea
-                      rows={2}
-                      value={form.notes}
-                      onChange={(e) => updateField("notes", e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent resize-none"
-                      placeholder="Any special instructions..."
-                    />
-                  </div>
                 </div>
               </div>
 
@@ -453,7 +441,7 @@ export default function CheckoutPage() {
                           Cash on Delivery
                         </p>
                         <p className="text-xs text-text-muted">
-                          {codAvailable ? "Pay when delivered" : "Not available"}
+                          {codAvailable ? "Pay when delivered" : cartTotal < COD_MINIMUM ? `Min. order ₹${COD_MINIMUM}` : "Not available"}
                         </p>
                       </div>
                     </button>

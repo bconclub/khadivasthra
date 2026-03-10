@@ -194,5 +194,4 @@ export interface CheckoutFormData {
   city: string;
   state: string;
   pincode: string;
-  notes: string;
 }

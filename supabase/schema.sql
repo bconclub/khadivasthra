@@ -195,6 +195,17 @@ CREATE POLICY "Admin upload banner images" ON storage.objects FOR INSERT WITH CH
 CREATE POLICY "Admin update banner images" ON storage.objects FOR UPDATE USING (bucket_id = 'banner-images' AND auth.role() = 'authenticated');
 CREATE POLICY "Admin delete banner images" ON storage.objects FOR DELETE USING (bucket_id = 'banner-images' AND auth.role() = 'authenticated');
 
+-- Decrement stock on order (called from client after order creation)
+CREATE OR REPLACE FUNCTION decrement_stock(p_product_id UUID, p_quantity INTEGER)
+RETURNS VOID AS $$
+BEGIN
+  UPDATE products
+  SET stock_quantity = GREATEST(stock_quantity - p_quantity, 0),
+      in_stock = CASE WHEN stock_quantity - p_quantity > 0 THEN true ELSE false END
+  WHERE id = p_product_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- Insert default settings row
 INSERT INTO settings (whatsapp_number, store_name, store_phone, store_address)
 VALUES ('919745512345', 'Khadi Vasthra', '+91 97455 12345', 'Kurumassery P.O, Aluva, Ernakulam, Kerala - 683579');

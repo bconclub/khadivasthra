@@ -42,7 +42,7 @@ export async function createOrder(
     status: isCod ? 'confirmed' as const : 'pending' as const,
     payment_status: isCod ? 'cod' as const : 'pending' as const,
     payment_method: paymentMethod,
-    notes: formData.notes || null,
+    notes: null,
   };
 
   const { data, error } = await supabase
@@ -52,6 +52,15 @@ export async function createOrder(
     .single();
 
   if (error) throw error;
+
+  // Decrement stock for each ordered item
+  for (const item of cartItems) {
+    await supabase.rpc('decrement_stock', {
+      p_product_id: item.id,
+      p_quantity: item.quantity,
+    });
+  }
+
   return data;
 }
 
@@ -78,6 +87,14 @@ export async function updateOrderStatus(id: string, status: string): Promise<voi
   const { error } = await supabase
     .from('orders')
     .update({ status })
+    .eq('id', id);
+  if (error) throw error;
+}
+
+export async function updateOrder(id: string, data: Record<string, unknown>): Promise<void> {
+  const { error } = await supabase
+    .from('orders')
+    .update(data)
     .eq('id', id);
   if (error) throw error;
 }
