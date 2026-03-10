@@ -320,6 +320,14 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
 // --- Edit Order Modal ---
 const PAYMENT_STATUS_OPTIONS: PaymentStatus[] = ["pending", "paid", "failed", "cod"];
 
+interface EditLineItem {
+  product_id: string;
+  product_name: string;
+  product_image: string | null;
+  price: number;
+  quantity: number;
+}
+
 function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: () => void; onUpdated: () => void }) {
   const [name, setName] = useState(order.customer_name);
   const [phone, setPhone] = useState(order.customer_phone);
@@ -335,7 +343,80 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
   const [shipping, setShipping] = useState(Number(order.shipping));
   const [submitting, setSubmitting] = useState(false);
 
-  const subtotal = Number(order.subtotal);
+  // Editable line items
+  const [lineItems, setLineItems] = useState<EditLineItem[]>(
+    (order.items || []).map((item) => ({
+      product_id: item.product_id,
+      product_name: item.product_name,
+      product_image: item.product_image,
+      price: Number(item.price),
+      quantity: item.quantity,
+    }))
+  );
+
+  // Product search
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [showSearch, setShowSearch] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  const searchProducts = useCallback(async (query: string) => {
+    if (query.length < 2) { setSearchResults([]); return; }
+    const { data } = await supabase
+      .from("products")
+      .select("*")
+      .eq("is_active", true)
+      .ilike("name", `%${query}%`)
+      .limit(8);
+    setSearchResults(data || []);
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => searchProducts(searchQuery), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery, searchProducts]);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowSearch(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const addProduct = (product: Product) => {
+    const existing = lineItems.find((li) => li.product_id === product.id);
+    if (existing) {
+      setLineItems(lineItems.map((li) => li.product_id === product.id ? { ...li, quantity: li.quantity + 1 } : li));
+    } else {
+      setLineItems([...lineItems, {
+        product_id: product.id,
+        product_name: product.name,
+        product_image: product.image_url,
+        price: product.price,
+        quantity: 1,
+      }]);
+    }
+    setSearchQuery("");
+    setSearchResults([]);
+    setShowSearch(false);
+  };
+
+  const updateQty = (productId: string, delta: number) => {
+    setLineItems(lineItems.map((li) => {
+      if (li.product_id !== productId) return li;
+      const newQty = li.quantity + delta;
+      return newQty < 1 ? li : { ...li, quantity: newQty };
+    }));
+  };
+
+  const removeItem = (productId: string) => {
+    setLineItems(lineItems.filter((li) => li.product_id !== productId));
+  };
+
+  const subtotal = lineItems.reduce((sum, li) => sum + li.price * li.quantity, 0);
   const total = subtotal + shipping;
 
   const handleSubmit = async () => {
@@ -343,9 +424,22 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
       toast.error("Please fill all required customer fields");
       return;
     }
+    if (lineItems.length === 0) {
+      toast.error("Order must have at least one item");
+      return;
+    }
 
     setSubmitting(true);
     try {
+      const items = lineItems.map((li) => ({
+        product_id: li.product_id,
+        product_name: li.product_name,
+        product_image: li.product_image,
+        price: li.price,
+        quantity: li.quantity,
+        subtotal: li.price * li.quantity,
+      }));
+
       await updateOrder(order.id, {
         customer_name: name.trim(),
         customer_phone: phone.trim(),
@@ -354,11 +448,13 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
         customer_city: city.trim(),
         customer_state: state.trim() || "Kerala",
         customer_pincode: pincode.trim(),
+        items,
+        subtotal,
+        shipping,
+        total,
         status,
         payment_status: paymentStatus,
         payment_method: paymentMethod,
-        shipping,
-        total,
         notes: notes.trim() || null,
       });
 
@@ -419,6 +515,80 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
             </div>
           </div>
 
+          {/* Products — editable */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Products</h3>
+            <div ref={searchRef} className="relative mb-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  className={`${inputCls} pl-9`}
+                  value={searchQuery}
+                  onChange={(e) => { setSearchQuery(e.target.value); setShowSearch(true); }}
+                  onFocus={() => setShowSearch(true)}
+                  placeholder="Search products to add..."
+                />
+              </div>
+              {showSearch && searchResults.length > 0 && (
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 shadow-lg max-h-48 overflow-y-auto">
+                  {searchResults.map((p) => (
+                    <button
+                      key={p.id}
+                      onClick={() => addProduct(p)}
+                      className="w-full flex items-center gap-3 px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-600 text-left"
+                    >
+                      <div className="w-8 h-8 rounded bg-gray-100 dark:bg-gray-600 overflow-hidden flex-shrink-0">
+                        {p.image_url ? (
+                          <Image src={p.image_url} alt="" width={32} height={32} className="w-full h-full object-cover" unoptimized />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center"><Package className="w-4 h-4 text-gray-300" /></div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-900 dark:text-white truncate">{p.name}</p>
+                        <p className="text-xs text-gray-400">₹{p.price.toLocaleString()}</p>
+                      </div>
+                      <Plus className="w-4 h-4 text-coral flex-shrink-0" />
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {lineItems.length === 0 ? (
+              <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-4">No products — add items above</p>
+            ) : (
+              <div className="space-y-2">
+                {lineItems.map((li) => (
+                  <div key={li.product_id} className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-2">
+                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-600 flex-shrink-0">
+                      {li.product_image ? (
+                        <Image src={li.product_image} alt="" width={40} height={40} className="w-full h-full object-cover" unoptimized />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center"><Package className="w-4 h-4 text-gray-300" /></div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-gray-900 dark:text-white truncate">{li.product_name}</p>
+                      <p className="text-xs text-gray-400">₹{li.price.toLocaleString()} each</p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => updateQty(li.product_id, -1)} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600"><Minus className="w-3.5 h-3.5 text-gray-500" /></button>
+                      <span className="w-6 text-center text-sm font-medium text-gray-900 dark:text-white">{li.quantity}</span>
+                      <button onClick={() => updateQty(li.product_id, 1)} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600"><Plus className="w-3.5 h-3.5 text-gray-500" /></button>
+                    </div>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white w-20 text-right">₹{(li.price * li.quantity).toLocaleString()}</span>
+                    <button onClick={() => removeItem(li.product_id)} className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30"><X className="w-3.5 h-3.5 text-red-500" /></button>
+                  </div>
+                ))}
+                <div className="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-600 text-sm font-bold text-gray-900 dark:text-white">
+                  <span>Subtotal</span>
+                  <span>₹{subtotal.toLocaleString()}</span>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Order Status & Payment */}
           <div>
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Status & Payment</h3>
@@ -445,16 +615,12 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
             </div>
           </div>
 
-          {/* Shipping & Totals */}
+          {/* Shipping & Total */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Pricing</h3>
-            <div className="grid grid-cols-3 gap-3">
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Shipping</h3>
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className={labelCls}>Subtotal</label>
-                <p className="px-3 py-2 text-sm text-gray-900 dark:text-white">₹{subtotal.toLocaleString()}</p>
-              </div>
-              <div>
-                <label className={labelCls}>Shipping</label>
+                <label className={labelCls}>Shipping Cost</label>
                 <input
                   type="number"
                   className={inputCls}
@@ -464,32 +630,9 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
                 />
               </div>
               <div>
-                <label className={labelCls}>Total</label>
+                <label className={labelCls}>Order Total</label>
                 <p className="px-3 py-2 text-sm font-bold text-gray-900 dark:text-white">₹{total.toLocaleString()}</p>
               </div>
-            </div>
-          </div>
-
-          {/* Order Items (read-only) */}
-          <div>
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Items</h3>
-            <div className="space-y-2">
-              {order.items?.map((item, i) => (
-                <div key={i} className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-2">
-                  <div className="w-8 h-8 rounded bg-gray-100 dark:bg-gray-600 overflow-hidden flex-shrink-0">
-                    {item.product_image ? (
-                      <Image src={item.product_image} alt="" width={32} height={32} className="w-full h-full object-cover" unoptimized />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center"><Package className="w-4 h-4 text-gray-300" /></div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-900 dark:text-white truncate">{item.product_name}</p>
-                  </div>
-                  <span className="text-xs text-gray-500">x{item.quantity}</span>
-                  <span className="text-sm font-medium text-gray-900 dark:text-white">₹{Number(item.subtotal).toLocaleString()}</span>
-                </div>
-              ))}
             </div>
           </div>
 
