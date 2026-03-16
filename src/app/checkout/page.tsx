@@ -432,6 +432,7 @@ export default function CheckoutPage() {
                         <p className="text-xs text-text-muted">UPI, Card, Net Banking</p>
                       </div>
                     </button>
+                    {codEnabledGlobal && (
                     <button
                       type="button"
                       onClick={() => codAvailable && setPaymentMethod("cod")}
@@ -454,6 +455,7 @@ export default function CheckoutPage() {
                         </p>
                       </div>
                     </button>
+                    )}
                   </div>
                 </div>
               )}
