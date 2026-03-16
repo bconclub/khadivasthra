@@ -86,6 +86,7 @@ CREATE TABLE settings (
   shipping_info TEXT,
   return_policy TEXT,
   announcement_text TEXT,
+  cod_enabled BOOLEAN NOT NULL DEFAULT true,
   is_store_open BOOLEAN NOT NULL DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()

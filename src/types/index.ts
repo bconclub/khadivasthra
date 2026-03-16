@@ -138,6 +138,7 @@ export interface SiteSettings {
   shipping_info: string | null;
   return_policy: string | null;
   announcement_text: string | null;
+  cod_enabled: boolean;
   is_store_open: boolean;
   created_at: string;
   updated_at: string;

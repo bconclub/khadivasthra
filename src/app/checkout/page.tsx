@@ -6,6 +6,7 @@ import { useCart } from "@/context/CartContext";
 import { useRazorpay } from "@/hooks/useRazorpay";
 import { Button } from "@/components/ui/button";
 import { createOrder, createRazorpayOrder, verifyRazorpayPayment, createShiprocketOrder, checkShippingServiceability } from "@/lib/services/orders";
+import { getSettings } from "@/lib/services/settings";
 import Link from "next/link";
 import { ChevronLeft, Loader2, ShoppingBag, CheckCircle2, XCircle, Truck, CreditCard, Banknote } from "lucide-react";
 import type { CheckoutFormData, Order, ServiceabilityResult, PaymentMethod } from "@/types";
@@ -37,6 +38,14 @@ export default function CheckoutPage() {
   const [checkingPincode, setCheckingPincode] = useState(false);
   const [pincodeError, setPincodeError] = useState("");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [codEnabledGlobal, setCodEnabledGlobal] = useState(true);
+
+  // Fetch COD setting
+  useEffect(() => {
+    getSettings().then((s) => {
+      if (s) setCodEnabledGlobal(s.cod_enabled ?? true);
+    });
+  }, []);
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const isCod = paymentMethod === "cod";
@@ -47,7 +56,7 @@ export default function CheckoutPage() {
 
   // COD availability: pincode must support COD and cart total must be ≥ ₹1000
   const COD_MINIMUM = 1000;
-  const codAvailable = (shippingInfo?.cod_available ?? false) && cartTotal >= COD_MINIMUM;
+  const codAvailable = codEnabledGlobal && (shippingInfo?.cod_available ?? false) && cartTotal >= COD_MINIMUM;
 
   // Check pincode serviceability with debounce
   useEffect(() => {
