@@ -79,6 +79,32 @@ export default function AdminSettingsPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          {/* Payment Options */}
+          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 space-y-4">
+            <h2 className="font-semibold text-gray-900">Payment Options</h2>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-700">Cash on Delivery (COD)</p>
+                <p className="text-xs text-gray-400 mt-0.5">Allow customers to pay cash when the order is delivered</p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={codEnabled}
+                onClick={() => setCodEnabled(!codEnabled)}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-coral focus:ring-offset-2 ${
+                  codEnabled ? "bg-coral" : "bg-gray-200"
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    codEnabled ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+
           {/* Store Information */}
           <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 space-y-4">
             <h2 className="font-semibold text-gray-900">Store Information</h2>
@@ -173,32 +199,6 @@ export default function AdminSettingsPage() {
                 className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
                 placeholder="Leave empty to hide banner"
               />
-            </div>
-          </div>
-
-          {/* Payment Options */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 space-y-4">
-            <h2 className="font-semibold text-gray-900">Payment Options</h2>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-700">Cash on Delivery (COD)</p>
-                <p className="text-xs text-gray-400 mt-0.5">Allow customers to pay cash when the order is delivered</p>
-              </div>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={codEnabled}
-                onClick={() => setCodEnabled(!codEnabled)}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-coral focus:ring-offset-2 ${
-                  codEnabled ? "bg-coral" : "bg-gray-200"
-                }`}
-              >
-                <span
-                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                    codEnabled ? "translate-x-5" : "translate-x-0"
-                  }`}
-                />
-              </button>
             </div>
           </div>
 
