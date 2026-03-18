@@ -762,12 +762,12 @@ export default function AdminOrdersPage() {
                 <button
                   onClick={() => {
                     const selected = allOrders.filter((o) => selectedOrders.has(o.id));
-                    printOrders(selected, "label");
+                    printOrders(selected, "sticker");
                   }}
                   className="px-3 py-2 bg-coral/10 text-coral rounded-lg text-sm font-medium hover:bg-coral/20 transition-colors flex items-center gap-1.5"
-                  title="Print labels"
+                  title="Print stickers"
                 >
-                  <Tag className="w-4 h-4" /> Labels
+                  <Tag className="w-4 h-4" /> Stickers
                 </button>
                 <button
                   onClick={() => setSelectedOrders(new Set())}
@@ -1089,11 +1089,11 @@ export default function AdminOrdersPage() {
                             <FileText className="w-4 h-4" /> Invoice
                           </button>
                           <button
-                            onClick={() => printOrder(order, "label")}
+                            onClick={() => printOrder(order, "sticker")}
                             className="px-3 py-2 bg-coral/10 text-coral rounded-lg text-sm font-medium hover:bg-coral/20 transition-colors flex items-center gap-1.5"
-                            title="Print shipping label"
+                            title="Print shipping sticker"
                           >
-                            <Tag className="w-4 h-4" /> Label
+                            <Tag className="w-4 h-4" /> Sticker
                           </button>
                           <button
                             onClick={() => handleDeleteOrder(order.id, order.order_number)}
