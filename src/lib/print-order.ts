@@ -182,6 +182,10 @@ function generateStickerHTML(order: Order): string {
   const isCod = order.payment_method === 'cod';
   const courierId = order.shiprocket_order_id && order.shiprocket_order_id !== 'undefined'
     ? order.shiprocket_order_id : '';
+  const totalPcs = order.items.reduce((sum, item) => sum + item.quantity, 0);
+  const itemLines = order.items.map((item) =>
+    `<div class="item-row"><span>${esc(item.product_name)} x${item.quantity}</span><span>${inr(item.subtotal)}</span></div>`
+  ).join('');
 
   return `<!DOCTYPE html>
 <html>
@@ -223,6 +227,12 @@ function generateStickerHTML(order: Order): string {
   .to-state { font-size:12px; }
   .to-phone { font-size:12px; margin-top:4px; }
 
+  /* Items & Total */
+  .items-section { font-size:11px; line-height:1.4; }
+  .items-heading { font-size:10px; font-weight:700; letter-spacing:1px; color:#888; margin-bottom:4px; }
+  .item-row { display:flex; justify-content:space-between; padding:2px 0; }
+  .items-total { display:flex; justify-content:space-between; border-top:1px solid #000; margin-top:4px; padding-top:4px; font-size:12px; font-weight:800; }
+
   /* Brand footer */
   .brand-footer { display:flex; justify-content:space-around; align-items:center; padding:10px 12px; border-top:2px solid #000; text-align:center; line-height:1.3; }
   .brand-col { font-size:13px; }
@@ -260,6 +270,13 @@ function generateStickerHTML(order: Order): string {
     <div class="to-addr">${esc(order.customer_address)}</div>
     <div class="to-city">${esc(order.customer_city)}, ${esc(order.customer_state)}</div>
     <div class="to-phone">Pin: ${esc(order.customer_pincode)} &nbsp;|&nbsp; Ph: ${esc(order.customer_phone)}</div>
+  </div>
+
+  <!-- Items & Total -->
+  <div class="row-section items-section">
+    <div class="items-heading">${totalPcs} ITEM${totalPcs !== 1 ? 'S' : ''}</div>
+    ${itemLines}
+    <div class="items-total"><span>Total</span><span>${inr(order.total)}</span></div>
   </div>
 
   <!-- Brand Footer -->
@@ -367,6 +384,10 @@ function generateBulkHTML(orders: Order[], type: 'invoice' | 'sticker'): string 
   .to-city { font-size:14px; font-weight:800; margin-top:4px; }
   .to-state { font-size:12px; }
   .to-phone { font-size:12px; margin-top:4px; }
+  .items-section { font-size:11px; line-height:1.4; }
+  .items-heading { font-size:10px; font-weight:700; letter-spacing:1px; color:#888; margin-bottom:4px; }
+  .item-row { display:flex; justify-content:space-between; padding:2px 0; }
+  .items-total { display:flex; justify-content:space-between; border-top:1px solid #000; margin-top:4px; padding-top:4px; font-size:12px; font-weight:800; }
   .brand-footer { display:flex; justify-content:space-around; align-items:center; padding:10px 12px; border-top:2px solid #000; text-align:center; line-height:1.3; }
   .brand-col { font-size:13px; }
   .brand-script { font-size:14px; font-weight:700; }
