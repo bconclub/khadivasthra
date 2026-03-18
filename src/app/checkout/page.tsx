@@ -14,6 +14,20 @@ import { trackInitiateCheckout } from "@/lib/fbq";
 
 type PaymentStep = "form" | "creating" | "paying";
 
+async function fetchPincodeDetails(pincode: string): Promise<{ city: string; state: string } | null> {
+  try {
+    const res = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
+    const data = await res.json();
+    if (data[0]?.Status === "Success" && data[0]?.PostOffice?.length > 0) {
+      const po = data[0].PostOffice[0];
+      return { city: po.District, state: po.State };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, cartTotal, clearCart } = useCart();
@@ -23,21 +37,28 @@ export default function CheckoutPage() {
   const [paymentStep, setPaymentStep] = useState<PaymentStep>("form");
   const [pendingOrder, setPendingOrder] = useState<Order | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("online");
-  const [form, setForm] = useState<CheckoutFormData>({
-    name: "",
-    phone: "",
-    email: "",
-    address: "",
-    city: "",
-    state: "Kerala",
-    pincode: "",
-  });
+
+  // Address fields (split)
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [houseNo, setHouseNo] = useState("");
+  const [street, setStreet] = useState("");
+  const [landmark, setLandmark] = useState("");
+  const [pincode, setPincode] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+
+  // Pincode lookup state
+  const [fetchingPincode, setFetchingPincode] = useState(false);
+  const [pincodeValid, setPincodeValid] = useState<boolean | null>(null);
 
   // Shipping serviceability state
   const [shippingInfo, setShippingInfo] = useState<ServiceabilityResult | null>(null);
   const [checkingPincode, setCheckingPincode] = useState(false);
   const [pincodeError, setPincodeError] = useState("");
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pincodeDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [codEnabledGlobal, setCodEnabledGlobal] = useState(true);
 
   // Fetch COD setting
@@ -58,28 +79,48 @@ export default function CheckoutPage() {
   const COD_MINIMUM = 1000;
   const codAvailable = codEnabledGlobal && (shippingInfo?.cod_available ?? false) && cartTotal >= COD_MINIMUM;
 
-  // Check pincode serviceability with debounce
+  // Fetch city/state from pincode API + check shipping serviceability
   useEffect(() => {
+    if (pincodeDebounceRef.current) clearTimeout(pincodeDebounceRef.current);
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
-    const pincode = form.pincode.trim();
-    if (pincode.length !== 6 || !/^\d{6}$/.test(pincode)) {
+    const trimmed = pincode.trim();
+    if (trimmed.length !== 6 || !/^\d{6}$/.test(trimmed)) {
+      setCity("");
+      setState("");
+      setPincodeValid(null);
       setShippingInfo(null);
       setPincodeError("");
       return;
     }
 
+    // Fetch city/state from postal API
+    setFetchingPincode(true);
+    setPincodeValid(null);
+    pincodeDebounceRef.current = setTimeout(async () => {
+      const details = await fetchPincodeDetails(trimmed);
+      if (details) {
+        setCity(details.city);
+        setState(details.state);
+        setPincodeValid(true);
+      } else {
+        setCity("");
+        setState("");
+        setPincodeValid(false);
+      }
+      setFetchingPincode(false);
+    }, 300);
+
+    // Check shipping serviceability
     setCheckingPincode(true);
     setPincodeError("");
-
     debounceRef.current = setTimeout(async () => {
       try {
-        const result = await checkShippingServiceability(pincode, totalItems);
+        const result = await checkShippingServiceability(trimmed, totalItems);
         setShippingInfo(result);
         if (!result.available) {
           setPincodeError("Delivery not available to this pincode.");
         }
-        // If COD was selected but not available for new pincode, switch to online
         if (!result.cod_available && paymentMethod === "cod") {
           setPaymentMethod("online");
         }
@@ -92,12 +133,23 @@ export default function CheckoutPage() {
     }, 500);
 
     return () => {
+      if (pincodeDebounceRef.current) clearTimeout(pincodeDebounceRef.current);
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [form.pincode, totalItems]);
+  }, [pincode, totalItems]);
 
-  const updateField = (field: keyof CheckoutFormData, value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+  const buildFormData = (): CheckoutFormData => {
+    const addressParts = [houseNo.trim(), street.trim()];
+    if (landmark.trim()) addressParts.push(landmark.trim());
+    return {
+      name: name.trim(),
+      phone: phone.trim(),
+      email: email.trim(),
+      address: addressParts.join(", "),
+      city: city.trim(),
+      state: state.trim(),
+      pincode: pincode.trim(),
+    };
   };
 
   const initiatePayment = async (order: Order) => {
@@ -112,9 +164,9 @@ export default function CheckoutPage() {
       description: `Order ${order.order_number}`,
       order_id: razorpayOrder.razorpay_order_id,
       prefill: {
-        name: form.name,
-        email: form.email || undefined,
-        contact: form.phone,
+        name,
+        email: email || undefined,
+        contact: phone,
       },
       theme: { color: "#E8657B" },
       handler: async (response: RazorpayResponse) => {
@@ -161,12 +213,12 @@ export default function CheckoutPage() {
   const handleCodOrder = async () => {
     setSubmitting(true);
     setPaymentStep("creating");
+    const formData = buildFormData();
     trackInitiateCheckout(items.map((i) => ({ id: i.id, price: i.price, quantity: i.quantity })), orderTotal);
 
     try {
-      const order = await createOrder(form, items, cartTotal, shippingCost, "cod");
+      const order = await createOrder(formData, items, cartTotal, shippingCost, "cod");
 
-      // Create Shiprocket shipment directly (COD order is already confirmed)
       try {
         await createShiprocketOrder(order.id);
       } catch {
@@ -192,17 +244,17 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (!form.name || !form.phone || !form.address || !form.city || !form.pincode) {
+    if (!name || !phone || !houseNo || !street || !pincode || !city || !state) {
       setError("Please fill in all required fields.");
       return;
     }
 
-    if (!/^\d{10}$/.test(form.phone)) {
+    if (!/^\d{10}$/.test(phone)) {
       setError("Please enter a valid 10-digit phone number.");
       return;
     }
 
-    if (!/^\d{6}$/.test(form.pincode)) {
+    if (!/^\d{6}$/.test(pincode)) {
       setError("Please enter a valid 6-digit pincode.");
       return;
     }
@@ -230,10 +282,11 @@ export default function CheckoutPage() {
 
     setSubmitting(true);
     setPaymentStep("creating");
+    const formData = buildFormData();
     trackInitiateCheckout(items.map((i) => ({ id: i.id, price: i.price, quantity: i.quantity })), orderTotal);
 
     try {
-      const order = pendingOrder || await createOrder(form, items, cartTotal, shippingCost, "online");
+      const order = pendingOrder || await createOrder(formData, items, cartTotal, shippingCost, "online");
       if (!pendingOrder) setPendingOrder(order);
 
       await initiatePayment(order);
@@ -286,6 +339,9 @@ export default function CheckoutPage() {
         ? "Complete Payment..."
         : "Place Order & Pay";
 
+  const inputCls = "w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent";
+  const readOnlyCls = "w-full px-4 py-3 rounded-lg border border-gray-200 bg-gray-50 text-text-muted cursor-not-allowed";
+
   return (
     <div className="min-h-screen bg-cream">
       <div className="container mx-auto px-4 max-w-5xl py-8">
@@ -310,9 +366,9 @@ export default function CheckoutPage() {
                     <input
                       type="text"
                       required
-                      value={form.name}
-                      onChange={(e) => updateField("name", e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className={inputCls}
                       placeholder="Your full name"
                     />
                   </div>
@@ -324,9 +380,9 @@ export default function CheckoutPage() {
                       type="tel"
                       required
                       maxLength={10}
-                      value={form.phone}
-                      onChange={(e) => updateField("phone", e.target.value.replace(/\D/g, "").slice(0, 10))}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                      className={inputCls}
                       placeholder="10-digit phone number"
                     />
                   </div>
@@ -339,28 +395,76 @@ export default function CheckoutPage() {
                 <div className="space-y-4">
                   <div>
                     <label className="block text-sm font-medium text-text mb-1">
-                      Address <span className="text-coral">*</span>
+                      House/Flat No. <span className="text-coral">*</span>
                     </label>
-                    <textarea
+                    <input
+                      type="text"
                       required
-                      rows={3}
-                      value={form.address}
-                      onChange={(e) => updateField("address", e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent resize-none"
-                      placeholder="House/Flat No., Street, Area"
+                      value={houseNo}
+                      onChange={(e) => setHouseNo(e.target.value)}
+                      className={inputCls}
+                      placeholder="House No., Flat No., Building Name"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-text mb-1">
-                      Email (optional)
+                      Street/Area <span className="text-coral">*</span>
                     </label>
                     <input
-                      type="email"
-                      value={form.email}
-                      onChange={(e) => updateField("email", e.target.value)}
-                      className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
-                      placeholder="your@email.com"
+                      type="text"
+                      required
+                      value={street}
+                      onChange={(e) => setStreet(e.target.value)}
+                      className={inputCls}
+                      placeholder="Street, Locality, Area"
                     />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-1">
+                      Landmark <span className="text-text-muted font-normal">(optional)</span>
+                    </label>
+                    <input
+                      type="text"
+                      value={landmark}
+                      onChange={(e) => setLandmark(e.target.value)}
+                      className={inputCls}
+                      placeholder="Near temple, opposite mall, etc."
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-1">
+                      Pincode <span className="text-coral">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      required
+                      maxLength={6}
+                      value={pincode}
+                      onChange={(e) => setPincode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                      className={inputCls}
+                      placeholder="6-digit pincode"
+                    />
+                    {(fetchingPincode || checkingPincode) && (
+                      <p className="text-xs text-text-muted mt-1 flex items-center gap-1">
+                        <Loader2 className="w-3 h-3 animate-spin" /> Checking pincode...
+                      </p>
+                    )}
+                    {!fetchingPincode && !checkingPincode && pincodeValid === false && (
+                      <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                        <XCircle className="w-3 h-3" /> Invalid pincode
+                      </p>
+                    )}
+                    {!fetchingPincode && !checkingPincode && shippingInfo?.available && (
+                      <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" /> Delivery available. Est. {shippingInfo.fastest_etd}
+                      </p>
+                    )}
+                    {!fetchingPincode && !checkingPincode && pincodeError && pincodeValid !== false && (
+                      <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                        <XCircle className="w-3 h-3" /> {pincodeError}
+                      </p>
+                    )}
                   </div>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
@@ -370,42 +474,37 @@ export default function CheckoutPage() {
                       <input
                         type="text"
                         required
-                        value={form.city}
-                        onChange={(e) => updateField("city", e.target.value)}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
-                        placeholder="City"
+                        value={city}
+                        readOnly
+                        className={readOnlyCls}
+                        placeholder="Auto-filled from pincode"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-text mb-1">
-                        Pincode <span className="text-coral">*</span>
+                        State <span className="text-coral">*</span>
                       </label>
                       <input
                         type="text"
-                        inputMode="numeric"
                         required
-                        maxLength={6}
-                        value={form.pincode}
-                        onChange={(e) => updateField("pincode", e.target.value.replace(/\D/g, "").slice(0, 6))}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
-                        placeholder="6-digit pincode"
+                        value={state}
+                        readOnly
+                        className={readOnlyCls}
+                        placeholder="Auto-filled from pincode"
                       />
-                      {checkingPincode && (
-                        <p className="text-xs text-text-muted mt-1 flex items-center gap-1">
-                          <Loader2 className="w-3 h-3 animate-spin" /> Checking delivery availability...
-                        </p>
-                      )}
-                      {!checkingPincode && shippingInfo?.available && (
-                        <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3" /> Delivery available. Est. {shippingInfo.fastest_etd}
-                        </p>
-                      )}
-                      {!checkingPincode && pincodeError && (
-                        <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                          <XCircle className="w-3 h-3" /> {pincodeError}
-                        </p>
-                      )}
                     </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-text mb-1">
+                      Email <span className="text-text-muted font-normal">(optional)</span>
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className={inputCls}
+                      placeholder="your@email.com"
+                    />
                   </div>
                 </div>
               </div>

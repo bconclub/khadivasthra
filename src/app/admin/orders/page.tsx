@@ -40,7 +40,7 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
-  const [state, setState] = useState("Kerala");
+  const [state, setState] = useState("");
   const [pincode, setPincode] = useState("");
   const [notes, setNotes] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cod");
@@ -140,7 +140,7 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
         customer_email: email.trim() || null,
         customer_address: address.trim(),
         customer_city: city.trim(),
-        customer_state: state.trim() || "Kerala",
+        customer_state: state.trim(),
         customer_pincode: pincode.trim(),
         items,
         subtotal,
@@ -446,7 +446,7 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
         customer_email: email.trim() || null,
         customer_address: address.trim(),
         customer_city: city.trim(),
-        customer_state: state.trim() || "Kerala",
+        customer_state: state.trim(),
         customer_pincode: pincode.trim(),
         items,
         subtotal,

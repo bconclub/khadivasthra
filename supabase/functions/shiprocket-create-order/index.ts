@@ -187,7 +187,7 @@ serve(async (req) => {
       billing_address: order.customer_address || "NA",
       billing_city: order.customer_city || "NA",
       billing_pincode: order.customer_pincode || "000000",
-      billing_state: order.customer_state || "Kerala",
+      billing_state: order.customer_state || "NA",
       billing_country: "India",
       billing_email: order.customer_email || "noreply@khadivasthra.com",
       billing_phone: cleanPhone || "0000000000",

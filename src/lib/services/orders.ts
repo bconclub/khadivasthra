@@ -33,7 +33,7 @@ export async function createOrder(
     customer_email: formData.email || null,
     customer_address: formData.address,
     customer_city: formData.city,
-    customer_state: formData.state || 'Kerala',
+    customer_state: formData.state,
     customer_pincode: formData.pincode,
     items,
     subtotal,
