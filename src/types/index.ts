@@ -93,6 +93,8 @@ export interface Order {
   awb_code: string | null;
   courier_name: string | null;
   tracking_url: string | null;
+  is_billed: boolean;
+  billed_at: string | null;
   created_at: string;
   updated_at: string;
 }

@@ -71,6 +71,8 @@ CREATE TABLE orders (
   awb_code TEXT,
   courier_name TEXT,
   tracking_url TEXT,
+  is_billed BOOLEAN NOT NULL DEFAULT false,
+  billed_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );

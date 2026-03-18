@@ -672,9 +672,21 @@ export default function AdminOrdersPage() {
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
 
   const allOrders = orders || [];
-  const filtered = statusFilter
-    ? allOrders.filter((o) => o.status === statusFilter)
-    : allOrders;
+  const filtered = statusFilter === "billed"
+    ? allOrders.filter((o) => o.is_billed)
+    : statusFilter
+      ? allOrders.filter((o) => o.status === statusFilter)
+      : allOrders;
+
+  const markAsBilled = async (orderIds: string[]) => {
+    const now = new Date().toISOString();
+    const { error } = await supabase
+      .from("orders")
+      .update({ is_billed: true, billed_at: now })
+      .in("id", orderIds)
+      .eq("is_billed", false);
+    if (!error) refetch();
+  };
 
   const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
     try {
@@ -753,6 +765,7 @@ export default function AdminOrdersPage() {
                   onClick={() => {
                     const selected = allOrders.filter((o) => selectedOrders.has(o.id));
                     printOrders(selected, "invoice");
+                    markAsBilled(selected.map((o) => o.id));
                   }}
                   className="px-3 py-2 bg-coral/10 text-coral rounded-lg text-sm font-medium hover:bg-coral/20 transition-colors flex items-center gap-1.5"
                   title="Print invoices"
@@ -804,7 +817,29 @@ export default function AdminOrdersPage() {
           >
             All ({allOrders.length})
           </button>
-          {STATUS_OPTIONS.map((status) => {
+          {STATUS_OPTIONS.slice(0, 2).map((status) => {
+            const count = allOrders.filter((o) => o.status === status).length;
+            return (
+              <button
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors capitalize ${
+                  statusFilter === status ? "bg-coral text-white" : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                }`}
+              >
+                {status} ({count})
+              </button>
+            );
+          })}
+          <button
+            onClick={() => setStatusFilter("billed")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              statusFilter === "billed" ? "bg-green-600 text-white" : "bg-white dark:bg-gray-800 text-green-600 dark:text-green-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+            }`}
+          >
+            Billed ({allOrders.filter((o) => o.is_billed).length})
+          </button>
+          {STATUS_OPTIONS.slice(2).map((status) => {
             const count = allOrders.filter((o) => o.status === status).length;
             return (
               <button
@@ -907,13 +942,18 @@ export default function AdminOrdersPage() {
                   <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${PAYMENT_STYLES[order.payment_status] || "bg-gray-100 text-gray-700"}`}>
                     {order.payment_status === "paid" ? "Paid" : order.payment_status === "cod" ? "COD" : order.payment_status === "failed" ? "Failed" : "Unpaid"}
                   </span>
+                  {order.is_billed && (
+                    <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                      Billed
+                    </span>
+                  )}
                   {/* Date */}
                   <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap hidden md:block">
                     {new Date(order.created_at).toLocaleDateString()}
                   </span>
                   {/* Print button */}
                   <button
-                    onClick={(e) => { e.stopPropagation(); printOrder(order, "invoice"); }}
+                    onClick={(e) => { e.stopPropagation(); printOrder(order, "invoice"); markAsBilled([order.id]); }}
                     className="p-1.5 text-gray-400 hover:text-coral transition-colors flex-shrink-0 hidden md:block"
                     title="Print invoice"
                   >
@@ -1082,7 +1122,7 @@ export default function AdminOrdersPage() {
                             <Pencil className="w-4 h-4" /> Edit
                           </button>
                           <button
-                            onClick={() => printOrder(order, "invoice")}
+                            onClick={() => { printOrder(order, "invoice"); markAsBilled([order.id]); }}
                             className="px-3 py-2 bg-coral/10 text-coral rounded-lg text-sm font-medium hover:bg-coral/20 transition-colors flex items-center gap-1.5"
                             title="Print invoice"
                           >
