@@ -180,8 +180,7 @@ function generateInvoiceHTML(order: Order): string {
 
 function generateStickerHTML(order: Order): string {
   const isCod = order.payment_method === 'cod';
-  const courierId = order.shiprocket_order_id && order.shiprocket_order_id !== 'undefined'
-    ? order.shiprocket_order_id : '';
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const totalPcs = order.items.reduce((sum, item) => sum + item.quantity, 0);
   const itemLines = order.items.map((item) =>
     `<div class="item-row"><span>${esc(item.product_name)} x${item.quantity}</span><span>${inr(item.subtotal)}</span></div>`
@@ -233,11 +232,9 @@ function generateStickerHTML(order: Order): string {
   .item-row { display:flex; justify-content:space-between; padding:2px 0; }
   .items-total { display:flex; justify-content:space-between; border-top:1px solid #000; margin-top:4px; padding-top:4px; font-size:12px; font-weight:800; }
 
-  /* Brand footer */
-  .brand-footer { display:flex; justify-content:space-around; align-items:center; padding:10px 12px; border-top:2px solid #000; text-align:center; line-height:1.3; }
-  .brand-col { font-size:13px; }
-  .brand-script { font-size:14px; font-weight:700; }
-  .brand-sub { font-size:11px; }
+  /* Logo footer */
+  .logo-footer { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border-top:2px solid #000; }
+  .logo-footer img { height:36px; width:auto; }
 </style>
 </head>
 <body>
@@ -251,10 +248,8 @@ function generateStickerHTML(order: Order): string {
     ${isCod ? `<span style="font-size:14px;">${inr(order.total)}</span>` : ''}
   </div>
 
-  <!-- CID / Order -->
-  <div class="cid">
-    ${courierId ? `CID: ${esc(courierId)} &nbsp;|&nbsp; ` : ''}Order: ${esc(order.order_number)}
-  </div>
+  <!-- CID -->
+  <div class="cid">CID: 1248959333</div>
 
   <!-- From -->
   <div class="row-section from-section">
@@ -281,20 +276,12 @@ function generateStickerHTML(order: Order): string {
     <div class="items-total"><span>Total</span><span>${inr(order.total)}</span></div>
   </div>
 
-  <!-- Brand Footer -->
-  <div class="brand-footer">
-    <div class="brand-col">
-      <div class="brand-script">ഖാദി</div>
-      <div class="brand-sub">വസ്ത്ര</div>
-    </div>
-    <div class="brand-col">
-      <div class="brand-script">खादी</div>
-      <div class="brand-sub">वस्त्र</div>
-    </div>
-    <div class="brand-col">
-      <div class="brand-script">Khadi</div>
-      <div class="brand-sub">Vasthra</div>
-    </div>
+  <!-- Logo Footer -->
+  <div class="logo-footer">
+    <img src="${origin}/logo_languages/Malayalam.webp" alt="Khadi Vasthra Malayalam" />
+    <img src="${origin}/logo_languages/PNG Tamil.png" alt="Khadi Vasthra Tamil" />
+    <img src="${origin}/logo_languages/Kannada.webp" alt="Khadi Vasthra Kannada" />
+    <img src="${origin}/logo_languages/English.webp" alt="Khadi Vasthra English" />
   </div>
 </div>
 
@@ -390,10 +377,8 @@ function generateBulkHTML(orders: Order[], type: 'invoice' | 'sticker'): string 
   .items-heading { font-size:10px; font-weight:700; letter-spacing:1px; color:#888; margin-bottom:4px; }
   .item-row { display:flex; justify-content:space-between; padding:2px 0; }
   .items-total { display:flex; justify-content:space-between; border-top:1px solid #000; margin-top:4px; padding-top:4px; font-size:12px; font-weight:800; }
-  .brand-footer { display:flex; justify-content:space-around; align-items:center; padding:10px 12px; border-top:2px solid #000; text-align:center; line-height:1.3; }
-  .brand-col { font-size:13px; }
-  .brand-script { font-size:14px; font-weight:700; }
-  .brand-sub { font-size:11px; }
+  .logo-footer { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border-top:2px solid #000; }
+  .logo-footer img { height:36px; width:auto; }
 </style>
 </head>
 <body>
