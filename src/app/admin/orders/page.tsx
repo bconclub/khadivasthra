@@ -7,7 +7,8 @@ import { getOrders, updateOrderStatus, updateOrder, createShiprocketOrder, check
 import { deleteOrder } from "@/lib/services/admin";
 import { supabase } from "@/lib/supabase";
 import type { Order, OrderStatus, Product, PaymentMethod, PaymentStatus } from "@/types";
-import { Loader2, ChevronDown, ChevronUp, Truck, ExternalLink, Trash2, CreditCard, Package, Plus, Search, X, Minus, Pencil } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp, Truck, ExternalLink, Trash2, CreditCard, Package, Plus, Search, X, Minus, Pencil, Printer, FileText, Tag } from "lucide-react";
+import { printOrder, printOrders } from "@/lib/print-order";
 import Image from "next/image";
 import toast from "react-hot-toast";
 
@@ -668,6 +669,7 @@ export default function AdminOrdersPage() {
   const [checkingPayment, setCheckingPayment] = useState<string | null>(null);
   const [showCreateOrder, setShowCreateOrder] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
+  const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
 
   const allOrders = orders || [];
   const filtered = statusFilter
@@ -743,12 +745,46 @@ export default function AdminOrdersPage() {
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Orders</h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1">{allOrders.length} total orders</p>
           </div>
-          <button
-            onClick={() => setShowCreateOrder(true)}
-            className="px-4 py-2 bg-coral text-white rounded-lg text-sm font-medium hover:bg-coral/90 transition-colors flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" /> Create Order
-          </button>
+          <div className="flex items-center gap-2">
+            {selectedOrders.size > 0 && (
+              <>
+                <span className="text-sm text-gray-500 dark:text-gray-400">{selectedOrders.size} selected</span>
+                <button
+                  onClick={() => {
+                    const selected = allOrders.filter((o) => selectedOrders.has(o.id));
+                    printOrders(selected, "invoice");
+                  }}
+                  className="px-3 py-2 bg-coral/10 text-coral rounded-lg text-sm font-medium hover:bg-coral/20 transition-colors flex items-center gap-1.5"
+                  title="Print invoices"
+                >
+                  <FileText className="w-4 h-4" /> Invoices
+                </button>
+                <button
+                  onClick={() => {
+                    const selected = allOrders.filter((o) => selectedOrders.has(o.id));
+                    printOrders(selected, "label");
+                  }}
+                  className="px-3 py-2 bg-coral/10 text-coral rounded-lg text-sm font-medium hover:bg-coral/20 transition-colors flex items-center gap-1.5"
+                  title="Print labels"
+                >
+                  <Tag className="w-4 h-4" /> Labels
+                </button>
+                <button
+                  onClick={() => setSelectedOrders(new Set())}
+                  className="px-2 py-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                  title="Clear selection"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </>
+            )}
+            <button
+              onClick={() => setShowCreateOrder(true)}
+              className="px-4 py-2 bg-coral text-white rounded-lg text-sm font-medium hover:bg-coral/90 transition-colors flex items-center gap-2"
+            >
+              <Plus className="w-4 h-4" /> Create Order
+            </button>
+          </div>
         </div>
 
         {showCreateOrder && (
@@ -795,6 +831,23 @@ export default function AdminOrdersPage() {
           </div>
         ) : (
           <div className="space-y-3">
+            {/* Select All */}
+            <div className="flex items-center gap-3 px-4 md:px-6">
+              <input
+                type="checkbox"
+                checked={filtered.length > 0 && filtered.every((o) => selectedOrders.has(o.id))}
+                onChange={() => {
+                  const allSelected = filtered.every((o) => selectedOrders.has(o.id));
+                  setSelectedOrders((prev) => {
+                    const next = new Set(prev);
+                    filtered.forEach((o) => allSelected ? next.delete(o.id) : next.add(o.id));
+                    return next;
+                  });
+                }}
+                className="w-4 h-4 rounded border-gray-300 text-coral focus:ring-coral"
+              />
+              <span className="text-xs text-gray-400 dark:text-gray-500">Select all ({filtered.length})</span>
+            </div>
             {filtered.map((order) => (
               <div key={order.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                 {/* Order Header */}
@@ -802,6 +855,22 @@ export default function AdminOrdersPage() {
                   className="px-4 md:px-6 py-3 flex items-center gap-3 md:gap-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50"
                   onClick={() => toggleExpand(order.id)}
                 >
+                  {/* Checkbox */}
+                  <input
+                    type="checkbox"
+                    checked={selectedOrders.has(order.id)}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      setSelectedOrders((prev) => {
+                        const next = new Set(prev);
+                        if (next.has(order.id)) next.delete(order.id);
+                        else next.add(order.id);
+                        return next;
+                      });
+                    }}
+                    onClick={(e) => e.stopPropagation()}
+                    className="w-4 h-4 rounded border-gray-300 text-coral focus:ring-coral flex-shrink-0"
+                  />
                   {/* Product thumbnail */}
                   <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0 border border-gray-200 dark:border-gray-600">
                     {order.items?.[0]?.product_image ? (
@@ -842,6 +911,14 @@ export default function AdminOrdersPage() {
                   <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap hidden md:block">
                     {new Date(order.created_at).toLocaleDateString()}
                   </span>
+                  {/* Print button */}
+                  <button
+                    onClick={(e) => { e.stopPropagation(); printOrder(order, "invoice"); }}
+                    className="p-1.5 text-gray-400 hover:text-coral transition-colors flex-shrink-0 hidden md:block"
+                    title="Print invoice"
+                  >
+                    <Printer className="w-4 h-4" />
+                  </button>
                   {expandedOrder === order.id ? (
                     <ChevronUp className="w-4 h-4 text-gray-400 flex-shrink-0" />
                   ) : (
@@ -1003,6 +1080,20 @@ export default function AdminOrdersPage() {
                             title="Edit order"
                           >
                             <Pencil className="w-4 h-4" /> Edit
+                          </button>
+                          <button
+                            onClick={() => printOrder(order, "invoice")}
+                            className="px-3 py-2 bg-coral/10 text-coral rounded-lg text-sm font-medium hover:bg-coral/20 transition-colors flex items-center gap-1.5"
+                            title="Print invoice"
+                          >
+                            <FileText className="w-4 h-4" /> Invoice
+                          </button>
+                          <button
+                            onClick={() => printOrder(order, "label")}
+                            className="px-3 py-2 bg-coral/10 text-coral rounded-lg text-sm font-medium hover:bg-coral/20 transition-colors flex items-center gap-1.5"
+                            title="Print shipping label"
+                          >
+                            <Tag className="w-4 h-4" /> Label
                           </button>
                           <button
                             onClick={() => handleDeleteOrder(order.id, order.order_number)}
