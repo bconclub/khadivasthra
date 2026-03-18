@@ -212,7 +212,7 @@ function generateStickerHTML(order: Order): string {
   .cb-box.checked { background:#000; color:#fff; }
 
   /* CID */
-  .cid { font-size:11px; color:#444; padding:4px 12px; border-bottom:1px solid #ccc; }
+  .cid { font-size:12px; font-weight:600; color:#333; padding:6px 12px; border-bottom:2px solid #000; }
 
   /* From */
   .from-label, .to-label { font-size:10px; font-weight:700; letter-spacing:1px; color:#888; margin-bottom:4px; }
@@ -251,8 +251,10 @@ function generateStickerHTML(order: Order): string {
     ${isCod ? `<span style="font-size:14px;">${inr(order.total)}</span>` : ''}
   </div>
 
-  <!-- CID -->
-  ${courierId ? `<div class="cid">CID: ${esc(courierId)}</div>` : ''}
+  <!-- CID / Order -->
+  <div class="cid">
+    ${courierId ? `CID: ${esc(courierId)} &nbsp;|&nbsp; ` : ''}Order: ${esc(order.order_number)}
+  </div>
 
   <!-- From -->
   <div class="row-section from-section">
@@ -374,7 +376,7 @@ function generateBulkHTML(orders: Order[], type: 'invoice' | 'sticker'): string 
   .cb { display:inline-flex; align-items:center; gap:4px; }
   .cb-box { width:16px; height:16px; border:2px solid #000; display:inline-flex; align-items:center; justify-content:center; font-size:14px; font-weight:900; }
   .cb-box.checked { background:#000; color:#fff; }
-  .cid { font-size:11px; color:#444; padding:4px 12px; border-bottom:1px solid #ccc; }
+  .cid { font-size:12px; font-weight:600; color:#333; padding:6px 12px; border-bottom:2px solid #000; }
   .from-label, .to-label { font-size:10px; font-weight:700; letter-spacing:1px; color:#888; margin-bottom:4px; }
   .from-section { font-size:11px; line-height:1.5; }
   .from-name { font-weight:700; font-size:12px; }
