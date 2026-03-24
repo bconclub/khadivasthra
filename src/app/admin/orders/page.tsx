@@ -3,20 +3,21 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
-import { getOrders, updateOrderStatus, updateOrder, createShiprocketOrder, checkPaymentStatus } from "@/lib/services/orders";
+import { getOrders, updateOrderStatus, updateOrder, checkPaymentStatus } from "@/lib/services/orders";
 import { deleteOrder } from "@/lib/services/admin";
 import { supabase } from "@/lib/supabase";
 import type { Order, OrderStatus, Product, PaymentMethod, PaymentStatus } from "@/types";
-import { Loader2, ChevronDown, ChevronUp, Truck, ExternalLink, Trash2, CreditCard, Package, Plus, Search, X, Minus, Pencil, Printer, FileText, Tag } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp, Trash2, CreditCard, Package, Plus, Search, X, Minus, Pencil, Printer, FileText, Tag } from "lucide-react";
 import { printOrder, printOrders } from "@/lib/print-order";
 import Image from "next/image";
 import toast from "react-hot-toast";
 
-const STATUS_OPTIONS: OrderStatus[] = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
+const STATUS_OPTIONS: OrderStatus[] = ["pending", "confirmed", "billed", "shipped", "delivered", "cancelled"];
 
 const STATUS_STYLES: Record<string, string> = {
   pending: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
   confirmed: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+  billed: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
   shipped: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
   delivered: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400",
   cancelled: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
@@ -124,6 +125,7 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
       const orderNumber = `KV-${dateStr}-${random}`;
 
       const isCod = paymentMethod === "cod";
+      const codCharges = isCod ? Math.round(subtotal * 0.016) : 0;
 
       const items = lineItems.map((li) => ({
         product_id: li.product.id,
@@ -146,7 +148,8 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
         items,
         subtotal,
         shipping: 0,
-        total: subtotal,
+        cod_charges: codCharges,
+        total: subtotal + codCharges,
         status: "confirmed",
         payment_status: isCod ? "cod" : "paid",
         payment_method: paymentMethod,
@@ -342,6 +345,10 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(order.payment_method);
   const [notes, setNotes] = useState(order.notes || "");
   const [shipping, setShipping] = useState(Number(order.shipping));
+  const [articleNumber, setArticleNumber] = useState(order.article_number || "");
+  const [settlementStatus, setSettlementStatus] = useState<string>(order.settlement_status || "pending");
+  const [amountReceived, setAmountReceived] = useState(order.amount_received != null ? Number(order.amount_received) : "");
+  const [settlementDate, setSettlementDate] = useState(order.settlement_date || "");
   const [submitting, setSubmitting] = useState(false);
 
   // Editable line items
@@ -418,7 +425,9 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
   };
 
   const subtotal = lineItems.reduce((sum, li) => sum + li.price * li.quantity, 0);
-  const total = subtotal + shipping;
+  const isCodEdit = paymentMethod === "cod";
+  const codCharges = isCodEdit ? Math.round((subtotal + shipping) * 0.016) : 0;
+  const total = subtotal + shipping + codCharges;
 
   const handleSubmit = async () => {
     if (!name.trim() || !phone.trim() || !address.trim() || !city.trim() || !pincode.trim()) {
@@ -452,10 +461,15 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
         items,
         subtotal,
         shipping,
+        cod_charges: codCharges,
         total,
         status,
         payment_status: paymentStatus,
         payment_method: paymentMethod,
+        article_number: articleNumber.trim() || null,
+        settlement_status: settlementStatus,
+        amount_received: amountReceived !== "" ? Number(amountReceived) : null,
+        settlement_date: settlementDate || null,
         notes: notes.trim() || null,
       });
 
@@ -618,7 +632,7 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
 
           {/* Shipping & Total */}
           <div>
-            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Shipping</h3>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Shipping & Total</h3>
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className={labelCls}>Shipping Cost</label>
@@ -631,11 +645,42 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
                 />
               </div>
               <div>
-                <label className={labelCls}>Order Total</label>
-                <p className="px-3 py-2 text-sm font-bold text-gray-900 dark:text-white">₹{total.toLocaleString()}</p>
+                <label className={labelCls}>Article Number</label>
+                <input className={inputCls} value={articleNumber} onChange={(e) => setArticleNumber(e.target.value)} placeholder="Enter India Post article number" />
               </div>
             </div>
+            <div className="mt-3 text-sm space-y-1">
+              <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Subtotal</span><span>₹{subtotal.toLocaleString()}</span></div>
+              <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Shipping</span><span>₹{shipping.toLocaleString()}</span></div>
+              {isCodEdit && <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>COD Charges (1.6%)</span><span>₹{codCharges.toLocaleString()}</span></div>}
+              <div className="flex justify-between font-bold text-gray-900 dark:text-white border-t border-gray-200 dark:border-gray-600 pt-1"><span>Total</span><span>₹{total.toLocaleString()}</span></div>
+            </div>
           </div>
+
+          {/* COD Settlement - only for COD orders */}
+          {isCodEdit && (
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">COD Settlement</h3>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className={labelCls}>Status</label>
+                  <select className={inputCls} value={settlementStatus} onChange={(e) => setSettlementStatus(e.target.value)}>
+                    <option value="pending">Pending</option>
+                    <option value="received">Received</option>
+                    <option value="settled">Settled</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={labelCls}>Amount Received</label>
+                  <input type="number" className={inputCls} value={amountReceived} onChange={(e) => setAmountReceived(e.target.value === "" ? "" : Number(e.target.value))} placeholder="₹" min={0} />
+                </div>
+                <div>
+                  <label className={labelCls}>Settlement Date</label>
+                  <input type="date" className={inputCls} value={settlementDate} onChange={(e) => setSettlementDate(e.target.value)} />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Notes */}
           <div>
@@ -665,7 +710,6 @@ export default function AdminOrdersPage() {
   const { data: orders, loading, refetch } = useSupabaseQuery(getOrders);
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
-  const [creatingShipment, setCreatingShipment] = useState<string | null>(null);
   const [checkingPayment, setCheckingPayment] = useState<string | null>(null);
   const [showCreateOrder, setShowCreateOrder] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
@@ -673,10 +717,12 @@ export default function AdminOrdersPage() {
 
   const allOrders = orders || [];
   const filtered = statusFilter === "billed"
-    ? allOrders.filter((o) => o.is_billed)
-    : statusFilter
-      ? allOrders.filter((o) => o.status === statusFilter)
-      : allOrders;
+    ? allOrders.filter((o) => o.is_billed || o.status === "billed")
+    : statusFilter === "cod"
+      ? allOrders.filter((o) => o.payment_method === "cod")
+      : statusFilter
+        ? allOrders.filter((o) => o.status === statusFilter)
+        : allOrders;
 
   const markAsBilled = async (orderIds: string[]) => {
     const now = new Date().toISOString();
@@ -690,7 +736,11 @@ export default function AdminOrdersPage() {
 
   const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
     try {
-      await updateOrderStatus(orderId, newStatus);
+      if (newStatus === "billed") {
+        await supabase.from("orders").update({ status: "billed", is_billed: true, billed_at: new Date().toISOString() }).eq("id", orderId);
+      } else {
+        await updateOrderStatus(orderId, newStatus);
+      }
       toast.success(`Order status updated to ${newStatus}`);
       refetch();
     } catch (err) {
@@ -700,25 +750,6 @@ export default function AdminOrdersPage() {
 
   const toggleExpand = (orderId: string) => {
     setExpandedOrder(expandedOrder === orderId ? null : orderId);
-  };
-
-  const handleCreateShipment = async (orderId: string) => {
-    setCreatingShipment(orderId);
-    try {
-      // Clear any bad "undefined" shiprocket_order_id so edge function doesn't skip
-      await supabase
-        .from("orders")
-        .update({ shiprocket_order_id: null, shipment_id: null })
-        .eq("id", orderId);
-
-      const result = await createShiprocketOrder(orderId);
-      toast.success(`Shipment created${result.awb_code ? ` - AWB: ${result.awb_code}` : ""}`);
-      refetch();
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to create shipment");
-    } finally {
-      setCreatingShipment(null);
-    }
   };
 
   const handleDeleteOrder = async (orderId: string, orderNumber: string) => {
@@ -817,14 +848,19 @@ export default function AdminOrdersPage() {
           >
             All ({allOrders.length})
           </button>
-          {STATUS_OPTIONS.slice(0, 2).map((status) => {
-            const count = allOrders.filter((o) => o.status === status).length;
+          {STATUS_OPTIONS.map((status) => {
+            const count = status === "billed"
+              ? allOrders.filter((o) => o.is_billed || o.status === "billed").length
+              : allOrders.filter((o) => o.status === status).length;
+            const isBilled = status === "billed";
             return (
               <button
                 key={status}
                 onClick={() => setStatusFilter(status)}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors capitalize ${
-                  statusFilter === status ? "bg-coral text-white" : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  statusFilter === status
+                    ? (isBilled ? "bg-green-600 text-white" : "bg-coral text-white")
+                    : (isBilled ? "bg-white dark:bg-gray-800 text-green-600 dark:text-green-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700" : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700")
                 }`}
               >
                 {status} ({count})
@@ -832,27 +868,15 @@ export default function AdminOrdersPage() {
             );
           })}
           <button
-            onClick={() => setStatusFilter("billed")}
+            onClick={() => setStatusFilter("cod")}
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              statusFilter === "billed" ? "bg-green-600 text-white" : "bg-white dark:bg-gray-800 text-green-600 dark:text-green-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+              statusFilter === "cod"
+                ? "bg-blue-600 text-white"
+                : "bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
             }`}
           >
-            Billed ({allOrders.filter((o) => o.is_billed).length})
+            COD ({allOrders.filter((o) => o.payment_method === "cod").length})
           </button>
-          {STATUS_OPTIONS.slice(2).map((status) => {
-            const count = allOrders.filter((o) => o.status === status).length;
-            return (
-              <button
-                key={status}
-                onClick={() => setStatusFilter(status)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors capitalize ${
-                  statusFilter === status ? "bg-coral text-white" : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-                }`}
-              >
-                {status} ({count})
-              </button>
-            );
-          })}
         </div>
 
         {/* Orders List */}
@@ -1022,45 +1046,83 @@ export default function AdminOrdersPage() {
                         )}
                       </div>
 
-                      {/* Shipping Details */}
+                      {/* Shipping & Article Number */}
                       <div>
-                        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-1">
-                          <Truck className="w-4 h-4" /> Shipping Details
-                        </h3>
-                        {order.shiprocket_order_id && order.shiprocket_order_id !== "undefined" ? (
-                          <div className="space-y-2 text-sm text-gray-900 dark:text-gray-200">
-                            <p><span className="text-gray-500 dark:text-gray-400">Shiprocket ID:</span> {order.shiprocket_order_id}</p>
-                            {order.awb_code && (
-                              <p><span className="text-gray-500 dark:text-gray-400">AWB:</span> {order.awb_code}</p>
-                            )}
-                            {order.courier_name && (
-                              <p><span className="text-gray-500 dark:text-gray-400">Courier:</span> {order.courier_name}</p>
-                            )}
-                            {order.tracking_url && (
-                              <a
-                                href={order.tracking_url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-coral hover:underline text-sm"
-                              >
-                                <ExternalLink className="w-3 h-3" /> Track shipment
-                              </a>
-                            )}
+                        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Shipping & Article No</h3>
+                        <div className="space-y-2 text-sm text-gray-900 dark:text-gray-200">
+                          {order.article_number && (
+                            <p><span className="text-gray-500 dark:text-gray-400">Article No:</span> <span className="font-mono font-medium">{order.article_number}</span></p>
+                          )}
+                          <div>
+                            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Article Number</label>
+                            <input
+                              defaultValue={order.article_number || ""}
+                              placeholder="Enter India Post article number"
+                              onBlur={async (e) => {
+                                const val = e.target.value.trim() || null;
+                                if (val !== (order.article_number || null)) {
+                                  await updateOrder(order.id, { article_number: val });
+                                  toast.success("Article number saved");
+                                  refetch();
+                                }
+                              }}
+                              className="w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-coral focus:border-transparent"
+                            />
                           </div>
-                        ) : (order.payment_status === "paid" || order.payment_status === "cod") ? (
-                          <button
-                            onClick={() => handleCreateShipment(order.id)}
-                            disabled={creatingShipment === order.id}
-                            className="px-4 py-2 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 rounded-lg text-sm font-medium hover:bg-purple-200 dark:hover:bg-purple-900/50 transition-colors disabled:opacity-50 flex items-center gap-2"
-                          >
-                            {creatingShipment === order.id ? (
-                              <><Loader2 className="w-4 h-4 animate-spin" /> Creating...</>
-                            ) : (
-                              <><Truck className="w-4 h-4" /> Create Shipment</>
-                            )}
-                          </button>
-                        ) : (
-                          <p className="text-sm text-gray-400 dark:text-gray-500">Payment required before shipping</p>
+                        </div>
+
+                        {/* COD Settlement */}
+                        {order.payment_method === "cod" && (
+                          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <h4 className="text-xs font-semibold text-blue-700 dark:text-blue-400 mb-2 uppercase tracking-wide">COD Settlement</h4>
+                            <div className="grid grid-cols-3 gap-2">
+                              <div>
+                                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Status</label>
+                                <select
+                                  defaultValue={order.settlement_status || "pending"}
+                                  onChange={async (e) => {
+                                    await updateOrder(order.id, { settlement_status: e.target.value });
+                                    toast.success("Settlement status updated");
+                                    refetch();
+                                  }}
+                                  className="w-full px-2 py-1.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
+                                >
+                                  <option value="pending">Pending</option>
+                                  <option value="received">Received</option>
+                                  <option value="settled">Settled</option>
+                                </select>
+                              </div>
+                              <div>
+                                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Amount Received</label>
+                                <input
+                                  type="number"
+                                  defaultValue={order.amount_received != null ? Number(order.amount_received) : ""}
+                                  placeholder="₹"
+                                  onBlur={async (e) => {
+                                    const val = e.target.value ? Number(e.target.value) : null;
+                                    await updateOrder(order.id, { amount_received: val });
+                                    toast.success("Amount saved");
+                                    refetch();
+                                  }}
+                                  className="w-full px-2 py-1.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
+                                  min={0}
+                                />
+                              </div>
+                              <div>
+                                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Settlement Date</label>
+                                <input
+                                  type="date"
+                                  defaultValue={order.settlement_date || ""}
+                                  onChange={async (e) => {
+                                    await updateOrder(order.id, { settlement_date: e.target.value || null });
+                                    toast.success("Settlement date saved");
+                                    refetch();
+                                  }}
+                                  className="w-full px-2 py-1.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
+                                />
+                              </div>
+                            </div>
+                          </div>
                         )}
                       </div>
 
@@ -1095,9 +1157,11 @@ export default function AdminOrdersPage() {
                               </span>
                             </div>
                           ))}
-                          <div className="border-t border-gray-200 dark:border-gray-600 pt-2 flex justify-between text-sm font-bold text-gray-900 dark:text-white">
-                            <span>Total</span>
-                            <span>₹{Number(order.total).toLocaleString()}</span>
+                          <div className="border-t border-gray-200 dark:border-gray-600 pt-2 space-y-1 text-sm">
+                            <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Subtotal</span><span>₹{Number(order.subtotal).toLocaleString()}</span></div>
+                            {Number(order.shipping) > 0 && <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Shipping</span><span>₹{Number(order.shipping).toLocaleString()}</span></div>}
+                            {Number(order.cod_charges) > 0 && <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>COD Charges (1.6%)</span><span>₹{Number(order.cod_charges).toLocaleString()}</span></div>}
+                            <div className="flex justify-between font-bold text-gray-900 dark:text-white"><span>Total</span><span>₹{Number(order.total).toLocaleString()}</span></div>
                           </div>
                         </div>
 

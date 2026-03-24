@@ -25,6 +25,8 @@ export async function createOrder(
   }));
 
   const isCod = paymentMethod === 'cod';
+  const codCharges = isCod ? Math.round((subtotal + shippingCost) * 0.016) : 0;
+  const total = subtotal + shippingCost + codCharges;
 
   const order = {
     order_number: generateOrderNumber(),
@@ -38,7 +40,8 @@ export async function createOrder(
     items,
     subtotal,
     shipping: shippingCost,
-    total: subtotal + shippingCost,
+    cod_charges: codCharges,
+    total,
     status: isCod ? 'confirmed' as const : 'pending' as const,
     payment_status: isCod ? 'cod' as const : 'pending' as const,
     payment_method: paymentMethod,
@@ -120,7 +123,6 @@ async function invokeEdgeFunction(functionName: string, body: Record<string, unk
 
   if (!res.ok) {
     console.error(`Edge function ${functionName} error:`, res.status, JSON.stringify(data, null, 2));
-    // Include Shiprocket details in error message for debugging
     const details = data?.details ? ` | Details: ${JSON.stringify(data.details)}` : '';
     throw new Error((data?.error || `Edge function failed (${res.status})`) + details);
   }
@@ -154,28 +156,32 @@ export async function verifyRazorpayPayment(
   });
 }
 
-// Shiprocket shipping functions
-
-export async function checkShippingServiceability(
-  deliveryPincode: string,
-  totalItems: number = 1
-): Promise<ServiceabilityResult> {
-  return invokeEdgeFunction('shiprocket-check-serviceability', {
-    delivery_pincode: deliveryPincode,
-    total_items: totalItems,
-  });
-}
-
-export async function createShiprocketOrder(
-  orderId: string
-): Promise<{ shiprocket_order_id: string; shipment_id: string; awb_code?: string }> {
-  return invokeEdgeFunction('shiprocket-create-order', { order_id: orderId });
-}
-
+// Shipment tracking stub (Shiprocket removed)
 export async function trackShipment(
-  orderNumber: string
+  _orderNumber: string
 ): Promise<TrackingResult> {
-  return invokeEdgeFunction('shiprocket-track', { order_number: orderNumber });
+  return {
+    status: 'unknown',
+    current_status: 'Tracking not available',
+    tracking_url: null,
+    etd: null,
+    scans: [],
+  };
+}
+
+// Shipping serviceability - returns default (always serviceable, free shipping, COD available)
+export async function checkShippingServiceability(
+  _deliveryPincode: string,
+  _totalItems: number = 1
+): Promise<ServiceabilityResult> {
+  return {
+    available: true,
+    rates: [],
+    cheapest_rate: 0,
+    fastest_etd: '',
+    cod_available: true,
+    cod_cheapest_rate: 0,
+  };
 }
 
 export async function checkPaymentStatus(

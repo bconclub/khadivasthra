@@ -29,9 +29,8 @@ function inr(n: number): string {
 // ─── TAX INVOICE (A4) ───────────────────────────────────────────────
 
 function generateInvoiceHTML(order: Order): string {
-  const courierId = order.shiprocket_order_id && order.shiprocket_order_id !== 'undefined'
-    ? order.shiprocket_order_id : '';
   const isCod = order.payment_method === 'cod';
+  const codCharges = Number(order.cod_charges) || 0;
 
   const itemRows = order.items.map((item, i) => `
     <tr>
@@ -113,7 +112,7 @@ function generateInvoiceHTML(order: Order): string {
     <div><b>Invoice No:</b> ${esc(order.order_number)}</div>
     <div><b>Date:</b> ${fmt(order.created_at)}</div>
     <div><b>Payment:</b> ${isCod ? 'COD' : 'PREPAID'}</div>
-    ${courierId ? `<div><b>Courier ID:</b> ${esc(courierId)}</div>` : ''}
+    ${order.article_number ? `<div><b>Article No:</b> ${esc(order.article_number)}</div>` : ''}
   </div>
 
   <!-- Bill To -->
@@ -151,8 +150,10 @@ function generateInvoiceHTML(order: Order): string {
     <div class="totals">
       <div class="row"><span>Subtotal</span><span>${inr(order.subtotal)}</span></div>
       <div class="row"><span>Shipping</span><span>${inr(order.shipping || 0)}</span></div>
+      ${codCharges > 0 ? `<div class="row"><span>COD Charges (1.6%)</span><span>${inr(codCharges)}</span></div>` : ''}
       <div class="row grand"><span>GRAND TOTAL</span><span>${inr(order.total)}</span></div>
     </div>
+    ${isCod ? `<div style="margin-top:8px;font-size:12px;color:#666;">COD Settlement: ${(order.settlement_status || 'pending').toUpperCase()}</div>` : ''}
   </div>
 
   <!-- Terms -->
@@ -210,8 +211,8 @@ function generateStickerHTML(order: Order): string {
   .cb-box { width:16px; height:16px; border:2px solid #000; display:inline-flex; align-items:center; justify-content:center; font-size:14px; font-weight:900; }
   .cb-box.checked { background:#000; color:#fff; }
 
-  /* CID */
-  .cid { font-size:12px; font-weight:600; color:#333; padding:6px 12px; border-bottom:2px solid #000; }
+  /* Article Number */
+  .article-no { font-size:12px; font-weight:600; color:#333; padding:6px 12px; border-bottom:2px solid #000; }
 
   /* From */
   .from-label, .to-label { font-size:10px; font-weight:700; letter-spacing:1px; color:#888; margin-bottom:4px; }
@@ -248,8 +249,8 @@ function generateStickerHTML(order: Order): string {
     ${isCod ? `<span style="font-size:14px;">${inr(order.total)}</span>` : ''}
   </div>
 
-  <!-- CID -->
-  <div class="cid">CID: 1248959333</div>
+  <!-- Article Number -->
+  ${order.article_number ? `<div class="article-no">Article No: ${esc(order.article_number)}</div>` : ''}
 
   <!-- From -->
   <div class="row-section from-section">
@@ -363,7 +364,7 @@ function generateBulkHTML(orders: Order[], type: 'invoice' | 'sticker'): string 
   .cb { display:inline-flex; align-items:center; gap:4px; }
   .cb-box { width:16px; height:16px; border:2px solid #000; display:inline-flex; align-items:center; justify-content:center; font-size:14px; font-weight:900; }
   .cb-box.checked { background:#000; color:#fff; }
-  .cid { font-size:12px; font-weight:600; color:#333; padding:6px 12px; border-bottom:2px solid #000; }
+  .article-no { font-size:12px; font-weight:600; color:#333; padding:6px 12px; border-bottom:2px solid #000; }
   .from-label, .to-label { font-size:10px; font-weight:700; letter-spacing:1px; color:#888; margin-bottom:4px; }
   .from-section { font-size:11px; line-height:1.5; }
   .from-name { font-weight:700; font-size:12px; }

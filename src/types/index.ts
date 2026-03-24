@@ -63,7 +63,7 @@ export interface OrderItem {
   subtotal: number;
 }
 
-export type OrderStatus = 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
+export type OrderStatus = 'pending' | 'confirmed' | 'billed' | 'shipped' | 'delivered' | 'cancelled';
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'cod';
 export type PaymentMethod = 'online' | 'cod';
 
@@ -88,11 +88,11 @@ export interface Order {
   razorpay_signature: string | null;
   payment_status: PaymentStatus;
   payment_method: PaymentMethod;
-  shiprocket_order_id: string | null;
-  shipment_id: string | null;
-  awb_code: string | null;
-  courier_name: string | null;
-  tracking_url: string | null;
+  article_number: string | null;
+  cod_charges: number;
+  settlement_status: 'pending' | 'received' | 'settled';
+  amount_received: number | null;
+  settlement_date: string | null;
   is_billed: boolean;
   billed_at: string | null;
   created_at: string;

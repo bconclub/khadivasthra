@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useRazorpay } from "@/hooks/useRazorpay";
 import { Button } from "@/components/ui/button";
-import { createOrder, createRazorpayOrder, verifyRazorpayPayment, createShiprocketOrder, checkShippingServiceability } from "@/lib/services/orders";
+import { createOrder, createRazorpayOrder, verifyRazorpayPayment, checkShippingServiceability } from "@/lib/services/orders";
 import { getSettings } from "@/lib/services/settings";
 import Link from "next/link";
 import { ChevronLeft, Loader2, ShoppingBag, CheckCircle2, XCircle, Truck, CreditCard, Banknote } from "lucide-react";
@@ -178,11 +178,6 @@ export default function CheckoutPage() {
             response.razorpay_signature
           );
           if (result.verified) {
-            try {
-              await createShiprocketOrder(order.id);
-            } catch {
-              console.warn("Shiprocket auto-create fallback failed for order:", order.id);
-            }
             clearCart();
             router.push(`/order-success?order=${order.order_number}&paid=true&total=${order.total}`);
           } else {
@@ -218,12 +213,6 @@ export default function CheckoutPage() {
 
     try {
       const order = await createOrder(formData, items, cartTotal, shippingCost, "cod");
-
-      try {
-        await createShiprocketOrder(order.id);
-      } catch {
-        console.warn("Shiprocket auto-create failed for COD order:", order.id);
-      }
 
       clearCart();
       router.push(`/order-success?order=${order.order_number}&paid=false&total=${order.total}`);
