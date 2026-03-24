@@ -717,7 +717,7 @@ export default function AdminOrdersPage() {
 
   const allOrders = orders || [];
   const filtered = statusFilter === "billed"
-    ? allOrders.filter((o) => o.is_billed || o.status === "billed")
+    ? allOrders.filter((o) => o.status === "billed")
     : statusFilter === "cod"
       ? allOrders.filter((o) => o.payment_method === "cod")
       : statusFilter
@@ -849,9 +849,7 @@ export default function AdminOrdersPage() {
             All ({allOrders.length})
           </button>
           {STATUS_OPTIONS.map((status) => {
-            const count = status === "billed"
-              ? allOrders.filter((o) => o.is_billed || o.status === "billed").length
-              : allOrders.filter((o) => o.status === status).length;
+            const count = allOrders.filter((o) => o.status === status).length;
             const isBilled = status === "billed";
             return (
               <button
