@@ -1,9 +1,14 @@
 import type { NextConfig } from "next";
 import path from "path";
+import { readFileSync } from "fs";
 
 const projectRoot = __dirname;
+const { version } = JSON.parse(readFileSync(path.join(projectRoot, "package.json"), "utf-8"));
 
 const nextConfig: NextConfig = {
+  env: {
+    NEXT_PUBLIC_APP_VERSION: version,
+  },
   output: 'export',
   trailingSlash: true,
   turbopack: {},

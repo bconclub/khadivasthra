@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Auto-bump patch version on every push.
+# 0.2.9 → 0.3.0, 0.9.9 → 1.0.0
+
+PKG="package.json"
+
+# Read current version
+current=$(node -p "require('./${PKG}').version")
+IFS='.' read -r major minor patch <<< "$current"
+
+# Increment patch, roll over at 10
+patch=$((patch + 1))
+if [ "$patch" -ge 10 ]; then
+  patch=0
+  minor=$((minor + 1))
+fi
+if [ "$minor" -ge 10 ]; then
+  minor=0
+  major=$((major + 1))
+fi
+
+new="${major}.${minor}.${patch}"
+
+# Update package.json
+node -e "
+  const fs = require('fs');
+  const pkg = JSON.parse(fs.readFileSync('${PKG}', 'utf8'));
+  pkg.version = '${new}';
+  fs.writeFileSync('${PKG}', JSON.stringify(pkg, null, 2) + '\n');
+"
+
+echo "Version bumped: ${current} → ${new}"
+
+# Commit the version bump so it's included in this push
+git add "${PKG}"
+git commit -m "chore: bump version to ${new}" --no-verify
