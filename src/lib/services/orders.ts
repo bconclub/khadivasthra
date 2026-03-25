@@ -169,19 +169,15 @@ export async function trackShipment(
   };
 }
 
-// Shipping serviceability - returns default (always serviceable, free shipping, COD available)
+// Shipping serviceability via Shiprocket edge function
 export async function checkShippingServiceability(
-  _deliveryPincode: string,
-  _totalItems: number = 1
+  deliveryPincode: string,
+  totalItems: number = 1
 ): Promise<ServiceabilityResult> {
-  return {
-    available: true,
-    rates: [],
-    cheapest_rate: 0,
-    fastest_etd: '',
-    cod_available: true,
-    cod_cheapest_rate: 0,
-  };
+  return invokeEdgeFunction('shiprocket-check-serviceability', {
+    delivery_pincode: deliveryPincode,
+    total_items: totalItems,
+  });
 }
 
 export async function checkPaymentStatus(
