@@ -730,9 +730,8 @@ export default function AdminOrdersPage() {
     const now = new Date().toISOString();
     const { error } = await supabase
       .from("orders")
-      .update({ is_billed: true, billed_at: now })
-      .in("id", orderIds)
-      .eq("is_billed", false);
+      .update({ status: "billed", is_billed: true, billed_at: now })
+      .in("id", orderIds);
     if (!error) refetch();
   };
 
