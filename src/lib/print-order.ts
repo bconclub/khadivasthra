@@ -249,8 +249,8 @@ function generateStickerHTML(order: Order): string {
     ${isCod ? `<span style="font-size:14px;">${inr(order.total)}</span>` : ''}
   </div>
 
-  <!-- Article Number -->
-  ${order.article_number ? `<div class="article-no">Article No: ${esc(order.article_number)}</div>` : ''}
+  <!-- Article Number (COD only) -->
+  ${isCod && order.article_number ? `<div class="article-no">Article No: ${esc(order.article_number)}</div>` : ''}
 
   <!-- From -->
   <div class="row-section from-section">

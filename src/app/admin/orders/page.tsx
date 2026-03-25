@@ -633,7 +633,7 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
           {/* Shipping & Total */}
           <div>
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Shipping & Total</h3>
-            <div className="grid grid-cols-2 gap-3">
+            <div className={`grid ${isCodEdit ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
               <div>
                 <label className={labelCls}>Shipping Cost</label>
                 <input
@@ -644,10 +644,12 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
                   min={0}
                 />
               </div>
+              {isCodEdit && (
               <div>
-                <label className={labelCls}>Article Number</label>
+                <label className={labelCls}>Article Number (India Post)</label>
                 <input className={inputCls} value={articleNumber} onChange={(e) => setArticleNumber(e.target.value)} placeholder="Enter India Post article number" />
               </div>
+              )}
             </div>
             <div className="mt-3 text-sm space-y-1">
               <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Subtotal</span><span>₹{subtotal.toLocaleString()}</span></div>
@@ -1044,15 +1046,13 @@ export default function AdminOrdersPage() {
                         )}
                       </div>
 
-                      {/* Shipping & Article Number */}
+                      {/* COD Details - only for COD orders */}
+                      {order.payment_method === "cod" && (
                       <div>
-                        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Shipping & Article No</h3>
-                        <div className="space-y-2 text-sm text-gray-900 dark:text-gray-200">
-                          {order.article_number && (
-                            <p><span className="text-gray-500 dark:text-gray-400">Article No:</span> <span className="font-mono font-medium">{order.article_number}</span></p>
-                          )}
+                        <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">COD Details</h3>
+                        <div className="space-y-3">
                           <div>
-                            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Article Number</label>
+                            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Article Number (India Post)</label>
                             <input
                               defaultValue={order.article_number || ""}
                               placeholder="Enter India Post article number"
@@ -1067,11 +1067,8 @@ export default function AdminOrdersPage() {
                               className="w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-coral focus:border-transparent"
                             />
                           </div>
-                        </div>
 
-                        {/* COD Settlement */}
-                        {order.payment_method === "cod" && (
-                          <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                             <h4 className="text-xs font-semibold text-blue-700 dark:text-blue-400 mb-2 uppercase tracking-wide">COD Settlement</h4>
                             <div className="grid grid-cols-3 gap-2">
                               <div>
@@ -1121,8 +1118,9 @@ export default function AdminOrdersPage() {
                               </div>
                             </div>
                           </div>
-                        )}
+                        </div>
                       </div>
+                      )}
 
                       {/* Order Items & Status */}
                       <div>

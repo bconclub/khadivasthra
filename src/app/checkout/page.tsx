@@ -73,7 +73,8 @@ export default function CheckoutPage() {
   const shippingCost = shippingInfo?.available
     ? (isCod ? shippingInfo.cod_cheapest_rate : shippingInfo.cheapest_rate)
     : 0;
-  const orderTotal = cartTotal + shippingCost;
+  const codCharges = isCod ? Math.round((cartTotal + shippingCost) * 0.016) : 0;
+  const orderTotal = cartTotal + shippingCost + codCharges;
 
   // COD availability: pincode must support COD and cart total must be ≥ ₹1000
   const COD_MINIMUM = 1000;
@@ -579,11 +580,19 @@ export default function CheckoutPage() {
                     {checkingPincode ? (
                       <span className="text-text-muted">Calculating...</span>
                     ) : shippingInfo?.available ? (
-                      <span>₹{shippingCost}</span>
+                      <span>{shippingCost > 0 ? `₹${shippingCost}` : "Free"}</span>
                     ) : (
                       <span className="text-text-muted">Enter pincode</span>
                     )}
                   </div>
+                  {isCod && shippingInfo?.available && (
+                    <div className="flex justify-between text-sm text-text-muted">
+                      <span className="flex items-center gap-1">
+                        <Banknote className="w-3.5 h-3.5" /> COD Charges (1.6%)
+                      </span>
+                      <span>₹{codCharges}</span>
+                    </div>
+                  )}
                   {shippingInfo?.available && shippingInfo.fastest_etd && (
                     <p className="text-xs text-green-600 flex items-center gap-1">
                       <CheckCircle2 className="w-3 h-3" /> Est. delivery: {shippingInfo.fastest_etd}
