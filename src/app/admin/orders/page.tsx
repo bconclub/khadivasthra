@@ -738,7 +738,8 @@ export default function AdminOrdersPage() {
   const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
     try {
       if (newStatus === "billed") {
-        await supabase.from("orders").update({ status: "billed", is_billed: true, billed_at: new Date().toISOString() }).eq("id", orderId);
+        const { error } = await supabase.from("orders").update({ status: "billed", is_billed: true, billed_at: new Date().toISOString() }).eq("id", orderId);
+        if (error) throw error;
       } else {
         await updateOrderStatus(orderId, newStatus);
       }
