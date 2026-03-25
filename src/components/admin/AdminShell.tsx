@@ -81,7 +81,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <Link href="/admin" className="text-xl font-bold text-coral font-serif">
               Khadi Vasthra
             </Link>
-            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Admin Panel</p>
+            <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Admin Panel <span className="text-gray-300 dark:text-gray-600">v0.2.0</span></p>
           </div>
 
           <nav className="flex-1 p-4 space-y-1">
