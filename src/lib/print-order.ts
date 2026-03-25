@@ -195,12 +195,12 @@ function generateStickerHTML(order: Order): string {
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family: 'Segoe UI', Tahoma, sans-serif; color:#000; }
-  @page { size:4in 6in; margin:3mm; }
+  @page { size:3.93in 5.9in; margin:3mm; }
   @media print {
     body { padding:0; }
     .no-print { display:none !important; }
   }
-  .sticker { width:3.9in; margin:0 auto; border:2px solid #000; font-size:12px; }
+  .sticker { width:3.87in; margin:0 auto; border:2px solid #000; font-size:12px; }
   .row-section { padding:10px 12px; border-bottom:2px solid #000; }
   .row-section:last-child { border-bottom:none; }
 
@@ -234,7 +234,7 @@ function generateStickerHTML(order: Order): string {
   .items-total { display:flex; justify-content:space-between; border-top:1px solid #000; margin-top:4px; padding-top:4px; font-size:12px; font-weight:800; }
 
   /* Logo footer */
-  .logo-footer { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border-top:2px solid #000; }
+  .logo-footer { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border-top:2px solid #000; background:#000; }
   .logo-footer img { height:36px; width:auto; }
 </style>
 </head>
@@ -280,7 +280,7 @@ function generateStickerHTML(order: Order): string {
   <!-- Logo Footer -->
   <div class="logo-footer">
     <img src="${origin}/logo_languages/Malayalam.webp" alt="Khadi Vasthra Malayalam" />
-    <img src="${origin}/logo_languages/PNG Tamil.png" alt="Khadi Vasthra Tamil" />
+    <img src="${origin}/logo_languages/Tamil.png" alt="Khadi Vasthra Tamil" />
     <img src="${origin}/logo_languages/Kannada.webp" alt="Khadi Vasthra Kannada" />
     <img src="${origin}/logo_languages/English.webp" alt="Khadi Vasthra English" />
   </div>
@@ -306,7 +306,7 @@ function generateBulkHTML(orders: Order[], type: 'invoice' | 'sticker'): string 
 
   const pageSize = type === 'invoice'
     ? '@page { size:A4; margin:12mm 15mm; }'
-    : '@page { size:4in 6in; margin:3mm; }';
+    : '@page { size:3.93in 5.9in; margin:3mm; }';
 
   return `<!DOCTYPE html>
 <html>
@@ -356,7 +356,7 @@ function generateBulkHTML(orders: Order[], type: 'invoice' | 'sticker'): string 
   .footer-thanks { font-size:12px; color:#888; margin-top:4px; }
 
   /* Sticker styles (duplicated for bulk context) */
-  .sticker { width:3.9in; margin:0 auto; border:2px solid #000; font-size:12px; }
+  .sticker { width:3.87in; margin:0 auto; border:2px solid #000; font-size:12px; }
   .row-section { padding:10px 12px; border-bottom:2px solid #000; }
   .row-section:last-child { border-bottom:none; }
   .top-bar { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border-bottom:2px solid #000; font-size:13px; font-weight:700; }
@@ -378,7 +378,7 @@ function generateBulkHTML(orders: Order[], type: 'invoice' | 'sticker'): string 
   .items-heading { font-size:10px; font-weight:700; letter-spacing:1px; color:#888; margin-bottom:4px; }
   .item-row { display:flex; justify-content:space-between; padding:2px 0; }
   .items-total { display:flex; justify-content:space-between; border-top:1px solid #000; margin-top:4px; padding-top:4px; font-size:12px; font-weight:800; }
-  .logo-footer { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border-top:2px solid #000; }
+  .logo-footer { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border-top:2px solid #000; background:#000; }
   .logo-footer img { height:36px; width:auto; }
 </style>
 </head>
