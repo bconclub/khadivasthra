@@ -779,12 +779,12 @@ export default function AdminOrdersPage() {
   return (
     <AdminShell>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Orders</h1>
             <p className="text-gray-500 dark:text-gray-400 mt-1">{allOrders.length} total orders</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {selectedOrders.size > 0 && (
               <>
                 <span className="text-sm text-gray-500 dark:text-gray-400">{selectedOrders.size} selected</span>
@@ -951,24 +951,24 @@ export default function AdminOrdersPage() {
                       {order.items?.map((i) => `${i.product_name} x${i.quantity}`).join(", ")}
                     </p>
                   </div>
-                  {/* Amount */}
-                  <span className="text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">₹{Number(order.total).toLocaleString()}</span>
-                  {/* Badges */}
-                  <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${STATUS_STYLES[order.status] || "bg-gray-100 text-gray-700"}`}>
-                    {order.status}
-                  </span>
-                  <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${PAYMENT_STYLES[order.payment_status] || "bg-gray-100 text-gray-700"}`}>
-                    {order.payment_status === "paid" ? "Paid" : order.payment_status === "cod" ? "COD" : order.payment_status === "failed" ? "Failed" : "Unpaid"}
-                  </span>
-                  {order.is_billed && (
-                    <span className="inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                      Billed
+                  {/* Amount + badges (right side, shrink-proof) */}
+                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">₹{Number(order.total).toLocaleString()}</span>
+                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${STATUS_STYLES[order.status] || "bg-gray-100 text-gray-700"}`}>
+                      {order.status}
                     </span>
-                  )}
-                  {/* Date */}
-                  <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap hidden md:block">
-                    {new Date(order.created_at).toLocaleDateString()}
-                  </span>
+                    <span className={`hidden sm:inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${PAYMENT_STYLES[order.payment_status] || "bg-gray-100 text-gray-700"}`}>
+                      {order.payment_status === "paid" ? "Paid" : order.payment_status === "cod" ? "COD" : order.payment_status === "failed" ? "Failed" : "Unpaid"}
+                    </span>
+                    {order.is_billed && (
+                      <span className="hidden sm:inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                        Billed
+                      </span>
+                    )}
+                    <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap hidden lg:block">
+                      {new Date(order.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
                   {/* Print button */}
                   <button
                     onClick={(e) => { e.stopPropagation(); printOrder(order, "invoice"); markAsBilled([order.id]); }}
