@@ -33,6 +33,8 @@ export interface Product {
   image_url: string | null;
   images: string[];
   material: string | null;
+  colours: string[];
+  sizes: string[];
   care_instructions: string[];
   details: ProductDetails | null;
   in_stock: boolean;

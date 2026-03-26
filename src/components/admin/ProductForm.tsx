@@ -51,6 +51,10 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const [careInstructions, setCareInstructions] = useState<string[]>(
     product?.care_instructions || ["Hand wash cold", "Dry in shade"]
   );
+  const [colours, setColours] = useState<string[]>(product?.colours || []);
+  const [colourInput, setColourInput] = useState("");
+  const [sizes, setSizes] = useState<string[]>(product?.sizes || []);
+  const [sizeInput, setSizeInput] = useState("");
   const [weight, setWeight] = useState(product?.weight?.toString() || "0.2");
   const [length, setLength] = useState(product?.length?.toString() || "13");
   const [breadth, setBreadth] = useState(product?.breadth?.toString() || "7");
@@ -131,6 +135,8 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         in_stock: (parseInt(stockQuantity) || 0) > 0,
         care_instructions: careInstructions.filter(Boolean),
         display_order: product?.display_order ?? 0,
+        colours,
+        sizes,
         weight: parseFloat(weight) || 0.2,
         length: parseFloat(length) || 13,
         breadth: parseFloat(breadth) || 7,
@@ -147,6 +153,14 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
     setCareInstructions(careInstructions.filter((_, i) => i !== index));
   const updateCareInstruction = (index: number, value: string) =>
     setCareInstructions(careInstructions.map((v, i) => (i === index ? value : v)));
+
+  const addTag = (value: string, list: string[], setList: (v: string[]) => void, setInput: (v: string) => void) => {
+    const trimmed = value.trim();
+    if (trimmed && !list.includes(trimmed)) setList([...list, trimmed]);
+    setInput("");
+  };
+  const removeTag = (index: number, list: string[], setList: (v: string[]) => void) =>
+    setList(list.filter((_, i) => i !== index));
 
   return (
     <div className="fixed inset-0 bg-black/60 z-50 flex items-start justify-center overflow-y-auto py-4 px-4 backdrop-blur-sm">
@@ -294,6 +308,63 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
                   onChange={(e) => setStockQuantity(e.target.value)}
                   className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm"
                 />
+              </div>
+            </div>
+
+            {/* === COLOURS & SIZES === */}
+            <div className="grid grid-cols-2 gap-3">
+              {/* Colours */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Colours</label>
+                <div className="flex flex-wrap gap-1.5 mb-1.5 min-h-[28px]">
+                  {colours.map((c, i) => (
+                    <span key={i} className="inline-flex items-center gap-1 bg-coral/10 text-coral text-xs px-2 py-0.5 rounded-full">
+                      {c}
+                      <button type="button" onClick={() => removeTag(i, colours, setColours)} className="hover:text-red-500">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                <div className="flex gap-1.5">
+                  <input
+                    type="text" value={colourInput}
+                    onChange={(e) => setColourInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(colourInput, colours, setColours, setColourInput); } }}
+                    placeholder="e.g. White"
+                    className="flex-1 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm"
+                  />
+                  <button type="button" onClick={() => addTag(colourInput, colours, setColours, setColourInput)} className="px-2.5 py-1.5 bg-coral/10 text-coral rounded-lg hover:bg-coral/20 transition-colors">
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Sizes */}
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Sizes</label>
+                <div className="flex flex-wrap gap-1.5 mb-1.5 min-h-[28px]">
+                  {sizes.map((s, i) => (
+                    <span key={i} className="inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 text-xs px-2 py-0.5 rounded-full">
+                      {s}
+                      <button type="button" onClick={() => removeTag(i, sizes, setSizes)} className="hover:text-red-500">
+                        <X className="w-3 h-3" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+                <div className="flex gap-1.5">
+                  <input
+                    type="text" value={sizeInput}
+                    onChange={(e) => setSizeInput(e.target.value)}
+                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(sizeInput, sizes, setSizes, setSizeInput); } }}
+                    placeholder="e.g. S, M, L, XL"
+                    className="flex-1 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm"
+                  />
+                  <button type="button" onClick={() => addTag(sizeInput, sizes, setSizes, setSizeInput)} className="px-2.5 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             </div>
 
