@@ -9,6 +9,11 @@ import { Loader2, Save } from "lucide-react";
 import toast from "react-hot-toast";
 import type { SiteSettings } from "@/types";
 
+const inputClass = "w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent";
+const labelClass = "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1";
+const cardClass = "bg-white dark:bg-gray-800 rounded-xl p-6 shadow-sm border border-gray-200 dark:border-gray-700 space-y-4";
+const cardTitleClass = "font-semibold text-gray-900 dark:text-white";
+
 export default function AdminSettingsPage() {
   const { data: settings, loading } = useSupabaseQuery(getSettings);
   const [saving, setSaving] = useState(false);
@@ -74,18 +79,18 @@ export default function AdminSettingsPage() {
     <AdminShell>
       <div className="space-y-6 max-w-2xl">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Store Settings</h1>
-          <p className="text-gray-500 mt-1">Configure your store details</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Store Settings</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">Configure your store details</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Payment Options */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 space-y-4">
-            <h2 className="font-semibold text-gray-900">Payment Options</h2>
+          <div className={cardClass}>
+            <h2 className={cardTitleClass}>Payment Options</h2>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-gray-700">Cash on Delivery (COD)</p>
-                <p className="text-xs text-gray-400 mt-0.5">Allow customers to pay cash when the order is delivered</p>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Cash on Delivery (COD)</p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Allow customers to pay cash when the order is delivered</p>
               </div>
               <button
                 type="button"
@@ -93,7 +98,7 @@ export default function AdminSettingsPage() {
                 aria-checked={codEnabled}
                 onClick={() => setCodEnabled(!codEnabled)}
                 className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-coral focus:ring-offset-2 ${
-                  codEnabled ? "bg-coral" : "bg-gray-200"
+                  codEnabled ? "bg-coral" : "bg-gray-200 dark:bg-gray-600"
                 }`}
               >
                 <span
@@ -106,98 +111,62 @@ export default function AdminSettingsPage() {
           </div>
 
           {/* Store Information */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 space-y-4">
-            <h2 className="font-semibold text-gray-900">Store Information</h2>
+          <div className={cardClass}>
+            <h2 className={cardTitleClass}>Store Information</h2>
             <div className="grid md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Store Name</label>
-                <input
-                  type="text"
-                  value={storeName}
-                  onChange={(e) => setStoreName(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
-                />
+                <label className={labelClass}>Store Name</label>
+                <input type="text" value={storeName} onChange={(e) => setStoreName(e.target.value)} className={inputClass} />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Store Phone</label>
-                <input
-                  type="text"
-                  value={storePhone}
-                  onChange={(e) => setStorePhone(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
-                />
+                <label className={labelClass}>Store Phone</label>
+                <input type="text" value={storePhone} onChange={(e) => setStorePhone(e.target.value)} className={inputClass} />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Store Email</label>
-              <input
-                type="email"
-                value={storeEmail}
-                onChange={(e) => setStoreEmail(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
-              />
+              <label className={labelClass}>Store Email</label>
+              <input type="email" value={storeEmail} onChange={(e) => setStoreEmail(e.target.value)} className={inputClass} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Store Address</label>
-              <textarea
-                rows={2}
-                value={storeAddress}
-                onChange={(e) => setStoreAddress(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent resize-none"
-              />
+              <label className={labelClass}>Store Address</label>
+              <textarea rows={2} value={storeAddress} onChange={(e) => setStoreAddress(e.target.value)} className={`${inputClass} resize-none`} />
             </div>
           </div>
 
           {/* WhatsApp */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 space-y-4">
-            <h2 className="font-semibold text-gray-900">WhatsApp</h2>
+          <div className={cardClass}>
+            <h2 className={cardTitleClass}>WhatsApp</h2>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">WhatsApp Number</label>
+              <label className={labelClass}>WhatsApp Number</label>
               <input
-                type="text"
-                value={whatsappNumber}
-                onChange={(e) => setWhatsappNumber(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
-                placeholder="918714090510"
+                type="text" value={whatsappNumber} onChange={(e) => setWhatsappNumber(e.target.value)}
+                className={inputClass} placeholder="918714090510"
               />
-              <p className="text-xs text-gray-400 mt-1">Include country code without + (e.g., 918714090510)</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Include country code without + (e.g., 918714090510)</p>
             </div>
           </div>
 
           {/* Policies */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 space-y-4">
-            <h2 className="font-semibold text-gray-900">Policies & Info</h2>
+          <div className={cardClass}>
+            <h2 className={cardTitleClass}>Policies & Info</h2>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Shipping Information</label>
-              <textarea
-                rows={3}
-                value={shippingInfo}
-                onChange={(e) => setShippingInfo(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent resize-none"
-              />
+              <label className={labelClass}>Shipping Information</label>
+              <textarea rows={3} value={shippingInfo} onChange={(e) => setShippingInfo(e.target.value)} className={`${inputClass} resize-none`} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Return Policy</label>
-              <textarea
-                rows={3}
-                value={returnPolicy}
-                onChange={(e) => setReturnPolicy(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent resize-none"
-              />
+              <label className={labelClass}>Return Policy</label>
+              <textarea rows={3} value={returnPolicy} onChange={(e) => setReturnPolicy(e.target.value)} className={`${inputClass} resize-none`} />
             </div>
           </div>
 
           {/* Announcement */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 space-y-4">
-            <h2 className="font-semibold text-gray-900">Announcement Banner</h2>
+          <div className={cardClass}>
+            <h2 className={cardTitleClass}>Announcement Banner</h2>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Announcement Text</label>
+              <label className={labelClass}>Announcement Text</label>
               <input
-                type="text"
-                value={announcement}
-                onChange={(e) => setAnnouncement(e.target.value)}
-                className="w-full px-3 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
-                placeholder="Leave empty to hide banner"
+                type="text" value={announcement} onChange={(e) => setAnnouncement(e.target.value)}
+                className={inputClass} placeholder="Leave empty to hide banner"
               />
             </div>
           </div>

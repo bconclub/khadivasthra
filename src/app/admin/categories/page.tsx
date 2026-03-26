@@ -65,8 +65,8 @@ export default function AdminCategoriesPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Categories</h1>
-            <p className="text-gray-500 mt-1">{allCategories.length} categories</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Categories</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">{allCategories.length} categories</p>
           </div>
           <Button variant="primary" onClick={openCreate}>
             <Plus className="w-4 h-4 mr-2" /> Add Category
@@ -76,7 +76,7 @@ export default function AdminCategoriesPage() {
         {/* Form Modal */}
         {showForm && (
           <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center overflow-y-auto pt-8 pb-8 px-4">
-            <div className="bg-white rounded-xl p-6 max-w-lg w-full shadow-xl">
+            <div className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-lg w-full shadow-xl">
               <CategoryForm
                 category={editingCategory}
                 onSubmit={editingCategory ? handleUpdate : handleCreate}
@@ -92,11 +92,11 @@ export default function AdminCategoriesPage() {
             <Loader2 className="w-6 h-6 animate-spin text-coral" />
           </div>
         ) : (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+                  <tr className="text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider bg-gray-50 dark:bg-gray-900/50">
                     <th className="px-6 py-3">Order</th>
                     <th className="px-6 py-3">Category</th>
                     <th className="px-6 py-3">Slug</th>
@@ -104,31 +104,33 @@ export default function AdminCategoriesPage() {
                     <th className="px-6 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                   {allCategories.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-gray-400">
+                      <td colSpan={5} className="px-6 py-12 text-center text-gray-400 dark:text-gray-500">
                         No categories yet
                       </td>
                     </tr>
                   ) : (
                     allCategories.map((category) => (
-                      <tr key={category.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 text-sm text-gray-500">
+                      <tr key={category.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                        <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
                           {category.display_order}
                         </td>
                         <td className="px-6 py-4">
-                          <p className="font-medium text-gray-900">{category.name}</p>
+                          <p className="font-medium text-gray-900 dark:text-white">{category.name}</p>
                           {category.description && (
-                            <p className="text-xs text-gray-400 line-clamp-1 mt-1">{category.description}</p>
+                            <p className="text-xs text-gray-400 dark:text-gray-500 line-clamp-1 mt-1">{category.description}</p>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-sm font-mono text-gray-500">
+                        <td className="px-6 py-4 text-sm font-mono text-gray-500 dark:text-gray-400">
                           {category.slug}
                         </td>
                         <td className="px-6 py-4">
                           <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
-                            category.is_active ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
+                            category.is_active
+                              ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                              : "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
                           }`}>
                             {category.is_active ? "Active" : "Hidden"}
                           </span>
@@ -137,13 +139,13 @@ export default function AdminCategoriesPage() {
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => openEdit(category)}
-                              className="p-2 text-gray-400 hover:text-coral rounded-lg hover:bg-gray-100 transition-colors"
+                              className="p-2 text-gray-400 hover:text-coral rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             >
                               <Pencil className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDelete(category)}
-                              className="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-gray-100 transition-colors"
+                              className="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>

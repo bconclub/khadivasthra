@@ -37,7 +37,6 @@ export default function AdminProductsPage() {
 
   const allProducts = products || [];
 
-  // Counts for visibility filter tabs
   const visibleCount = allProducts.filter((p) => p.is_active).length;
   const hiddenCount = allProducts.filter((p) => !p.is_active).length;
 
@@ -141,8 +140,8 @@ export default function AdminProductsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Products</h1>
-            <p className="text-gray-500 mt-1">{allProducts.length} total products</p>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Products</h1>
+            <p className="text-gray-500 dark:text-gray-400 mt-1">{allProducts.length} total products</p>
           </div>
           <div className="flex items-center gap-2">
             <Button
@@ -176,7 +175,7 @@ export default function AdminProductsPage() {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               visibilityFilter === "all"
                 ? "bg-coral text-white"
-                : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+                : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
             }`}
           >
             All ({allProducts.length})
@@ -186,7 +185,7 @@ export default function AdminProductsPage() {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors inline-flex items-center gap-1.5 ${
               visibilityFilter === "visible"
                 ? "bg-coral text-white"
-                : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+                : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
             }`}
           >
             <Eye className="w-3.5 h-3.5" /> Visible ({visibleCount})
@@ -196,7 +195,7 @@ export default function AdminProductsPage() {
             className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors inline-flex items-center gap-1.5 ${
               visibilityFilter === "hidden"
                 ? "bg-coral text-white"
-                : "bg-white text-gray-600 border border-gray-200 hover:bg-gray-50"
+                : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
             }`}
           >
             <EyeOff className="w-3.5 h-3.5" /> Hidden ({hiddenCount})
@@ -206,19 +205,19 @@ export default function AdminProductsPage() {
         {/* Search & Category Filters */}
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
             <input
               type="text"
               placeholder="Search products..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent"
             />
           </div>
           <select
             value={categoryFilter}
             onChange={(e) => setCategoryFilter(e.target.value)}
-            className="px-4 py-2 rounded-lg border border-gray-200 focus:ring-2 focus:ring-coral focus:border-transparent"
+            className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent"
           >
             <option value="">All Categories</option>
             {categories?.map((cat) => (
@@ -233,11 +232,11 @@ export default function AdminProductsPage() {
             <Loader2 className="w-6 h-6 animate-spin text-coral" />
           </div>
         ) : (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
-                  <tr className="text-left text-xs font-medium text-gray-500 uppercase tracking-wider bg-gray-50">
+                  <tr className="text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider bg-gray-50 dark:bg-gray-900/50">
                     <th className="px-6 py-3">Order</th>
                     <th className="px-6 py-3">Product</th>
                     <th className="px-6 py-3">Price</th>
@@ -247,22 +246,22 @@ export default function AdminProductsPage() {
                     <th className="px-6 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-100">
+                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                   {filtered.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center text-gray-400">
+                      <td colSpan={7} className="px-6 py-12 text-center text-gray-400 dark:text-gray-500">
                         No products found
                       </td>
                     </tr>
                   ) : (
                     filtered.map((product) => (
-                      <tr key={product.id} className={`hover:bg-gray-50 ${!product.is_active ? 'bg-gray-50/50' : ''}`}>
+                      <tr key={product.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 ${!product.is_active ? 'bg-gray-50/50 dark:bg-gray-900/30' : ''}`}>
                         <td className="px-6 py-4">
                           <div className="flex flex-col items-center gap-0.5">
                             <button
                               onClick={() => moveProduct(product.id, "up")}
                               disabled={filtered.indexOf(product) === 0}
-                              className="p-1 text-gray-400 hover:text-coral disabled:opacity-20 disabled:cursor-not-allowed rounded hover:bg-gray-100 transition-colors"
+                              className="p-1 text-gray-400 hover:text-coral disabled:opacity-20 disabled:cursor-not-allowed rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                               title="Move up"
                             >
                               <ArrowUp className="w-3.5 h-3.5" />
@@ -270,7 +269,7 @@ export default function AdminProductsPage() {
                             <button
                               onClick={() => moveProduct(product.id, "down")}
                               disabled={filtered.indexOf(product) === filtered.length - 1}
-                              className="p-1 text-gray-400 hover:text-coral disabled:opacity-20 disabled:cursor-not-allowed rounded hover:bg-gray-100 transition-colors"
+                              className="p-1 text-gray-400 hover:text-coral disabled:opacity-20 disabled:cursor-not-allowed rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                               title="Move down"
                             >
                               <ArrowDown className="w-3.5 h-3.5" />
@@ -283,38 +282,37 @@ export default function AdminProductsPage() {
                               <img
                                 src={product.image_url}
                                 alt={product.name}
-                                className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-gray-200"
+                                className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-gray-200 dark:border-gray-700"
                               />
                             ) : (
-                              <div className="w-10 h-10 rounded-lg bg-gray-100 flex-shrink-0 flex items-center justify-center">
-                                <span className="text-gray-400 text-xs">No img</span>
+                              <div className="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex-shrink-0 flex items-center justify-center">
+                                <span className="text-gray-400 dark:text-gray-500 text-xs">No img</span>
                               </div>
                             )}
                             {!product.is_active && (
-                              <span className="flex-shrink-0 w-2 h-2 rounded-full bg-gray-300" title="Hidden" />
+                              <span className="flex-shrink-0 w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600" title="Hidden" />
                             )}
                             <div>
-                              <p className={`font-medium line-clamp-1 ${product.is_active ? 'text-gray-900' : 'text-gray-500'}`}>{product.name}</p>
-                              <p className="text-xs text-gray-400 font-mono">{product.slug}</p>
+                              <p className={`font-medium line-clamp-1 ${product.is_active ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>{product.name}</p>
+                              <p className="text-xs text-gray-400 dark:text-gray-500 font-mono">{product.slug}</p>
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                        <td className="px-6 py-4 text-sm font-medium text-gray-900 dark:text-white">
                           ₹{Number(product.price).toLocaleString()}
                         </td>
                         <td className="px-6 py-4">
                           <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
                             (product.stock_quantity || 0) > 10
-                              ? 'bg-green-100 text-green-700'
+                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
                               : (product.stock_quantity || 0) > 0
-                                ? 'bg-amber-100 text-amber-700'
-                                : 'bg-red-100 text-red-600'
+                                ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+                                : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
                           }`}>
                             {(product.stock_quantity || 0) > 0 ? product.stock_quantity : 'Out'}
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          {/* Toggle Switch */}
                           <button
                             onClick={() => toggleActive(product)}
                             className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-coral focus:ring-offset-2"
@@ -335,12 +333,12 @@ export default function AdminProductsPage() {
                             onClick={() => toggleFeatured(product)}
                             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
                               product.is_featured
-                                ? "bg-amber-100 text-amber-700 hover:bg-amber-200"
-                                : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                                ? "bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/30 dark:text-amber-400 dark:hover:bg-amber-900/50"
+                                : "bg-gray-100 text-gray-400 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-500 dark:hover:bg-gray-600"
                             }`}
                             title={product.is_featured ? "Remove from featured" : "Mark as featured"}
                           >
-                            <Star className={`w-3.5 h-3.5 ${product.is_featured ? 'fill-amber-500' : ''}`} />
+                            <Star className={`w-3.5 h-3.5 ${product.is_featured ? 'fill-amber-500 dark:fill-amber-400' : ''}`} />
                             {product.is_featured ? "Featured" : "Not featured"}
                           </button>
                         </td>
@@ -348,14 +346,14 @@ export default function AdminProductsPage() {
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => openEdit(product)}
-                              className="p-2 text-gray-400 hover:text-coral rounded-lg hover:bg-gray-100 transition-colors"
+                              className="p-2 text-gray-400 hover:text-coral rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                               title="Edit product"
                             >
                               <Pencil className="w-4 h-4" />
                             </button>
                             <button
                               onClick={() => handleDelete(product)}
-                              className="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-gray-100 transition-colors"
+                              className="p-2 text-gray-400 hover:text-red-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                               title="Delete product"
                             >
                               <Trash2 className="w-4 h-4" />
