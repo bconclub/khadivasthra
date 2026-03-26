@@ -75,8 +75,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   return (
     <div className={cn("min-h-screen flex", dark ? "dark" : "")}>
       <div className="min-h-screen flex flex-1 bg-gray-50 dark:bg-gray-900 transition-colors">
-        {/* Desktop Sidebar — collapses to icons, expands on hover */}
-        <aside className="hidden lg:flex lg:flex-col w-16 hover:w-52 transition-[width] duration-200 ease-in-out overflow-hidden group bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex-shrink-0">
+        {/* Desktop Sidebar — fixed overlay, collapses to icons, expands on hover */}
+        <aside className="hidden lg:flex lg:flex-col fixed top-0 left-0 h-screen z-50 w-16 hover:w-52 transition-[width] duration-200 ease-in-out overflow-hidden group bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700">
           <div className="h-16 px-3 border-b border-gray-100 dark:border-gray-700 flex items-center overflow-hidden">
             <Link href="/admin" className="flex items-center gap-3 overflow-hidden">
               <div className="w-8 h-8 bg-coral rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0">K</div>
@@ -185,8 +185,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           )}
         </div>
 
-        {/* Main Content */}
-        <main className="flex-1 min-w-0 overflow-x-hidden lg:overflow-y-auto">
+        {/* Main Content — offset by collapsed sidebar width */}
+        <main className="flex-1 min-w-0 overflow-x-hidden lg:overflow-y-auto lg:pl-16">
           <div className="lg:p-8 p-4 pt-18 lg:pt-8">
             {children}
           </div>
