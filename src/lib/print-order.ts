@@ -181,6 +181,7 @@ function generateInvoiceHTML(order: Order): string {
 
 function generateStickerHTML(order: Order): string {
   const isCod = order.payment_method === 'cod';
+  const codCharges = Number(order.cod_charges) || 0;
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const totalPcs = order.items.reduce((sum, item) => sum + item.quantity, 0);
   const itemLines = order.items.map((item) =>
@@ -245,8 +246,9 @@ function generateStickerHTML(order: Order): string {
     <div class="checkbox-group">
       <span class="cb"><span class="cb-box${isCod ? ' checked' : ''}">${isCod ? '✓' : ''}</span> COD</span>
       <span class="cb"><span class="cb-box${!isCod ? ' checked' : ''}">${!isCod ? '✓' : ''}</span> PREPAID</span>
+      ${isCod ? `<span style="font-size:14px; margin-left:8px;">${inr(order.total)}</span>` : ''}
     </div>
-    ${isCod ? `<span style="font-size:14px;">${inr(order.total)}</span>` : ''}
+    <span style="font-size:11px; font-weight:700; letter-spacing:0.5px;">CID: 1248959333</span>
   </div>
 
   <!-- Article Number (COD only) -->
@@ -274,6 +276,7 @@ function generateStickerHTML(order: Order): string {
   <div class="row-section items-section">
     <div class="items-heading">${totalPcs} ITEM${totalPcs !== 1 ? 'S' : ''}</div>
     ${itemLines}
+    ${codCharges > 0 ? `<div class="item-row"><span>COD Charges (1.6%)</span><span>${inr(codCharges)}</span></div>` : ''}
     <div class="items-total"><span>Total</span><span>${inr(order.total)}</span></div>
   </div>
 
