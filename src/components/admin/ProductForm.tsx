@@ -52,7 +52,6 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
     product?.care_instructions || ["Hand wash cold", "Dry in shade"]
   );
   const [colours, setColours] = useState<string[]>(product?.colours || []);
-  const [colourInput, setColourInput] = useState("");
   const [sizes, setSizes] = useState<string[]>(product?.sizes || []);
   const [sizeInput, setSizeInput] = useState("");
   const [weight, setWeight] = useState(product?.weight?.toString() || "0.2");
@@ -326,18 +325,25 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
                     </span>
                   ))}
                 </div>
-                <div className="flex gap-1.5">
-                  <input
-                    type="text" value={colourInput}
-                    onChange={(e) => setColourInput(e.target.value)}
-                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(colourInput, colours, setColours, setColourInput); } }}
-                    placeholder="e.g. White"
-                    className="flex-1 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm"
-                  />
-                  <button type="button" onClick={() => addTag(colourInput, colours, setColours, setColourInput)} className="px-2.5 py-1.5 bg-coral/10 text-coral rounded-lg hover:bg-coral/20 transition-colors">
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
+                <select
+                  value=""
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val && !colours.includes(val)) setColours([...colours, val]);
+                  }}
+                  className="w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm"
+                >
+                  <option value="">+ Add colour</option>
+                  {[
+                    "White","Off-White","Cream","Ivory","Gold","Silver",
+                    "Yellow","Light Yellow","Saffron","Orange","Pink","Rose",
+                    "Red","Maroon","Purple","Violet","Blue","Navy Blue",
+                    "Sky Blue","Green","Light Green","Olive","Brown","Beige",
+                    "Grey","Black","Multi-colour",
+                  ].filter(c => !colours.includes(c)).map(c => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
               </div>
 
               {/* Sizes */}

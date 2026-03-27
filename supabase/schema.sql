@@ -28,6 +28,8 @@ CREATE TABLE products (
   images TEXT[] DEFAULT '{}',
   material TEXT,
   care_instructions TEXT[] DEFAULT '{}',
+  colours TEXT[] DEFAULT '{}',
+  sizes TEXT[] DEFAULT '{}',
   details JSONB,
   in_stock BOOLEAN NOT NULL DEFAULT true,
   stock_quantity INTEGER NOT NULL DEFAULT 0,
