@@ -8,7 +8,7 @@ export async function getAllProducts(): Promise<ProductWithCategory[]> {
     .select('*, category:categories(*)')
     .order('display_order', { ascending: true })
     .order('created_at', { ascending: false });
-  if (error) throw error;
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error));
   return data || [];
 }
 
@@ -40,7 +40,7 @@ export async function createProduct(data: ProductFormData): Promise<Product> {
     .single();
   if (error) {
     if (error.code === '23505') throw new Error(`A product with this slug already exists. Please use a different name.`);
-    throw error;
+    throw new Error(error.message || error.details || JSON.stringify(error));
   }
   return product;
 }
@@ -52,13 +52,13 @@ export async function updateProduct(id: string, data: Partial<ProductFormData>):
     .eq('id', id)
     .select()
     .single();
-  if (error) throw error;
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error));
   return product;
 }
 
 export async function deleteProduct(id: string): Promise<void> {
   const { error } = await supabase.from('products').delete().eq('id', id);
-  if (error) throw error;
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error));
 }
 
 export async function updateProductOrder(updates: { id: string; display_order: number }[]): Promise<void> {
@@ -78,7 +78,7 @@ export async function createCategory(data: CategoryFormData): Promise<Category> 
     .insert(data)
     .select()
     .single();
-  if (error) throw error;
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error));
   return category;
 }
 
@@ -89,13 +89,13 @@ export async function updateCategory(id: string, data: Partial<CategoryFormData>
     .eq('id', id)
     .select()
     .single();
-  if (error) throw error;
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error));
   return category;
 }
 
 export async function deleteCategory(id: string): Promise<void> {
   const { error } = await supabase.from('categories').delete().eq('id', id);
-  if (error) throw error;
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error));
 }
 
 // Banners CRUD
@@ -105,7 +105,7 @@ export async function createBanner(data: BannerFormData): Promise<Banner> {
     .insert(data)
     .select()
     .single();
-  if (error) throw error;
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error));
   return banner;
 }
 
@@ -116,13 +116,13 @@ export async function updateBanner(id: string, data: Partial<BannerFormData>): P
     .eq('id', id)
     .select()
     .single();
-  if (error) throw error;
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error));
   return banner;
 }
 
 export async function deleteBanner(id: string): Promise<void> {
   const { error } = await supabase.from('banners').delete().eq('id', id);
-  if (error) throw error;
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error));
 }
 
 export async function getBanners(): Promise<Banner[]> {
@@ -130,7 +130,7 @@ export async function getBanners(): Promise<Banner[]> {
     .from('banners')
     .select('*')
     .order('display_order', { ascending: true });
-  if (error) throw error;
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error));
   return data || [];
 }
 
@@ -143,7 +143,7 @@ export async function getActiveBanners(): Promise<Banner[]> {
     .or(`starts_at.is.null,starts_at.lte.${now}`)
     .or(`ends_at.is.null,ends_at.gte.${now}`)
     .order('display_order', { ascending: true });
-  if (error) throw error;
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error));
   return data || [];
 }
 
@@ -177,7 +177,7 @@ export async function triggerSiteDeploy(): Promise<void> {
 // Delete an order
 export async function deleteOrder(id: string): Promise<void> {
   const { error } = await supabase.from('orders').delete().eq('id', id);
-  if (error) throw error;
+  if (error) throw new Error(error.message || error.details || JSON.stringify(error));
 }
 
 // Dashboard stats
