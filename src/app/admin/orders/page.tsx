@@ -966,7 +966,7 @@ export default function AdminOrdersPage() {
                       </span>
                     )}
                     <span className="text-xs text-gray-400 dark:text-gray-500 whitespace-nowrap hidden lg:block">
-                      {new Date(order.created_at).toLocaleDateString()}
+                      {new Date(order.created_at).toLocaleDateString()} {new Date(order.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
                   {/* Print button */}
