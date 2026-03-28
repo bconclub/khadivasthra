@@ -213,10 +213,10 @@ function generateStickerHTML(order: Order): string {
   .cb-box.checked { background:#000; color:#fff; }
 
   /* Article Number */
-  .article-no { font-size:12px; font-weight:600; color:#333; padding:6px 12px; border-bottom:2px solid #000; }
+  .article-no { font-size:12px; font-weight:600; color:#000; padding:6px 12px; border-bottom:2px solid #000; }
 
   /* From */
-  .from-label, .to-label { font-size:10px; font-weight:700; letter-spacing:1px; color:#888; margin-bottom:4px; }
+  .from-label, .to-label { font-size:10px; font-weight:700; letter-spacing:1px; color:#000; margin-bottom:4px; }
   .from-section { font-size:11px; line-height:1.5; }
   .from-name { font-weight:700; font-size:12px; }
 
@@ -230,7 +230,7 @@ function generateStickerHTML(order: Order): string {
 
   /* Items & Total */
   .items-section { font-size:11px; line-height:1.4; }
-  .items-heading { font-size:10px; font-weight:700; letter-spacing:1px; color:#888; margin-bottom:4px; }
+  .items-heading { font-size:10px; font-weight:700; letter-spacing:1px; color:#000; margin-bottom:4px; }
   .item-row { display:flex; justify-content:space-between; padding:2px 0; }
   .items-total { display:flex; justify-content:space-between; border-top:1px solid #000; margin-top:4px; padding-top:4px; font-size:12px; font-weight:800; }
 
@@ -282,10 +282,10 @@ function generateStickerHTML(order: Order): string {
 
   <!-- Logo Footer -->
   <div class="logo-footer">
-    <img src="${origin}/logo_languages/Malayalam.webp" alt="Khadi Vasthra Malayalam" />
-    <img src="${origin}/logo_languages/Tamil.png" alt="Khadi Vasthra Tamil" />
-    <img src="${origin}/logo_languages/Kannada.webp" alt="Khadi Vasthra Kannada" />
-    <img src="${origin}/logo_languages/English.webp" alt="Khadi Vasthra English" />
+    <img src="${origin}/logo_languages/Artboard%201.png" alt="Khadi Vasthra logo 1" />
+    <img src="${origin}/logo_languages/Artboard%202.png" alt="Khadi Vasthra logo 2" />
+    <img src="${origin}/logo_languages/Artboard%203.png" alt="Khadi Vasthra logo 3" />
+    <img src="${origin}/logo_languages/Artboard%204.png" alt="Khadi Vasthra logo 4" />
   </div>
 </div>
 
@@ -367,8 +367,8 @@ function generateBulkHTML(orders: Order[], type: 'invoice' | 'sticker'): string 
   .cb { display:inline-flex; align-items:center; gap:4px; }
   .cb-box { width:16px; height:16px; border:2px solid #000; display:inline-flex; align-items:center; justify-content:center; font-size:14px; font-weight:900; }
   .cb-box.checked { background:#000; color:#fff; }
-  .article-no { font-size:12px; font-weight:600; color:#333; padding:6px 12px; border-bottom:2px solid #000; }
-  .from-label, .to-label { font-size:10px; font-weight:700; letter-spacing:1px; color:#888; margin-bottom:4px; }
+  .article-no { font-size:12px; font-weight:600; color:#000; padding:6px 12px; border-bottom:2px solid #000; }
+  .from-label, .to-label { font-size:10px; font-weight:700; letter-spacing:1px; color:#000; margin-bottom:4px; }
   .from-section { font-size:11px; line-height:1.5; }
   .from-name { font-weight:700; font-size:12px; }
   .to-section { line-height:1.5; }
@@ -378,7 +378,7 @@ function generateBulkHTML(orders: Order[], type: 'invoice' | 'sticker'): string 
   .to-state { font-size:12px; }
   .to-phone { font-size:12px; margin-top:4px; }
   .items-section { font-size:11px; line-height:1.4; }
-  .items-heading { font-size:10px; font-weight:700; letter-spacing:1px; color:#888; margin-bottom:4px; }
+  .items-heading { font-size:10px; font-weight:700; letter-spacing:1px; color:#000; margin-bottom:4px; }
   .item-row { display:flex; justify-content:space-between; padding:2px 0; }
   .items-total { display:flex; justify-content:space-between; border-top:1px solid #000; margin-top:4px; padding-top:4px; font-size:12px; font-weight:800; }
   .logo-footer { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border-top:2px solid #000; background:#000; }

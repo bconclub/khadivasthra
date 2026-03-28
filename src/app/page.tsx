@@ -49,11 +49,12 @@ export default function Home() {
   const [logoScale, setLogoScale] = useState(1);
   const [logoOpacity, setLogoOpacity] = useState(1);
 
-  // Multilingual logo cycling — starts Tamil, cycles once, lands on Malayalam
+  // Multilingual logo cycling
   const heroLogos = [
-    "/logo_languages/Kannada.webp",    // Kannada
-    "/logo_languages/English.webp",    // English
-    "/logo_languages/Malayalam.webp",  // Malayalam (final)
+    "/logo_languages/Artboard 1.png",
+    "/logo_languages/Artboard 2.png",
+    "/logo_languages/Artboard 3.png",
+    "/logo_languages/Artboard 4.png",
   ];
   const [logoIndex, setLogoIndex] = useState(0);
 
