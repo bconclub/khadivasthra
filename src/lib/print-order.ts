@@ -194,7 +194,7 @@ function generateStickerHTML(order: Order): string {
 <meta charset="utf-8">
 <title>Sticker - ${esc(order.order_number)}</title>
 <style>
-  * { margin:0; padding:0; box-sizing:border-box; }
+  * { margin:0; padding:0; box-sizing:border-box; color:#000 !important; -webkit-text-fill-color:#000 !important; }
   body { font-family: 'Segoe UI', Tahoma, sans-serif; color:#000; }
   @page { size:3.93in 5.9in; margin:3mm; }
   @media print {
