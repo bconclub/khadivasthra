@@ -51,10 +51,10 @@ export default function Home() {
 
   // Multilingual logo cycling
   const heroLogos = [
-    "/logo_languages/Artboard 1.png",
-    "/logo_languages/Artboard 2.png",
-    "/logo_languages/Artboard 3.png",
-    "/logo_languages/Artboard 4.png",
+    "/logo-lanuages_hero/Artboard 1.png",
+    "/logo-lanuages_hero/Artboard 2.png",
+    "/logo-lanuages_hero/Artboard 3.png",
+    "/logo-lanuages_hero/Artboard 4.png",
   ];
   const [logoIndex, setLogoIndex] = useState(0);
 
