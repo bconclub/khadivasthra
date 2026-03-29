@@ -111,14 +111,22 @@ export default function AdminProductsPage() {
     const swapIdx = direction === "up" ? idx - 1 : idx + 1;
     if (swapIdx < 0 || swapIdx >= list.length) return;
 
-    const currentOrder = list[idx].display_order ?? idx;
-    const swapOrder = list[swapIdx].display_order ?? swapIdx;
+    // If all display_orders are the same (e.g. all 0), assign positions from current index first
+    const allSame = list.every((p) => (p.display_order ?? 0) === (list[0].display_order ?? 0));
+    const getOrder = (i: number) => allSame ? i : (list[i].display_order ?? i);
+
+    const currentOrder = getOrder(idx);
+    const swapOrder = getOrder(swapIdx);
 
     try {
-      await updateProductOrder([
-        { id: list[idx].id, display_order: swapOrder },
-        { id: list[swapIdx].id, display_order: currentOrder },
-      ]);
+      const updates: { id: string; display_order: number }[] = allSame
+        // Re-index everyone so we have a stable base, then swap the two
+        ? list.map((p, i) => ({ id: p.id, display_order: i === idx ? swapIdx : i === swapIdx ? idx : i }))
+        : [
+            { id: list[idx].id, display_order: swapOrder },
+            { id: list[swapIdx].id, display_order: currentOrder },
+          ];
+      await updateProductOrder(updates);
       refetch();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to reorder");

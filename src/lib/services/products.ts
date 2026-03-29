@@ -44,7 +44,7 @@ export async function getBestSellingProducts(): Promise<ProductWithCategory[]> {
   return (data || []) as ProductWithCategory[];
 }
 
-async function sortByViewCount(products: ProductWithCategory[]): Promise<ProductWithCategory[]> {
+async function sortByOrderThenViews(products: ProductWithCategory[]): Promise<ProductWithCategory[]> {
   if (products.length === 0) return products;
   const { data: views } = await supabase
     .from('product_views')
@@ -52,7 +52,12 @@ async function sortByViewCount(products: ProductWithCategory[]): Promise<Product
     .in('product_id', products.map((p) => p.id));
   const counts: Record<string, number> = {};
   (views || []).forEach((v) => { counts[v.product_id] = (counts[v.product_id] || 0) + 1; });
-  return [...products].sort((a, b) => (counts[b.id] || 0) - (counts[a.id] || 0));
+  // Primary: display_order ascending; secondary: view count descending
+  return [...products].sort((a, b) => {
+    const orderDiff = (a.display_order ?? 0) - (b.display_order ?? 0);
+    if (orderDiff !== 0) return orderDiff;
+    return (counts[b.id] || 0) - (counts[a.id] || 0);
+  });
 }
 
 export async function getProductsByCategory(categoryId: string): Promise<ProductWithCategory[]> {
@@ -62,7 +67,7 @@ export async function getProductsByCategory(categoryId: string): Promise<Product
     .eq('category_id', categoryId)
     .eq('is_active', true);
   if (error) throw error;
-  return sortByViewCount(data || []);
+  return sortByOrderThenViews(data || []);
 }
 
 export async function getProductsByCategorySlug(slug: string): Promise<ProductWithCategory[]> {
