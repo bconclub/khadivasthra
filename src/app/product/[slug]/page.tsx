@@ -40,6 +40,8 @@ export default function ProductDetailPage() {
       [product?.id]
     );
     const [quantity, setQuantity] = useState(1);
+    const [selectedSize, setSelectedSize] = useState("");
+    const [selectedColour, setSelectedColour] = useState("");
     const [activeTab, setActiveTab] = useState<"details" | "specs" | "care">("details");
     const [imageError, setImageError] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
@@ -191,6 +193,52 @@ export default function ProductDetailPage() {
                     </p>
 
                     <div className="mt-auto space-y-8">
+                        {/* Colours */}
+                        {product.colours && product.colours.length > 0 && (
+                          <div>
+                            <p className="text-sm font-semibold text-text mb-2">
+                              Colour{selectedColour ? <span className="font-normal text-text-muted ml-1">— {selectedColour}</span> : ""}
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {product.colours.map((c) => (
+                                <button
+                                  key={c}
+                                  onClick={() => setSelectedColour(selectedColour === c ? "" : c)}
+                                  className={cn(
+                                    "px-3 py-1.5 rounded-full border text-sm font-medium transition-all",
+                                    selectedColour === c
+                                      ? "border-coral bg-coral/10 text-coral"
+                                      : "border-gray-200 text-text-muted hover:border-coral/50"
+                                  )}
+                                >{c}</button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Sizes */}
+                        {product.sizes && product.sizes.length > 0 && (
+                          <div>
+                            <p className="text-sm font-semibold text-text mb-2">
+                              Size{selectedSize ? <span className="font-normal text-text-muted ml-1">— {selectedSize}</span> : ""}
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {product.sizes.map((s) => (
+                                <button
+                                  key={s}
+                                  onClick={() => setSelectedSize(selectedSize === s ? "" : s)}
+                                  className={cn(
+                                    "min-w-[44px] px-3 py-1.5 rounded-lg border text-sm font-bold transition-all",
+                                    selectedSize === s
+                                      ? "border-coral bg-coral text-white"
+                                      : "border-gray-200 text-text hover:border-coral"
+                                  )}
+                                >{s}</button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
                         <div className="p-6 bg-white rounded-xl shadow-sm border border-cream/30">
                             <div className="flex items-center space-x-6 mb-6">
                                 <span className="font-medium text-text">Quantity</span>
@@ -313,6 +361,11 @@ export default function ProductDetailPage() {
                         </div>
                     )}
                 </div>
+            </div>
+
+            {/* Disclaimer */}
+            <div className="mb-10 px-4 py-3 bg-amber-50 border border-amber-200 rounded-xl text-amber-800 text-sm leading-relaxed">
+              <span className="font-semibold">Please note:</span> Not all products listed on this website are Khadi and pure handloom. We offer a curated range of cotton and blended fabrics. We kindly request you to check individual product descriptions carefully before placing your order.
             </div>
 
             {/* Related Products */}

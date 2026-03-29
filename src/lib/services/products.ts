@@ -44,16 +44,25 @@ export async function getBestSellingProducts(): Promise<ProductWithCategory[]> {
   return (data || []) as ProductWithCategory[];
 }
 
+async function sortByViewCount(products: ProductWithCategory[]): Promise<ProductWithCategory[]> {
+  if (products.length === 0) return products;
+  const { data: views } = await supabase
+    .from('product_views')
+    .select('product_id')
+    .in('product_id', products.map((p) => p.id));
+  const counts: Record<string, number> = {};
+  (views || []).forEach((v) => { counts[v.product_id] = (counts[v.product_id] || 0) + 1; });
+  return [...products].sort((a, b) => (counts[b.id] || 0) - (counts[a.id] || 0));
+}
+
 export async function getProductsByCategory(categoryId: string): Promise<ProductWithCategory[]> {
   const { data, error } = await supabase
     .from('products')
     .select('*, category:categories(*)')
     .eq('category_id', categoryId)
-    .eq('is_active', true)
-    .order('display_order', { ascending: true })
-    .order('created_at', { ascending: false });
+    .eq('is_active', true);
   if (error) throw error;
-  return data || [];
+  return sortByViewCount(data || []);
 }
 
 export async function getProductsByCategorySlug(slug: string): Promise<ProductWithCategory[]> {

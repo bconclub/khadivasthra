@@ -14,23 +14,34 @@ const ProductDetailPage = dynamic(
   )}
 );
 
+const ShopCategoryClient = dynamic(
+  () => import("./shop/[category]/ShopCategoryClient"),
+  { ssr: false, loading: () => (
+    <div className="container mx-auto px-4 max-w-7xl py-20 flex justify-center">
+      <Loader2 className="w-8 h-8 animate-spin text-coral" />
+    </div>
+  )}
+);
+
 export default function NotFound() {
-  const [pageType, setPageType] = useState<"loading" | "product" | "404">("loading");
+  const [pageType, setPageType] = useState<"loading" | "product" | "category" | "404">("loading");
+  const [categorySlug, setCategorySlug] = useState("");
 
   useEffect(() => {
     const path = window.location.pathname;
     if (/^\/product\/[^/]+\/?$/.test(path)) {
       setPageType("product");
+    } else if (/^\/shop\/[^/]+\/?$/.test(path)) {
+      setCategorySlug(path.split('/')[2]);
+      setPageType("category");
     } else {
       setPageType("404");
     }
   }, []);
 
   if (pageType === "loading") return null;
-
-  if (pageType === "product") {
-    return <ProductDetailPage />;
-  }
+  if (pageType === "product") return <ProductDetailPage />;
+  if (pageType === "category") return <ShopCategoryClient slug={categorySlug} />;
 
   return (
     <div className="container mx-auto px-4 max-w-7xl py-20 text-center">

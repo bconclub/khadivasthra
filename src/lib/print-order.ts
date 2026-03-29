@@ -170,8 +170,9 @@ function generateInvoiceHTML(order: Order): string {
   </div>
 </div>
 
-<div class="no-print" style="text-align:center;margin-top:24px;">
+<div class="no-print" style="text-align:center;margin-top:24px;display:flex;gap:12px;justify-content:center;">
   <button onclick="window.print()" style="padding:10px 24px;background:#222;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;">Print Invoice</button>
+  <button onclick="(async()=>{try{await navigator.share({title:'Invoice ${esc(order.order_number)}',text:'Invoice from KHADI VASTHRA',url:window.location.href});}catch(e){navigator.clipboard?.writeText(window.location.href).then(()=>alert('Link copied!'));}})();" style="padding:10px 24px;background:#4b5563;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;">Share Invoice</button>
 </div>
 </body>
 </html>`;
