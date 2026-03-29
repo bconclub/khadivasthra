@@ -129,7 +129,7 @@ export default function Home() {
           <span className="hero-section__badge inline-block px-4 py-1.5 border border-white/30 rounded-full text-sm tracking-widest uppercase font-medium bg-white/20 backdrop-blur-sm text-white mb-4">
             Authentic Kerala Handloom
           </span>
-          <div id="hero-logo" className="hero-section__logo-wrapper relative flex justify-center items-center mb-4 w-full max-w-[90vw] md:max-w-4xl lg:max-w-5xl mx-auto aspect-[5/2]"
+          <div id="hero-logo" className="hero-section__logo-wrapper relative flex justify-center items-center mb-4 w-full max-w-[70vw] md:max-w-xl lg:max-w-2xl mx-auto aspect-[5/2]"
             style={{ transform: `scale(${logoScale})`, opacity: logoOpacity, transition: "transform 100ms ease-out, opacity 100ms ease-out" }}
           >
             {heroLogos.map((src, i) => (
@@ -148,12 +148,26 @@ export default function Home() {
           <p className="hero-section__description text-xl md:text-2xl text-white/95 max-w-2xl mx-auto font-light leading-relaxed drop-shadow-md mb-6">
             Pure comfort. Timeless style. Crafted in cotton, inspired by heritage.
           </p>
-          <div className="hero-section__actions flex flex-col sm:flex-row items-center justify-center gap-6">
+          <div className="hero-section__actions flex flex-col items-center justify-center gap-4">
             <Link href="/shop" className="hero-section__cta-primary">
               <Button size="lg" className="bg-orange hover:bg-orange-dark text-white font-bold min-w-[200px] h-14 text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                 Shop Now
               </Button>
             </Link>
+            <div className="flex flex-wrap justify-center gap-2">
+              {[
+                { label: "Kavi Mundu", href: "/shop/kavi-mundu" },
+                { label: "Printed Mundu", href: "/shop/printed-mundu" },
+                { label: "Set Mundu", href: "/shop/set-mundu" },
+                { label: "Set Sarees", href: "/shop/set-sarees" },
+                { label: "Men's Shirts", href: "/shop/men-shirts" },
+              ].map(({ label, href }) => (
+                <Link key={href} href={href}
+                  className="px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white text-xs font-medium tracking-wide transition-all hover:-translate-y-0.5">
+                  {label}
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </section>
