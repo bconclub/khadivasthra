@@ -32,7 +32,7 @@ export default function NotFound() {
     if (/^\/product\/[^/]+\/?$/.test(path)) {
       setPageType("product");
     } else if (/^\/shop\/[^/]+\/?$/.test(path)) {
-      setCategorySlug(path.split('/')[2]);
+      setCategorySlug(decodeURIComponent(path.split('/')[2]).trim().toLowerCase());
       setPageType("category");
     } else {
       setPageType("404");

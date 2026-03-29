@@ -66,11 +66,15 @@ export async function getProductsByCategory(categoryId: string): Promise<Product
 }
 
 export async function getProductsByCategorySlug(slug: string): Promise<ProductWithCategory[]> {
-  const { data: category } = await supabase
-    .from('categories')
-    .select('id')
-    .eq('slug', slug)
-    .single();
+  const normalized = decodeURIComponent(slug).trim().toLowerCase();
+  let category: { id: string } | null = null;
+  const { data: exact } = await supabase.from('categories').select('id').eq('slug', normalized).single();
+  if (exact) {
+    category = exact;
+  } else {
+    const { data: all } = await supabase.from('categories').select('id, slug');
+    category = (all || []).find(c => c.slug.trim().toLowerCase() === normalized) || null;
+  }
   if (!category) return [];
   return getProductsByCategory(category.id);
 }

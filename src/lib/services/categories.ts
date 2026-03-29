@@ -21,13 +21,17 @@ export async function getAllCategories(): Promise<Category[]> {
 }
 
 export async function getCategoryBySlug(slug: string): Promise<Category | null> {
-  const { data, error } = await supabase
+  const normalized = decodeURIComponent(slug).trim().toLowerCase();
+  // Try exact match first
+  const { data: exact } = await supabase
     .from('categories')
     .select('*')
-    .eq('slug', slug)
+    .eq('slug', normalized)
     .single();
-  if (error && error.code !== 'PGRST116') throw error;
-  return data;
+  if (exact) return exact;
+  // Fallback: match all categories normalizing slugs (handles bad slugs with spaces/casing)
+  const { data: all } = await supabase.from('categories').select('*');
+  return (all || []).find(c => c.slug.trim().toLowerCase() === normalized) || null;
 }
 
 export async function getCategoryById(id: string): Promise<Category | null> {
