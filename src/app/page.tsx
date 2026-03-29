@@ -124,12 +124,12 @@ export default function Home() {
           priority
           quality={90}
         />
-        <div className="hero-section__overlay absolute inset-0 bg-black/30 z-0"></div>
+        <div className="hero-section__overlay absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/50 z-0"></div>
         <div className="hero-section__content container mx-auto px-4 max-w-7xl relative z-20 text-center max-w-4xl">
-          <span className="hero-section__badge inline-block px-4 py-1.5 border border-white/30 rounded-full text-sm tracking-widest uppercase font-medium bg-white/20 backdrop-blur-sm text-white mb-4">
+          <span className="hero-section__badge inline-block px-4 py-1.5 border border-orange/60 rounded-full text-xs tracking-[0.2em] uppercase font-semibold bg-orange/20 backdrop-blur-sm text-orange-100 mb-5 shadow-sm">
             Authentic Kerala Handloom
           </span>
-          <div id="hero-logo" className="hero-section__logo-wrapper relative flex justify-center items-center mb-4 w-full max-w-[70vw] md:max-w-xl lg:max-w-2xl mx-auto aspect-[5/2]"
+          <div id="hero-logo" className="hero-section__logo-wrapper relative flex justify-center items-center mb-3 w-full max-w-[65vw] md:max-w-lg lg:max-w-xl mx-auto aspect-[5/2]"
             style={{ transform: `scale(${logoScale})`, opacity: logoOpacity, transition: "transform 100ms ease-out, opacity 100ms ease-out" }}
           >
             {heroLogos.map((src, i) => (
@@ -145,12 +145,12 @@ export default function Home() {
               />
             ))}
           </div>
-          <p className="hero-section__description text-xl md:text-2xl text-white/95 max-w-2xl mx-auto font-light leading-relaxed drop-shadow-md mb-6">
+          <p className="hero-section__description text-base md:text-lg text-white/80 max-w-lg mx-auto font-light tracking-wide drop-shadow-md mb-7">
             Pure comfort. Timeless style. Crafted in cotton, inspired by heritage.
           </p>
-          <div className="hero-section__actions flex flex-col items-center justify-center gap-4">
+          <div className="hero-section__actions flex flex-col items-center justify-center gap-5">
             <Link href="/shop" className="hero-section__cta-primary">
-              <Button size="lg" className="bg-orange hover:bg-orange-dark text-white font-bold min-w-[200px] h-14 text-lg shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
+              <Button size="lg" className="bg-orange hover:bg-orange/90 text-white font-bold px-10 h-12 text-base rounded-full shadow-lg shadow-orange/30 hover:shadow-orange/50 hover:-translate-y-1 transition-all duration-300">
                 Shop Now
               </Button>
             </Link>
@@ -163,7 +163,7 @@ export default function Home() {
                 { label: "Men's Shirts", href: "/shop/men-shirts" },
               ].map(({ label, href }) => (
                 <Link key={href} href={href}
-                  className="px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/30 backdrop-blur-sm border border-white/30 text-white text-xs font-medium tracking-wide transition-all hover:-translate-y-0.5">
+                  className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/25 text-white/90 hover:text-white text-xs font-medium tracking-wide transition-all duration-200 hover:-translate-y-0.5 hover:border-white/50 shadow-sm">
                   {label}
                 </Link>
               ))}
