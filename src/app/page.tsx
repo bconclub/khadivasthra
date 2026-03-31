@@ -126,9 +126,6 @@ export default function Home() {
         />
         <div className="hero-section__overlay absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/50 z-0"></div>
         <div className="hero-section__content container mx-auto px-4 max-w-7xl relative z-20 text-center max-w-4xl">
-          <span className="hero-section__badge inline-block px-4 py-1.5 border border-orange/60 rounded-full text-xs tracking-[0.2em] uppercase font-semibold bg-orange/20 backdrop-blur-sm text-orange-100 mb-5 shadow-sm">
-            Authentic Kerala Handloom
-          </span>
           <div id="hero-logo" className="hero-section__logo-wrapper relative flex justify-center items-center mb-3 w-full max-w-[65vw] md:max-w-lg lg:max-w-xl mx-auto aspect-[5/2]"
             style={{ transform: `scale(${logoScale})`, opacity: logoOpacity, transition: "transform 100ms ease-out, opacity 100ms ease-out" }}
           >
@@ -146,7 +143,7 @@ export default function Home() {
             ))}
           </div>
           <p className="hero-section__description text-base md:text-lg text-white/80 max-w-lg mx-auto font-light tracking-wide drop-shadow-md mb-7">
-            Pure comfort. Timeless style. Crafted in cotton, inspired by heritage.
+            Pure comfort. Timeless style. Crafted in cotton, inspired by kerala heritage.
           </p>
           <div className="hero-section__actions flex flex-col items-center justify-center gap-5">
             <Link href="/shop" className="hero-section__cta-primary">
@@ -280,7 +277,7 @@ export default function Home() {
                 .map((categoryName) => {
                   const categoryProducts = productsByCategory[categoryName].slice(0, 8);
                   const matchedCategory = categories?.find((cat) => cat.name === categoryName);
-                  const categorySlug = matchedCategory?.slug || slugifyCategory(categoryName);
+                  const categorySlug = (matchedCategory?.slug || slugifyCategory(categoryName)).trim();
 
                   return (
                     <div key={categoryName} className="category-products-row">
