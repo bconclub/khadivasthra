@@ -21,6 +21,23 @@ export interface Category {
   updated_at: string;
 }
 
+export interface ProductVariant {
+  id: string;
+  product_id: string;
+  sku: string;
+  color_name: string;
+  color_hex: string;
+  size: string;
+  price_adjustment: number;
+  stock_quantity: number;
+  variant_image: string | null;
+  variant_images: string[];
+  is_active: boolean;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -43,6 +60,7 @@ export interface Product {
   is_featured: boolean;
   is_new: boolean;
   is_best_seller: boolean;
+  has_variants: boolean;
   display_order: number;
   weight: number;
   length: number;
@@ -54,6 +72,7 @@ export interface Product {
 
 export interface ProductWithCategory extends Product {
   category: Category;
+  variants?: ProductVariant[];
 }
 
 export interface OrderItem {
@@ -63,6 +82,9 @@ export interface OrderItem {
   price: number;
   quantity: number;
   subtotal: number;
+  variant_id?: string | null;
+  color?: string | null;
+  size?: string | null;
 }
 
 export type OrderStatus = 'pending' | 'confirmed' | 'billed' | 'shipped' | 'delivered' | 'cancelled';
@@ -166,7 +188,7 @@ export interface Banner {
   image_url: string;
   size: BannerSize;
   link_type: BannerLinkType;
-  link_value: string | null;  // product slug, category slug, or external URL
+  link_value: string | null;
   display_order: number;
   is_active: boolean;
   starts_at: string | null;
@@ -188,6 +210,9 @@ export interface CartItem {
   price: number;
   image: string;
   quantity: number;
+  variant_id?: string;
+  color?: string;
+  size?: string;
 }
 
 // Checkout form data

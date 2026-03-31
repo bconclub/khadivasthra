@@ -557,9 +557,17 @@ export default function CheckoutPage() {
 
                 <div className="space-y-3 mb-4">
                   {items.map((item) => (
-                    <div key={item.id} className="flex justify-between text-sm">
+                    <div key={`${item.id}${item.variant_id ? `-${item.variant_id}` : ''}`} className="flex justify-between text-sm">
                       <span className="text-text-muted line-clamp-1 flex-1 mr-2">
-                        {item.name} x {item.quantity}
+                        {item.name} 
+                        {(item.color || item.size) && (
+                          <span className="text-xs text-text-muted block">
+                            {item.color && `Color: ${item.color}`}
+                            {item.color && item.size && " / "}
+                            {item.size && `Size: ${item.size}`}
+                          </span>
+                        )}
+                        x {item.quantity}
                       </span>
                       <span className="font-medium text-text whitespace-nowrap">
                         ₹{item.price * item.quantity}

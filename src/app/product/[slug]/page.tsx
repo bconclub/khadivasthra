@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { useState, useEffect, useMemo } from "react";
+import { useParams, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/context/CartContext";
 import { ProductCard } from "@/components/product/ProductCard";
+import { ColorSwatches } from "@/components/product/ColorSwatches";
+import { SizeSelector } from "@/components/product/SizeSelector";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getProductBySlug, getRelatedProducts, recordProductView } from "@/lib/services/products";
-import type { ProductWithCategory } from "@/types";
+import type { ProductWithCategory, ProductVariant } from "@/types";
 import { Minus, Plus, ShoppingBag, Truck, ShieldCheck, Ruler, Droplets, Info, ImageOff, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { trackViewContent } from "@/lib/fbq";
@@ -28,10 +30,11 @@ function toCardProduct(product: ProductWithCategory) {
 
 export default function ProductDetailPage() {
     const params = useParams();
-    // Fall back to URL path when rendered from not-found page (new products without static HTML)
+    const searchParams = useSearchParams();
     const slug = (params?.slug as string) || (typeof window !== 'undefined'
       ? window.location.pathname.split('/').filter(Boolean)[1] || ''
       : '');
+    
     const { data: product, loading } = useSupabaseQuery(
       () => getProductBySlug(slug), [slug]
     );
@@ -39,13 +42,22 @@ export default function ProductDetailPage() {
       () => product ? getRelatedProducts(product) : Promise.resolve([]),
       [product?.id]
     );
+    
     const [quantity, setQuantity] = useState(1);
-    const [selectedSize, setSelectedSize] = useState("");
-    const [selectedColour, setSelectedColour] = useState("");
+    const [selectedColor, setSelectedColor] = useState<string | null>(null);
+    const [selectedSize, setSelectedSize] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<"details" | "specs" | "care">("details");
     const [imageError, setImageError] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const { addToCart } = useCart();
+
+    // Initialize from URL params
+    useEffect(() => {
+      const colorParam = searchParams.get('color');
+      const sizeParam = searchParams.get('size');
+      if (colorParam) setSelectedColor(colorParam);
+      if (sizeParam) setSelectedSize(sizeParam);
+    }, [searchParams]);
 
     // Record product view + Meta Pixel ViewContent
     useEffect(() => {
@@ -54,6 +66,134 @@ export default function ProductDetailPage() {
         trackViewContent({ id: product.id, name: product.name, price: Number(product.price), category: product.category?.name });
       }
     }, [product?.id]);
+
+    // Compute variants data
+    const hasVariants = product?.has_variants && product.variants && product.variants.length > 0;
+    const variants = product?.variants || [];
+
+    // Get unique colors with stock info
+    const colorOptions = useMemo(() => {
+      if (!hasVariants) return [];
+      const colorMap = new Map<string, { hex: string; inStock: boolean; stock: number }>();
+      variants.forEach(v => {
+        const existing = colorMap.get(v.color_name);
+        const inStock = v.stock_quantity > 0;
+        if (!existing || (inStock && !existing.inStock)) {
+          colorMap.set(v.color_name, { hex: v.color_hex, inStock, stock: v.stock_quantity });
+        } else if (inStock && existing.inStock) {
+          // Merge stock count
+          colorMap.set(v.color_name, { 
+            hex: v.color_hex, 
+            inStock: true, 
+            stock: existing.stock + v.stock_quantity 
+          });
+        }
+      });
+      return Array.from(colorMap.entries()).map(([name, data]) => ({
+        name,
+        hex: data.hex,
+        inStock: data.inStock,
+        lowStock: data.stock > 0 && data.stock < 5,
+      }));
+    }, [variants, hasVariants]);
+
+    // Get available sizes for selected color
+    const availableSizes = useMemo(() => {
+      if (!selectedColor) return product?.sizes || [];
+      return variants
+        .filter(v => v.color_name === selectedColor && v.stock_quantity > 0)
+        .map(v => v.size);
+    }, [selectedColor, variants, product?.sizes]);
+
+    // Find matching variant
+    const selectedVariant: ProductVariant | null = useMemo(() => {
+      if (!hasVariants || !selectedColor || !selectedSize) return null;
+      return variants.find(v => 
+        v.color_name === selectedColor && 
+        v.size === selectedSize && 
+        v.stock_quantity > 0
+      ) || null;
+    }, [selectedColor, selectedSize, variants, hasVariants]);
+
+    // Compute display price
+    const basePrice = Number(product?.price || 0);
+    const priceAdjustment = selectedVariant?.price_adjustment || 0;
+    const displayPrice = basePrice + priceAdjustment;
+    const mrp = product?.compare_price ? Number(product.compare_price) : 0;
+    const hasDiscount = mrp > 0 && mrp > displayPrice && displayPrice > 0;
+    const discountPercent = hasDiscount ? Math.round(((mrp - displayPrice) / mrp) * 100) : 0;
+
+    // Variant stock
+    const variantStock = selectedVariant?.stock_quantity || 0;
+    const isOutOfStock = hasVariants 
+      ? (!selectedVariant || variantStock === 0)
+      : product?.in_stock === false;
+
+    // Build gallery images
+    const allImages: string[] = useMemo(() => {
+      const images: string[] = [];
+      
+      // Use variant images if available
+      if (selectedVariant?.variant_images && selectedVariant.variant_images.length > 0) {
+        images.push(...selectedVariant.variant_images);
+      } else if (selectedVariant?.variant_image) {
+        images.push(selectedVariant.variant_image);
+      }
+      
+      // Fallback to product main image
+      const mainImg = product?.image_url || '';
+      if (mainImg && !mainImg.startsWith('blob:') && !mainImg.startsWith('data:')) {
+        if (!images.includes(mainImg)) images.push(mainImg);
+      }
+      
+      // Add gallery images
+      if (product?.images && product.images.length > 0) {
+        product.images.forEach(img => {
+          if (img && !images.includes(img)) images.push(img);
+        });
+      }
+      
+      if (images.length === 0) {
+        images.push(`https://placehold.co/600x800/E8657B/FFF?text=${encodeURIComponent((product?.name || 'Product').replace(/ /g, '+'))}`);
+      }
+      
+      return images;
+    }, [product, selectedVariant]);
+
+    const currentImage = allImages[selectedImageIndex] || allImages[0];
+    const hasMultipleImages = allImages.length > 1;
+
+    // Reset image index when color changes
+    useEffect(() => {
+      setSelectedImageIndex(0);
+      setImageError(false);
+    }, [selectedColor]);
+
+    const handleAddToCart = () => {
+      if (!product) return;
+      if (hasVariants && !selectedVariant) return;
+      
+      addToCart({
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        price: displayPrice,
+        image: currentImage,
+        variant_id: selectedVariant?.id,
+        color: selectedColor || undefined,
+        size: selectedSize || undefined,
+      }, quantity);
+    };
+
+    // URL update when selections change
+    useEffect(() => {
+      if (!product || (!selectedColor && !selectedSize)) return;
+      const params = new URLSearchParams();
+      if (selectedColor) params.set('color', selectedColor);
+      if (selectedSize) params.set('size', selectedSize);
+      const newUrl = `${window.location.pathname}?${params.toString()}`;
+      window.history.replaceState({}, '', newUrl);
+    }, [selectedColor, selectedSize, product]);
 
     if (loading) {
       return (
@@ -66,40 +206,6 @@ export default function ProductDetailPage() {
     if (!product) {
         return <div className="container mx-auto px-4 max-w-7xl py-20 text-center">Product not found</div>;
     }
-
-    const handleAddToCart = () => {
-        addToCart({
-          id: product.id,
-          name: product.name,
-          slug: product.slug,
-          price: Number(product.price),
-          image: product.image_url || '',
-        }, quantity);
-    };
-
-    // Build gallery: main image + additional gallery images
-    const allImages: string[] = [];
-    const mainImg = product.image_url || '';
-    if (mainImg && !mainImg.startsWith('blob:') && !mainImg.startsWith('data:') && (mainImg.startsWith('/images/') || mainImg.startsWith('https://'))) {
-      allImages.push(mainImg);
-    }
-    if (product.images && product.images.length > 0) {
-      for (const img of product.images) {
-        if (img && !allImages.includes(img)) allImages.push(img);
-      }
-    }
-    if (allImages.length === 0) {
-      allImages.push(`https://placehold.co/600x800/E8657B/FFF?text=${encodeURIComponent(product.name.replace(/ /g, '+'))}`);
-    }
-
-    const currentImage = allImages[selectedImageIndex] || allImages[0];
-    const hasMultipleImages = allImages.length > 1;
-
-    // Discount calculation
-    const salePrice = Number(product.price);
-    const mrp = product.compare_price ? Number(product.compare_price) : 0;
-    const hasDiscount = mrp > 0 && mrp > salePrice && salePrice > 0;
-    const discountPercent = hasDiscount ? Math.round(((mrp - salePrice) / mrp) * 100) : 0;
 
     const details = product.details || {};
     const careInstructions = product.care_instructions || ['Hand wash cold', 'Dry in shade'];
@@ -115,7 +221,7 @@ export default function ProductDetailPage() {
                             src={currentImage}
                             alt={product.name}
                             fill
-                            className="object-cover"
+                            className="object-cover transition-opacity duration-300"
                             priority
                             onError={() => setImageError(true)}
                             unoptimized
@@ -178,65 +284,65 @@ export default function ProductDetailPage() {
                         </span>
                         <h1 className="text-4xl md:text-5xl font-bold text-text leading-tight mb-2 font-serif">{product.name}</h1>
                         <div className="flex items-center gap-3 flex-wrap">
-                          <span className="text-2xl font-semibold text-orange">&#8377;{salePrice}</span>
+                          {hasVariants && !selectedVariant ? (
+                            <span className="text-2xl font-semibold text-orange">From ₹{basePrice}</span>
+                          ) : (
+                            <span className="text-2xl font-semibold text-orange">₹{displayPrice}</span>
+                          )}
                           {hasDiscount && (
                             <>
-                              <span className="text-lg text-text-muted line-through">&#8377;{mrp}</span>
+                              <span className="text-lg text-text-muted line-through">₹{mrp}</span>
                               <span className="text-sm font-bold text-coral bg-coral/10 px-2 py-0.5 rounded-full">{discountPercent}% OFF</span>
                             </>
                           )}
                         </div>
+                        {selectedVariant && (
+                          <p className="text-sm text-text-muted mt-1">SKU: {selectedVariant.sku}</p>
+                        )}
                     </div>
 
                     <p className="text-text-muted leading-relaxed text-lg mb-8">
                         {product.long_description || product.description}
                     </p>
 
-                    <div className="mt-auto space-y-8">
-                        {/* Colours */}
-                        {product.colours && product.colours.length > 0 && (
-                          <div>
-                            <p className="text-sm font-semibold text-text mb-2">
-                              Colour{selectedColour ? <span className="font-normal text-text-muted ml-1">— {selectedColour}</span> : ""}
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                              {product.colours.map((c) => (
-                                <button
-                                  key={c}
-                                  onClick={() => setSelectedColour(selectedColour === c ? "" : c)}
-                                  className={cn(
-                                    "px-3 py-1.5 rounded-full border text-sm font-medium transition-all",
-                                    selectedColour === c
-                                      ? "border-coral bg-coral/10 text-coral"
-                                      : "border-gray-200 text-text-muted hover:border-coral/50"
-                                  )}
-                                >{c}</button>
-                              ))}
-                            </div>
+                    <div className="mt-auto space-y-6">
+                        {/* Color Swatches */}
+                        {hasVariants && colorOptions.length > 0 && (
+                          <ColorSwatches
+                            colors={colorOptions}
+                            selected={selectedColor}
+                            onSelect={setSelectedColor}
+                          />
+                        )}
+
+                        {/* Size Selector */}
+                        {(hasVariants || product.sizes.length > 0) && (
+                          <SizeSelector
+                            sizes={product.sizes}
+                            selected={selectedSize}
+                            availableSizes={hasVariants ? availableSizes : product.sizes}
+                            onSelect={setSelectedSize}
+                          />
+                        )}
+
+                        {/* Stock & Variant Info */}
+                        {hasVariants && selectedVariant && (
+                          <div className="flex items-center gap-2 text-sm">
+                            {variantStock === 0 ? (
+                              <span className="text-red-500 font-medium">Out of Stock</span>
+                            ) : variantStock < 5 ? (
+                              <span className="text-amber-600 font-medium">Only {variantStock} left in this color/size</span>
+                            ) : (
+                              <span className="text-green-600 font-medium">In Stock</span>
+                            )}
                           </div>
                         )}
 
-                        {/* Sizes */}
-                        {product.sizes && product.sizes.length > 0 && (
-                          <div>
-                            <p className="text-sm font-semibold text-text mb-2">
-                              Size{selectedSize ? <span className="font-normal text-text-muted ml-1">— {selectedSize}</span> : ""}
-                            </p>
-                            <div className="flex flex-wrap gap-2">
-                              {product.sizes.map((s) => (
-                                <button
-                                  key={s}
-                                  onClick={() => setSelectedSize(selectedSize === s ? "" : s)}
-                                  className={cn(
-                                    "min-w-[44px] px-3 py-1.5 rounded-lg border text-sm font-bold transition-all",
-                                    selectedSize === s
-                                      ? "border-coral bg-coral text-white"
-                                      : "border-gray-200 text-text hover:border-coral"
-                                  )}
-                                >{s}</button>
-                              ))}
-                            </div>
-                          </div>
+                        {/* Validation message */}
+                        {hasVariants && (!selectedColor || !selectedSize) && (
+                          <p className="text-sm text-amber-600">
+                            Please select {(!selectedColor && !selectedSize) ? 'color and size' : !selectedColor ? 'color' : 'size'} to add to cart
+                          </p>
                         )}
 
                         <div className="p-6 bg-white rounded-xl shadow-sm border border-cream/30">
@@ -252,7 +358,7 @@ export default function ProductDetailPage() {
                                     </button>
                                 </div>
                             </div>
-                            {product.in_stock === false ? (
+                            {isOutOfStock ? (
                               <div className="w-full text-lg h-14 font-semibold bg-gray-200 text-gray-500 rounded-lg flex items-center justify-center">
                                 Out of Stock
                               </div>
@@ -260,11 +366,12 @@ export default function ProductDetailPage() {
                               <Button
                                   size="lg"
                                   variant="primary"
-                                  className="w-full text-lg h-14 font-semibold shadow-lg shadow-coral/20 hover:shadow-coral/30 transition-all"
+                                  className="w-full text-lg h-14 font-semibold shadow-lg shadow-coral/20 hover:shadow-coral/30 transition-all disabled:opacity-50"
                                   onClick={handleAddToCart}
+                                  disabled={hasVariants && !selectedVariant}
                               >
                                   <ShoppingBag className="mr-2 h-5 w-5" />
-                                  Add to Cart
+                                  {hasVariants && !selectedVariant ? 'Select Options' : 'Add to Cart'}
                               </Button>
                             )}
                         </div>
@@ -327,6 +434,7 @@ export default function ProductDetailPage() {
                                   ["Fit", details.fit || 'Regular Fit'],
                                   ["Origin", details.origin || 'Aluva, Kerala'],
                                   ["Dimensions", details.dimensions || 'Standard'],
+                                  ...(selectedVariant ? [["SKU", selectedVariant.sku]] : []),
                                 ].map(([label, value]) => (
                                   <div key={label} className="flex justify-between py-3 border-b border-cream/30">
                                     <span className="text-text-muted">{label}</span>

@@ -6,7 +6,7 @@ import { ProductForm } from "@/components/admin/ProductForm";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getAllProducts, updateProduct, createProduct, deleteProduct, updateProductOrder, triggerSiteDeploy } from "@/lib/services/admin";
 import { getCategories } from "@/lib/services/categories";
-import type { Product } from "@/types";
+import type { ProductWithCategory } from "@/types";
 import { Plus, Search, Pencil, Trash2, Loader2, Eye, EyeOff, Star, RefreshCw, ArrowUp, ArrowDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
@@ -20,7 +20,7 @@ export default function AdminProductsPage() {
   const [categoryFilter, setCategoryFilter] = useState<string>("");
   const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>("all");
   const [showForm, setShowForm] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | undefined>();
+  const [editingProduct, setEditingProduct] = useState<ProductWithCategory | undefined>();
   const [syncing, setSyncing] = useState(false);
 
   const handleSync = async () => {
@@ -71,7 +71,7 @@ export default function AdminProductsPage() {
     setEditingProduct(undefined);
   };
 
-  const handleDelete = async (product: Product) => {
+  const handleDelete = async (product: ProductWithCategory) => {
     if (!confirm(`Delete "${product.name}"? This cannot be undone.`)) return;
     try {
       await deleteProduct(product.id);
@@ -82,7 +82,7 @@ export default function AdminProductsPage() {
     }
   };
 
-  const toggleActive = async (product: Product) => {
+  const toggleActive = async (product: ProductWithCategory) => {
     try {
       const newState = !product.is_active;
       await updateProduct(product.id, { is_active: newState });
@@ -93,7 +93,7 @@ export default function AdminProductsPage() {
     }
   };
 
-  const toggleFeatured = async (product: Product) => {
+  const toggleFeatured = async (product: ProductWithCategory) => {
     try {
       const newState = !product.is_featured;
       await updateProduct(product.id, { is_featured: newState });
@@ -133,7 +133,7 @@ export default function AdminProductsPage() {
     }
   };
 
-  const openEdit = (product: Product) => {
+  const openEdit = (product: ProductWithCategory) => {
     setEditingProduct(product);
     setShowForm(true);
   };

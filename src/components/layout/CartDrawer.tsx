@@ -133,7 +133,7 @@ export function CartDrawer() {
             <div className="space-y-4">
               {items.map((item) => (
                 <div
-                  key={item.id}
+                  key={`${item.id}${item.variant_id ? `-${item.variant_id}` : ''}`}
                   className="flex gap-3 p-3 bg-cream/30 rounded-lg"
                 >
                   {/* Image */}
@@ -150,6 +150,13 @@ export function CartDrawer() {
                     >
                       {item.name}
                     </Link>
+                    {(item.color || item.size) && (
+                      <p className="text-xs text-text-muted mt-0.5">
+                        {item.color && `Color: ${item.color}`}
+                        {item.color && item.size && " / "}
+                        {item.size && `Size: ${item.size}`}
+                      </p>
+                    )}
                     <p className="text-orange font-bold text-sm mt-1">
                       ₹{item.price}
                     </p>
@@ -160,7 +167,7 @@ export function CartDrawer() {
                         <button
                           className="p-1.5 hover:bg-gray-50 transition-colors text-gray-500 disabled:opacity-30"
                           onClick={() =>
-                            updateQuantity(item.id, item.quantity - 1)
+                            updateQuantity(item.id, item.quantity - 1, item.variant_id)
                           }
                           disabled={item.quantity <= 1}
                         >
@@ -172,7 +179,7 @@ export function CartDrawer() {
                         <button
                           className="p-1.5 hover:bg-gray-50 transition-colors text-gray-500"
                           onClick={() =>
-                            updateQuantity(item.id, item.quantity + 1)
+                            updateQuantity(item.id, item.quantity + 1, item.variant_id)
                           }
                         >
                           <Plus className="h-3 w-3" />
@@ -184,7 +191,7 @@ export function CartDrawer() {
                           ₹{item.price * item.quantity}
                         </span>
                         <button
-                          onClick={() => removeFromCart(item.id)}
+                          onClick={() => removeFromCart(item.id, item.variant_id)}
                           className="text-gray-400 hover:text-coral transition-colors"
                         >
                           <Trash2 className="h-4 w-4" />

@@ -22,6 +22,9 @@ export async function createOrder(
     price: item.price,
     quantity: item.quantity,
     subtotal: item.price * item.quantity,
+    variant_id: item.variant_id || null,
+    color: item.color || null,
+    size: item.size || null,
   }));
 
   const isCod = paymentMethod === 'cod';
@@ -61,6 +64,7 @@ export async function createOrder(
     await supabase.rpc('decrement_stock', {
       p_product_id: item.id,
       p_quantity: item.quantity,
+      p_variant_id: item.variant_id || null,
     });
   }
 

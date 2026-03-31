@@ -1,21 +1,26 @@
 import { supabase } from '@/lib/supabase';
-import type { Product, Category, Banner, ProductFormData, CategoryFormData, BannerFormData, ProductWithCategory } from '@/types';
+import type { Product, Category, Banner, ProductFormData, CategoryFormData, BannerFormData, ProductWithCategory, ProductVariant } from '@/types';
 
 // Admin: get ALL products (including hidden) with category data
 export async function getAllProducts(): Promise<ProductWithCategory[]> {
   const { data, error } = await supabase
     .from('products')
-    .select('*, category:categories(*)')
+    .select('*, category:categories(*), variants:product_variants(*)')
     .order('display_order', { ascending: true })
     .order('created_at', { ascending: false });
   if (error) throw new Error(error.message || error.details || JSON.stringify(error));
-  return data || [];
+  return (data || []).map((p) => ({
+    ...(p as ProductWithCategory),
+    variants: (Array.isArray((p as Record<string, unknown>).variants) ? (p as Record<string, unknown>).variants : []) as ProductVariant[],
+  }));
 }
 
 // Products CRUD
-export async function createProduct(data: ProductFormData): Promise<Product> {
+export async function createProduct(data: ProductFormData & { variants?: Omit<ProductVariant, 'id' | 'created_at' | 'updated_at'>[] }): Promise<Product> {
+  const { variants, ...productData } = data;
+  
   // Check if slug already exists; if so, append a number to make it unique
-  let slug = data.slug;
+  let slug = productData.slug;
   const { count } = await supabase
     .from('products')
     .select('*', { count: 'exact', head: true })
@@ -35,24 +40,69 @@ export async function createProduct(data: ProductFormData): Promise<Product> {
 
   const { data: product, error } = await supabase
     .from('products')
-    .insert({ ...data, slug })
+    .insert({ ...productData, slug })
     .select()
     .single();
   if (error) {
     if (error.code === '23505') throw new Error(`A product with this slug already exists. Please use a different name.`);
     throw new Error(error.message || error.details || JSON.stringify(error));
   }
+
+  // Create variants if provided
+  if (variants && variants.length > 0 && product) {
+    const { error: variantError } = await supabase
+      .from('product_variants')
+      .insert(variants.map(v => ({ ...v, product_id: product.id })));
+    if (variantError) throw new Error(variantError.message || JSON.stringify(variantError));
+  }
+
   return product;
 }
 
-export async function updateProduct(id: string, data: Partial<ProductFormData>): Promise<Product> {
+export async function updateProduct(
+  id: string,
+  data: Partial<ProductFormData> & { variants?: ProductVariant[] }
+): Promise<Product> {
+  const { variants, ...productData } = data;
+
   const { data: product, error } = await supabase
     .from('products')
-    .update(data)
+    .update(productData)
     .eq('id', id)
     .select()
     .single();
   if (error) throw new Error(error.message || error.details || JSON.stringify(error));
+
+  // Handle variants if provided
+  if (variants !== undefined && product) {
+    // Get existing variants
+    const { data: existing } = await supabase
+      .from('product_variants')
+      .select('id')
+      .eq('product_id', id);
+    const existingIds = new Set((existing || []).map((v) => v.id));
+    const incomingIds = new Set(variants.filter((v) => v.id).map((v) => v.id));
+
+    // Delete removed variants
+    const toDelete = Array.from(existingIds).filter((eid) => !incomingIds.has(eid));
+    if (toDelete.length > 0) {
+      await supabase.from('product_variants').delete().in('id', toDelete);
+    }
+
+    // Upsert variants
+    const toUpsert = variants.map((v) => ({
+      ...v,
+      product_id: id,
+      // Remove generated fields for insert, keep for update
+    }));
+    if (toUpsert.length > 0) {
+      const { error: upsertError } = await supabase
+        .from('product_variants')
+        .upsert(toUpsert, { onConflict: 'id' });
+      if (upsertError) throw new Error(upsertError.message || JSON.stringify(upsertError));
+    }
+  }
+
   return product;
 }
 
@@ -62,7 +112,6 @@ export async function deleteProduct(id: string): Promise<void> {
 }
 
 export async function updateProductOrder(updates: { id: string; display_order: number }[]): Promise<void> {
-  // Update each product's display_order
   const promises = updates.map(({ id, display_order }) =>
     supabase.from('products').update({ display_order }).eq('id', id)
   );
@@ -200,7 +249,6 @@ export async function getDashboardStats() {
     supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'cancelled'),
   ]);
 
-  // Get all orders for revenue calculations
   const { data: orders } = await supabase
     .from('orders')
     .select('total, status, payment_status');
@@ -211,7 +259,6 @@ export async function getDashboardStats() {
 
   const totalOrderValue = orders?.reduce((sum, o) => sum + Number(o.total), 0) || 0;
 
-  // Abandoned carts: orders that are pending or cancelled + never paid
   const abandonedOrders = orders?.filter(o => (o.status === 'pending' || o.status === 'cancelled') && o.payment_status !== 'paid') || [];
   const abandonedCarts = abandonedOrders.length;
   const abandonedValue = abandonedOrders.reduce((sum, o) => sum + Number(o.total), 0);
