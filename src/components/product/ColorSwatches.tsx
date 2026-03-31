@@ -23,9 +23,6 @@ export function ColorSwatches({ colors, selected, onSelect }: ColorSwatchesProps
 
   return (
     <div>
-      <p className="text-sm font-semibold text-text mb-3">
-        Colour{selectedColor ? <span className="font-normal text-text-muted ml-1">— {selectedColor.name}</span> : ""}
-      </p>
       <div className="flex flex-wrap gap-3">
         {colors.map((color) => (
           <button

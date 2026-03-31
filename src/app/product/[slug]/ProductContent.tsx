@@ -211,7 +211,7 @@ function ProductContentInner() {
               <li>/</li>
               <li><a href={`/shop/${product.category?.slug}`} className="hover:text-text">{product.category?.name}</a></li>
               <li>/</li>
-              <li className="text-text font-medium truncate max-w-xs">{product.name}</li>
+              <li className="text-text font-medium">{product.name}</li>
             </ol>
           </nav>
 
@@ -334,7 +334,7 @@ function ProductContentInner() {
               {product.has_variants && availableSizes.length > 0 && (
                 <div>
                   <h3 className="text-sm font-medium text-text mb-3">
-                    Size: <span className="text-text-muted font-normal">{selectedSize || "Select a size"}</span>
+                    Size: <span className="text-text-muted font-normal">{effectiveSize || "Select a size"}</span>
                   </h3>
                   <SizeSelector
                     sizes={availableSizes.map(s => s.size)}

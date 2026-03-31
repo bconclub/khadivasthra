@@ -18,10 +18,7 @@ export function SizeSelector({ sizes, selected, availableSizes, onSelect }: Size
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-3">
-        <p className="text-sm font-semibold text-text">
-          Size{selected ? <span className="font-normal text-text-muted ml-1">— {selected}</span> : ""}
-        </p>
+      <div className="flex items-center justify-end mb-3">
         <button
           type="button"
           onClick={() => setShowGuide(true)}
