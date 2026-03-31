@@ -150,10 +150,10 @@ export function CartDrawer() {
                     >
                       {item.name}
                     </Link>
-                    {(item.color || item.size) && (
+                    {(item.color_name || item.size) && (
                       <p className="text-xs text-text-muted mt-0.5">
-                        {item.color && `Color: ${item.color}`}
-                        {item.color && item.size && " / "}
+                        {item.color_name && `Color: ${item.color_name}`}
+                        {item.color_name && item.size && " / "}
                         {item.size && `Size: ${item.size}`}
                       </p>
                     )}

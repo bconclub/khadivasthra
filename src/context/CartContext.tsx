@@ -13,7 +13,8 @@ interface CartProduct {
   price: number;
   image: string;
   variant_id?: string;
-  color?: string;
+  color_id?: string;
+  color_name?: string;
   size?: string;
 }
 
@@ -65,8 +66,6 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const openCart = useCallback(() => setIsCartOpen(true), []);
     const closeCart = useCallback(() => setIsCartOpen(false), []);
 
-    const getItemKey = (id: string, variant_id?: string) => `${id}${variant_id ? `::${variant_id}` : ''}`;
-
     const addToCart = (product: CartProduct, quantity = 1) => {
         setItems((prev) => {
             const existingIndex = prev.findIndex(
@@ -89,7 +88,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                     image: product.image,
                     quantity,
                     variant_id: product.variant_id,
-                    color: product.color,
+                    color_id: product.color_id,
+                    color_name: product.color_name,
                     size: product.size,
                 },
             ];

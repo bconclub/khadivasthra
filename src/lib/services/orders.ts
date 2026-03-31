@@ -23,7 +23,8 @@ export async function createOrder(
     quantity: item.quantity,
     subtotal: item.price * item.quantity,
     variant_id: item.variant_id || null,
-    color: item.color || null,
+    color_id: item.color_id || null,
+    color_name: item.color_name || null,
     size: item.size || null,
   }));
 

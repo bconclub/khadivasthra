@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef } from "react";
 import { uploadProductImage } from "@/lib/services/storage";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getCategories } from "@/lib/services/categories";
-import type { ProductWithCategory, ProductVariant } from "@/types";
-import { Loader2, X, Plus, Upload, Camera, Package, Trash2, RefreshCw, Palette } from "lucide-react";
+import type { ProductWithCategory, ProductColor, ProductVariant } from "@/types";
+import { Loader2, X, Plus, Camera, Package, Trash2, RefreshCw, Palette, GripVertical } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
@@ -22,23 +22,28 @@ function slugify(text: string) {
     .replace(/(^-|-$)/g, "");
 }
 
-function generateSKU(productSlug: string, color: string, size: string, index: number): string {
-  const colorCode = color.slice(0, 3).toUpperCase().replace(/[^A-Z]/g, '');
+function generateSKU(productSlug: string, colorName: string, size: string): string {
+  const colorCode = colorName.slice(0, 3).toUpperCase().replace(/[^A-Z]/g, '');
   const sizeCode = size.toUpperCase();
-  return `KV-${productSlug.slice(0, 6).toUpperCase()}-${colorCode}-${sizeCode}-${index + 1}`;
+  return `KV-${productSlug.slice(0, 6).toUpperCase()}-${colorCode}-${sizeCode}`;
 }
 
-interface VariantFormData {
+interface ColorFormData {
   id?: string;
-  color_name: string;
-  color_hex: string;
+  name: string;
+  hex_code: string;
+  images: string[];
+  sort_order: number;
+  sizes: SizeVariantFormData[];
+}
+
+interface SizeVariantFormData {
+  id?: string;
   size: string;
-  price_adjustment: number;
+  sku: string;
   stock_quantity: number;
-  variant_image: string;
-  variant_images: string[];
+  price_adjustment: number;
   is_active: boolean;
-  is_default: boolean;
 }
 
 export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
@@ -68,13 +73,9 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const [isBestSeller, setIsBestSeller] = useState(product?.is_best_seller || false);
   const [isActive, setIsActive] = useState(product?.is_active !== false);
   const [hasVariants, setHasVariants] = useState(product?.has_variants || false);
-  const [stockQuantity, setStockQuantity] = useState(product?.stock_quantity?.toString() || "0");
   const [careInstructions, setCareInstructions] = useState<string[]>(
     product?.care_instructions || ["Hand wash cold", "Dry in shade"]
   );
-  const [colours, setColours] = useState<string[]>(product?.colours || []);
-  const [sizes, setSizes] = useState<string[]>(product?.sizes || []);
-  const [sizeInput, setSizeInput] = useState("");
   const [weight, setWeight] = useState(product?.weight?.toString() || "0.2");
   const [length, setLength] = useState(product?.length?.toString() || "13");
   const [breadth, setBreadth] = useState(product?.breadth?.toString() || "7");
@@ -84,26 +85,30 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const mainInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
-  // Variants state
-  const existingVariants: VariantFormData[] = ((product as ProductWithCategory | undefined)?.variants || []).map((v: ProductVariant) => ({
-    id: v.id,
-    color_name: v.color_name,
-    color_hex: v.color_hex,
-    size: v.size,
-    price_adjustment: v.price_adjustment,
-    stock_quantity: v.stock_quantity,
-    variant_image: v.variant_image || '',
-    variant_images: v.variant_images || [],
-    is_active: v.is_active,
-    is_default: v.is_default,
-  })) || [];
-  const [variants, setVariants] = useState<VariantFormData[]>(existingVariants);
-  const [variantColorInput, setVariantColorInput] = useState("");
-  const [variantColorHex, setVariantColorHex] = useState("#000000");
-  const [variantSizeInput, setVariantSizeInput] = useState("");
-  const [uploadingVariantImage, setUploadingVariantImage] = useState<number | null>(null);
-  const variantImageInputRef = useRef<HTMLInputElement>(null);
-  const [activeVariantIndex, setActiveVariantIndex] = useState<number | null>(null);
+  // Colors and variants state
+  const existingColors: ColorFormData[] = (product?.colors || []).map((c, idx) => ({
+    id: c.id,
+    name: c.name,
+    hex_code: c.hex_code,
+    images: c.images || [],
+    sort_order: c.sort_order || idx,
+    sizes: (product?.variants || [])
+      .filter(v => v.color_id === c.id)
+      .map(v => ({
+        id: v.id,
+        size: v.size,
+        sku: v.sku,
+        stock_quantity: v.stock_quantity,
+        price_adjustment: v.price_adjustment,
+        is_active: v.is_active,
+      })),
+  }));
+  const [colors, setColors] = useState<ColorFormData[]>(existingColors);
+  const [showColorModal, setShowColorModal] = useState(false);
+  const [editingColorIndex, setEditingColorIndex] = useState<number | null>(null);
+  const [colorForm, setColorForm] = useState({ name: "", hex_code: "#000000", images: [] as string[] });
+  const [uploadingColorImage, setUploadingColorImage] = useState(false);
+  const colorImageInputRef = useRef<HTMLInputElement>(null);
 
   const mrpNum = parseFloat(comparePrice) || 0;
   const calculatedSalePrice = discountPct > 0 && mrpNum > 0
@@ -155,115 +160,133 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
     setGalleryImages(galleryImages.filter((_, i) => i !== index));
   };
 
-  // Variant management
-  const addVariant = () => {
-    if (!variantColorInput.trim() || !variantSizeInput.trim()) return;
+  // Color management
+  const openColorModal = (colorIndex: number | null = null) => {
+    if (colorIndex !== null) {
+      const color = colors[colorIndex];
+      setColorForm({ name: color.name, hex_code: color.hex_code, images: color.images });
+      setEditingColorIndex(colorIndex);
+    } else {
+      setColorForm({ name: "", hex_code: "#000000", images: [] });
+      setEditingColorIndex(null);
+    }
+    setShowColorModal(true);
+    setError("");
+  };
+
+  const closeColorModal = () => {
+    setShowColorModal(false);
+    setColorForm({ name: "", hex_code: "#000000", images: [] });
+    setEditingColorIndex(null);
+  };
+
+  const saveColor = () => {
+    if (!colorForm.name.trim()) {
+      setError("Color name is required");
+      return;
+    }
+    if (colorForm.images.length === 0) {
+      setError("At least one image is required for the color");
+      return;
+    }
     
-    // Check for duplicates
-    const exists = variants.some(v => 
-      v.color_name.toLowerCase() === variantColorInput.trim().toLowerCase() && 
-      v.size.toLowerCase() === variantSizeInput.trim().toLowerCase()
+    // Check for duplicate color names
+    const duplicateIndex = colors.findIndex((c, idx) => 
+      c.name.toLowerCase() === colorForm.name.trim().toLowerCase() && idx !== editingColorIndex
     );
-    if (exists) {
-      setError(`Variant ${variantColorInput} / ${variantSizeInput} already exists`);
+    if (duplicateIndex !== -1) {
+      setError(`Color "${colorForm.name}" already exists`);
       return;
     }
 
-    const newVariant: VariantFormData = {
-      color_name: variantColorInput.trim(),
-      color_hex: variantColorHex,
-      size: variantSizeInput.trim().toUpperCase(),
-      price_adjustment: 0,
-      stock_quantity: 10,
-      variant_image: '',
-      variant_images: [],
-      is_active: true,
-      is_default: variants.length === 0,
-    };
-    setVariants([...variants, newVariant]);
-    setVariantColorInput("");
-    setVariantSizeInput("");
-    setVariantColorHex("#000000");
-    setError("");
-  };
-
-  const removeVariant = (index: number) => {
-    const newVariants = variants.filter((_, i) => i !== index);
-    // Ensure at least one default
-    if (newVariants.length > 0 && !newVariants.some(v => v.is_default)) {
-      newVariants[0].is_default = true;
+    if (editingColorIndex !== null) {
+      // Update existing
+      setColors(colors.map((c, idx) => idx === editingColorIndex ? { 
+        ...c, 
+        name: colorForm.name.trim(), 
+        hex_code: colorForm.hex_code,
+        images: colorForm.images 
+      } : c));
+    } else {
+      // Add new
+      setColors([...colors, {
+        name: colorForm.name.trim(),
+        hex_code: colorForm.hex_code,
+        images: colorForm.images,
+        sort_order: colors.length,
+        sizes: [],
+      }]);
     }
-    setVariants(newVariants);
+    closeColorModal();
   };
 
-  const updateVariant = (index: number, updates: Partial<VariantFormData>) => {
-    setVariants(variants.map((v, i) => i === index ? { ...v, ...updates } : v));
+  const deleteColor = (index: number) => {
+    if (!confirm(`Delete color "${colors[index].name}"? All size variants for this color will also be deleted.`)) return;
+    setColors(colors.filter((_, i) => i !== index));
   };
 
-  const handleVariantImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
-    const file = e.target.files?.[0];
-    if (!file || !file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) return;
-    setUploadingVariantImage(index);
+  const handleColorImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploadingColorImage(true);
     try {
-      const url = await uploadProductImage(file, `${slug || slugify(name)}-${index}`);
-      updateVariant(index, { variant_images: [...variants[index].variant_images, url] });
+      const newUrls: string[] = [];
+      for (const file of Array.from(files)) {
+        if (!file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) continue;
+        const url = await uploadProductImage(file, `${slug || slugify(name)}-color`);
+        newUrls.push(url);
+      }
+      setColorForm({ ...colorForm, images: [...colorForm.images, ...newUrls].slice(0, 4) });
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Variant image upload failed");
+      setError(err instanceof Error ? err.message : "Image upload failed");
     } finally {
-      setUploadingVariantImage(null);
-      if (variantImageInputRef.current) variantImageInputRef.current.value = "";
+      setUploadingColorImage(false);
+      if (colorImageInputRef.current) colorImageInputRef.current.value = "";
     }
   };
 
-  const removeVariantImage = (variantIndex: number, imageIndex: number) => {
-    const v = variants[variantIndex];
-    updateVariant(variantIndex, { 
-      variant_images: v.variant_images.filter((_, i) => i !== imageIndex) 
-    });
+  const removeColorImage = (index: number) => {
+    setColorForm({ ...colorForm, images: colorForm.images.filter((_, i) => i !== index) });
   };
 
-  const setDefaultVariant = (index: number) => {
-    setVariants(variants.map((v, i) => ({ ...v, is_default: i === index })));
-  };
-
-  const generateVariantMatrix = () => {
-    if (colours.length === 0 || sizes.length === 0) {
-      setError("Add colors and sizes first");
+  // Size variant management
+  const addSizeToColor = (colorIndex: number) => {
+    const size = prompt("Enter size (e.g., M, L, XL, Free Size):");
+    if (!size || !size.trim()) return;
+    
+    const trimmedSize = size.trim().toUpperCase();
+    const color = colors[colorIndex];
+    
+    // Check for duplicate size
+    if (color.sizes.some(s => s.size === trimmedSize)) {
+      setError(`Size ${trimmedSize} already exists for ${color.name}`);
       return;
     }
-    
-    const newVariants: VariantFormData[] = [];
-    let index = 0;
-    colours.forEach(color => {
-      const colorHex = predefinedColors.find(c => c.name === color)?.hex || "#888888";
-      sizes.forEach(size => {
-        const exists = variants.some(v => 
-          v.color_name === color && v.size === size
-        );
-        if (!exists) {
-          newVariants.push({
-            color_name: color,
-            color_hex: colorHex,
-            size,
-            price_adjustment: 0,
-            stock_quantity: 10,
-            variant_image: '',
-            variant_images: [],
-            is_active: true,
-            is_default: variants.length === 0 && index === 0,
-          });
-          index++;
-        }
-      });
-    });
-    
-    if (newVariants.length === 0) {
-      setError("All combinations already exist");
-      return;
-    }
-    
-    setVariants([...variants, ...newVariants]);
+
+    const newSize: SizeVariantFormData = {
+      size: trimmedSize,
+      sku: generateSKU(slug || slugify(name), color.name, trimmedSize),
+      stock_quantity: 10,
+      price_adjustment: 0,
+      is_active: true,
+    };
+
+    setColors(colors.map((c, idx) => idx === colorIndex ? { ...c, sizes: [...c.sizes, newSize] } : c));
     setError("");
+  };
+
+  const updateSizeVariant = (colorIndex: number, sizeIndex: number, updates: Partial<SizeVariantFormData>) => {
+    setColors(colors.map((c, ci) => {
+      if (ci !== colorIndex) return c;
+      return {
+        ...c,
+        sizes: c.sizes.map((s, si) => si === sizeIndex ? { ...s, ...updates } : s),
+      };
+    }));
+  };
+
+  const removeSizeVariant = (colorIndex: number, sizeIndex: number) => {
+    setColors(colors.map((c, idx) => idx === colorIndex ? { ...c, sizes: c.sizes.filter((_, i) => i !== sizeIndex) } : c));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -275,19 +298,30 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
     }
     
     // Validate variants if has_variants is true
-    if (hasVariants && variants.length === 0) {
-      setError("Add at least one variant or disable variants");
-      return;
-    }
-    
-    // Validate at least one variant has stock
-    if (hasVariants && !variants.some(v => v.stock_quantity > 0)) {
-      setError("At least one variant must have stock > 0");
-      return;
+    if (hasVariants) {
+      if (colors.length === 0) {
+        setError("Add at least one color or disable variants");
+        return;
+      }
+      for (const color of colors) {
+        if (color.sizes.length === 0) {
+          setError(`Add at least one size for color "${color.name}"`);
+          return;
+        }
+      }
+      const totalStock = colors.reduce((sum, c) => sum + c.sizes.reduce((s, sz) => s + sz.stock_quantity, 0), 0);
+      if (totalStock === 0) {
+        setError("At least one variant must have stock > 0");
+        return;
+      }
     }
     
     setSubmitting(true);
     try {
+      const totalStock = hasVariants 
+        ? colors.reduce((sum, c) => sum + c.sizes.reduce((s, sz) => s + sz.stock_quantity, 0), 0)
+        : 0;
+
       const baseData = {
         name, slug, description,
         long_description: longDescription,
@@ -297,35 +331,40 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         image_url: imageUrl, images: galleryImages,
         is_featured: isFeatured, is_best_seller: isBestSeller, is_active: isActive,
         has_variants: hasVariants,
-        stock_quantity: hasVariants ? variants.reduce((sum, v) => sum + v.stock_quantity, 0) : (parseInt(stockQuantity) || 0),
-        in_stock: hasVariants ? variants.some(v => v.stock_quantity > 0) : (parseInt(stockQuantity) || 0) > 0,
+        stock_quantity: totalStock,
+        in_stock: hasVariants ? totalStock > 0 : true,
         care_instructions: careInstructions.filter(Boolean),
         display_order: product?.display_order ?? 0,
-        colours: hasVariants ? [...new Set(variants.map(v => v.color_name))] : colours,
-        sizes: hasVariants ? [...new Set(variants.map(v => v.size))] : sizes,
+        colours: hasVariants ? colors.map(c => c.name) : [],
+        sizes: hasVariants ? [...new Set(colors.flatMap(c => c.sizes.map(s => s.size)))] : [],
         weight: parseFloat(weight) || 0.2,
         length: parseFloat(length) || 13,
         breadth: parseFloat(breadth) || 7,
         height: parseFloat(height) || 3,
       };
 
-      const variantData = hasVariants ? {
-        variants: variants.map((v, i) => ({
-          ...(v.id ? { id: v.id } : {}),
-          sku: generateSKU(slug || slugify(name), v.color_name, v.size, i),
-          color_name: v.color_name,
-          color_hex: v.color_hex,
-          size: v.size,
-          price_adjustment: v.price_adjustment,
-          stock_quantity: v.stock_quantity,
-          variant_image: v.variant_images[0] || null,
-          variant_images: v.variant_images,
-          is_active: v.is_active,
-          is_default: v.is_default,
-        }))
-      } : { variants: [] };
+      // Prepare colors and variants for submission
+      const colorsData = colors.map((c, idx) => ({
+        ...(c.id ? { id: c.id } : {}),
+        name: c.name,
+        hex_code: c.hex_code,
+        images: c.images,
+        sort_order: idx,
+      }));
 
-      await onSubmit({ ...baseData, ...variantData });
+      const variantsData = colors.flatMap(c => 
+        c.sizes.map(s => ({
+          ...(s.id ? { id: s.id } : {}),
+          color_id: c.id, // Will be replaced by server if new color
+          size: s.size,
+          sku: s.sku,
+          stock_quantity: s.stock_quantity,
+          price_adjustment: s.price_adjustment,
+          is_active: s.is_active,
+        }))
+      );
+
+      await onSubmit({ ...baseData, colors: colorsData, variants: variantsData });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save product");
       setSubmitting(false);
@@ -337,14 +376,6 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
     setCareInstructions(careInstructions.filter((_, i) => i !== index));
   const updateCareInstruction = (index: number, value: string) =>
     setCareInstructions(careInstructions.map((v, i) => (i === index ? value : v)));
-
-  const addTag = (value: string, list: string[], setList: (v: string[]) => void, setInput: (v: string) => void) => {
-    const trimmed = value.trim();
-    if (trimmed && !list.includes(trimmed)) setList([...list, trimmed]);
-    setInput("");
-  };
-  const removeTag = (index: number, list: string[], setList: (v: string[]) => void) =>
-    setList(list.filter((_, i) => i !== index));
 
   const predefinedColors = [
     { name: "White", hex: "#FFFFFF" },
@@ -373,7 +404,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
     { name: "Beige", hex: "#F5F5DC" },
     { name: "Grey", hex: "#808080" },
     { name: "Black", hex: "#000000" },
-    { name: "Multi-colour", hex: "#FF69B4" },
+    { name: "Kasavu Gold", hex: "#D4AF37" },
   ];
 
   return (
@@ -407,8 +438,8 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
                 id="has-variants"
               />
               <label htmlFor="has-variants" className="flex-1 cursor-pointer">
-                <span className="font-semibold text-gray-900 dark:text-white block">This product has variants (color/size)</span>
-                <span className="text-sm text-gray-500 dark:text-gray-400">Enable to manage stock and images per color/size combination</span>
+                <span className="font-semibold text-gray-900 dark:text-white block">This product has color variations</span>
+                <span className="text-sm text-gray-500 dark:text-gray-400">Enable to manage different colors with dedicated images and size variants</span>
               </label>
             </div>
 
@@ -506,8 +537,8 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
               </div>
             </div>
 
-            {/* Category + Material + Stock */}
-            <div className="grid grid-cols-3 gap-3">
+            {/* Category + Material */}
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Category *</label>
                 <select
@@ -529,21 +560,6 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
                   className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm"
                   placeholder="100% Cotton"
                 />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
-                  Stock {!hasVariants && "*"}
-                </label>
-                <input
-                  type="number" min="0" 
-                  value={hasVariants ? variants.reduce((sum, v) => sum + v.stock_quantity, 0) : stockQuantity}
-                  onChange={(e) => !hasVariants && setStockQuantity(e.target.value)}
-                  disabled={hasVariants}
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm disabled:bg-gray-100 disabled:text-gray-500"
-                />
-                {hasVariants && (
-                  <span className="text-xs text-gray-400">Auto-calculated from variants</span>
-                )}
               </div>
             </div>
 
@@ -591,277 +607,142 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
               </div>
               {hasVariants && (
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Variant prices can be adjusted from the base price (+/-) in the variants section below.
+                  Variant prices can be adjusted from the base price (+/-) per size.
                 </p>
               )}
             </div>
 
-            {/* === VARIANTS SECTION === */}
+            {/* === COLOR VARIATIONS SECTION === */}
             {hasVariants && (
               <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 space-y-4 border border-blue-200 dark:border-blue-800">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Palette className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-                    <h3 className="font-semibold text-gray-900 dark:text-white">Product Variants</h3>
+                    <h3 className="font-semibold text-gray-900 dark:text-white">Color Variations</h3>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <button
-                      type="button"
-                      onClick={generateVariantMatrix}
-                      className="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 px-3 py-1.5 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors"
-                    >
-                      <RefreshCw className="w-3 h-3 inline mr-1" /> Auto-generate from colors & sizes
-                    </button>
-                  </div>
+                  <button
+                    type="button"
+                    onClick={() => openColorModal()}
+                    className="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 px-3 py-1.5 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors flex items-center gap-1"
+                  >
+                    <Plus className="w-3 h-3" /> Add New Color
+                  </button>
                 </div>
 
-                {/* Quick add color/size */}
-                <div className="grid grid-cols-4 gap-2 p-3 bg-white dark:bg-gray-800 rounded-lg">
-                  <div className="col-span-1">
-                    <label className="text-[10px] text-gray-400 block mb-1">Color</label>
-                    <select
-                      value={variantColorInput}
-                      onChange={(e) => {
-                        const color = e.target.value;
-                        setVariantColorInput(color);
-                        const predefined = predefinedColors.find(c => c.name === color);
-                        if (predefined) setVariantColorHex(predefined.hex);
-                      }}
-                      className="w-full px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded"
-                    >
-                      <option value="">Select</option>
-                      {predefinedColors.map(c => (
-                        <option key={c.name} value={c.name}>{c.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="col-span-1">
-                    <label className="text-[10px] text-gray-400 block mb-1">Hex</label>
-                    <div className="flex items-center gap-1">
-                      <input
-                        type="color"
-                        value={variantColorHex}
-                        onChange={(e) => setVariantColorHex(e.target.value)}
-                        className="w-8 h-8 rounded cursor-pointer border-0 p-0"
-                      />
-                      <span className="text-xs text-gray-500">{variantColorHex}</span>
-                    </div>
-                  </div>
-                  <div className="col-span-1">
-                    <label className="text-[10px] text-gray-400 block mb-1">Size</label>
-                    <input
-                      type="text"
-                      value={variantSizeInput}
-                      onChange={(e) => setVariantSizeInput(e.target.value.toUpperCase())}
-                      onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addVariant())}
-                      placeholder="M, L, XL"
-                      className="w-full px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-600 rounded"
-                    />
-                  </div>
-                  <div className="col-span-1 flex items-end">
-                    <button
-                      type="button"
-                      onClick={addVariant}
-                      disabled={!variantColorInput || !variantSizeInput}
-                      className="w-full px-3 py-1.5 bg-coral text-white rounded-lg text-sm font-medium hover:bg-coral/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
-                      <Plus className="w-4 h-4 inline mr-1" /> Add
-                    </button>
-                  </div>
-                </div>
-
-                {/* Variants table */}
-                {variants.length > 0 ? (
-                  <div className="space-y-2">
-                    {variants.map((variant, index) => (
+                {/* Color cards */}
+                {colors.length > 0 ? (
+                  <div className="space-y-3">
+                    {colors.map((color, colorIndex) => (
                       <div 
-                        key={`${variant.color_name}-${variant.size}-${index}`}
-                        className={cn(
-                          "bg-white dark:bg-gray-800 rounded-lg p-3 border-2 transition-all",
-                          variant.is_default ? "border-green-300 dark:border-green-700" : "border-gray-200 dark:border-gray-700"
-                        )}
+                        key={color.id || colorIndex}
+                        className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700"
                       >
-                        <div className="flex items-center gap-3">
-                          {/* Color swatch */}
+                        {/* Color header */}
+                        <div className="flex items-start gap-3 mb-4">
                           <div 
-                            className="w-8 h-8 rounded-full border-2 border-gray-200 flex-shrink-0"
-                            style={{ backgroundColor: variant.color_hex }}
-                            title={`${variant.color_name}`}
+                            className="w-12 h-12 rounded-full border-2 border-gray-200 flex-shrink-0"
+                            style={{ backgroundColor: color.hex_code }}
                           />
-                          
-                          {/* Color/Size info */}
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2">
-                              <span className="font-medium text-sm">{variant.color_name}</span>
-                              <span className="text-gray-400">/</span>
-                              <span className="font-medium text-sm">{variant.size}</span>
-                              {variant.is_default && (
-                                <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Default</span>
-                              )}
+                              <h4 className="font-semibold text-gray-900 dark:text-white">{color.name}</h4>
+                              <button
+                                type="button"
+                                onClick={() => openColorModal(colorIndex)}
+                                className="text-xs text-blue-600 hover:underline"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => deleteColor(colorIndex)}
+                                className="text-xs text-red-500 hover:underline"
+                              >
+                                Delete
+                              </button>
                             </div>
-                            <div className="text-xs text-gray-500">
-                              SKU: {generateSKU(slug || slugify(name), variant.color_name, variant.size, index)}
-                            </div>
+                            <p className="text-xs text-gray-500">{color.images.length} images</p>
                           </div>
-
-                          {/* Stock */}
-                          <div className="w-20">
-                            <label className="text-[10px] text-gray-400 block">Stock</label>
-                            <input
-                              type="number"
-                              min="0"
-                              value={variant.stock_quantity}
-                              onChange={(e) => updateVariant(index, { stock_quantity: parseInt(e.target.value) || 0 })}
-                              className="w-full px-2 py-1 text-sm border border-gray-200 dark:border-gray-600 rounded"
-                            />
-                          </div>
-
-                          {/* Price adjustment */}
-                          <div className="w-24">
-                            <label className="text-[10px] text-gray-400 block">Price +/-</label>
-                            <input
-                              type="number"
-                              value={variant.price_adjustment}
-                              onChange={(e) => updateVariant(index, { price_adjustment: parseInt(e.target.value) || 0 })}
-                              className="w-full px-2 py-1 text-sm border border-gray-200 dark:border-gray-600 rounded"
-                              placeholder="0"
-                            />
-                          </div>
-
-                          {/* Final price */}
-                          <div className="w-20 text-right">
-                            <label className="text-[10px] text-gray-400 block">Final</label>
-                            <span className="text-sm font-semibold">₹{calculatedSalePrice + variant.price_adjustment}</span>
-                          </div>
-
-                          {/* Actions */}
-                          <div className="flex items-center gap-1">
-                            <button
-                              type="button"
-                              onClick={() => setDefaultVariant(index)}
-                              disabled={variant.is_default}
-                              className="p-1.5 text-gray-400 hover:text-green-600 disabled:opacity-30 disabled:cursor-not-allowed rounded"
-                              title="Set as default"
-                            >
-                              <RefreshCw className="w-4 h-4" />
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => removeVariant(index)}
-                              className="p-1.5 text-gray-400 hover:text-red-500 rounded"
-                              title="Remove variant"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
+                          {/* Image thumbnails */}
+                          <div className="flex gap-1">
+                            {color.images.slice(0, 3).map((img, idx) => (
+                              <div key={idx} className="relative w-10 h-10 rounded border border-gray-200 overflow-hidden">
+                                <Image src={img} alt="" fill className="object-cover" unoptimized />
+                              </div>
+                            ))}
+                            {color.images.length > 3 && (
+                              <div className="w-10 h-10 rounded border border-gray-200 flex items-center justify-center text-xs text-gray-500">
+                                +{color.images.length - 3}
+                              </div>
+                            )}
                           </div>
                         </div>
 
-                        {/* Variant images */}
-                        <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
-                          <div className="flex flex-wrap gap-2 items-center">
-                            <span className="text-xs text-gray-500">Images:</span>
-                            {variant.variant_images.map((url, imgIndex) => (
-                              <div key={imgIndex} className="relative w-12 h-12 rounded border border-gray-200 overflow-hidden group">
-                                <Image src={url} alt="" fill className="object-cover" unoptimized />
-                                <button
-                                  type="button"
-                                  onClick={() => removeVariantImage(index, imgIndex)}
-                                  className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
-                                >
-                                  <X className="w-3 h-3 text-white" />
-                                </button>
-                              </div>
-                            ))}
+                        {/* Sizes */}
+                        <div className="border-t border-gray-100 dark:border-gray-700 pt-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-medium text-gray-500">Sizes</span>
                             <button
                               type="button"
-                              onClick={() => { setActiveVariantIndex(index); variantImageInputRef.current?.click(); }}
-                              disabled={uploadingVariantImage === index}
-                              className="w-12 h-12 rounded border-2 border-dashed border-gray-300 flex items-center justify-center text-gray-400 hover:border-coral"
+                              onClick={() => addSizeToColor(colorIndex)}
+                              className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                             >
-                              {uploadingVariantImage === index ? (
-                                <Loader2 className="w-3 h-3 animate-spin" />
-                              ) : (
-                                <Plus className="w-3 h-3" />
-                              )}
+                              <Plus className="w-3 h-3 inline mr-1" /> Add Size
                             </button>
                           </div>
+                          {color.sizes.length > 0 ? (
+                            <div className="space-y-2">
+                              {color.sizes.map((size, sizeIndex) => (
+                                <div key={sizeIndex} className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                                  <span className="font-medium text-sm w-12">{size.size}</span>
+                                  <div className="flex-1 grid grid-cols-3 gap-2">
+                                    <div>
+                                      <label className="text-[10px] text-gray-400 block">Stock</label>
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        value={size.stock_quantity}
+                                        onChange={(e) => updateSizeVariant(colorIndex, sizeIndex, { stock_quantity: parseInt(e.target.value) || 0 })}
+                                        className="w-full px-2 py-1 text-sm border border-gray-200 dark:border-gray-600 rounded"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="text-[10px] text-gray-400 block">Price +/-</label>
+                                      <input
+                                        type="number"
+                                        value={size.price_adjustment}
+                                        onChange={(e) => updateSizeVariant(colorIndex, sizeIndex, { price_adjustment: parseInt(e.target.value) || 0 })}
+                                        className="w-full px-2 py-1 text-sm border border-gray-200 dark:border-gray-600 rounded"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="text-[10px] text-gray-400 block">Final</label>
+                                      <span className="text-sm font-semibold">₹{calculatedSalePrice + size.price_adjustment}</span>
+                                    </div>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => removeSizeVariant(colorIndex, sizeIndex)}
+                                    className="p-1 text-gray-400 hover:text-red-500"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-gray-400 italic">No sizes added yet</p>
+                          )}
                         </div>
                       </div>
                     ))}
-                    <input 
-                      ref={variantImageInputRef}
-                      type="file" 
-                      accept="image/*" 
-                      onChange={(e) => activeVariantIndex !== null && handleVariantImageUpload(e, activeVariantIndex)} 
-                      className="hidden" 
-                    />
                   </div>
                 ) : (
-                  <div className="text-center py-6 text-gray-400">
-                    <Palette className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">No variants yet. Add color/size combinations above.</p>
+                  <div className="text-center py-8 text-gray-400 bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-200 dark:border-gray-700">
+                    <Palette className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                    <p className="text-sm">No colors yet. Click "Add New Color" to get started.</p>
                   </div>
                 )}
-              </div>
-            )}
-
-            {/* === COLOURS & SIZES (for non-variant products) === */}
-            {!hasVariants && (
-              <div className="grid grid-cols-2 gap-3">
-                {/* Colours */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Colours</label>
-                  <div className="flex flex-wrap gap-1.5 mb-1.5 min-h-[28px]">
-                    {colours.map((c, i) => (
-                      <span key={i} className="inline-flex items-center gap-1 bg-coral/10 text-coral text-xs px-2 py-0.5 rounded-full">
-                        {c}
-                        <button type="button" onClick={() => removeTag(i, colours, setColours)} className="hover:text-red-500">
-                          <X className="w-3 h-3" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                  <select
-                    value=""
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      if (val && !colours.includes(val)) setColours([...colours, val]);
-                    }}
-                    className="w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm"
-                  >
-                    <option value="">+ Add colour</option>
-                    {predefinedColors.filter(c => !colours.includes(c.name)).map(c => (
-                      <option key={c.name} value={c.name}>{c.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Sizes */}
-                <div>
-                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Sizes</label>
-                  <div className="flex flex-wrap gap-1.5 mb-1.5 min-h-[28px]">
-                    {sizes.map((s, i) => (
-                      <span key={i} className="inline-flex items-center gap-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 text-xs px-2 py-0.5 rounded-full">
-                        {s}
-                        <button type="button" onClick={() => removeTag(i, sizes, setSizes)} className="hover:text-red-500">
-                          <X className="w-3 h-3" />
-                        </button>
-                      </span>
-                    ))}
-                  </div>
-                  <div className="flex gap-1.5">
-                    <input
-                      type="text" value={sizeInput}
-                      onChange={(e) => setSizeInput(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addTag(sizeInput, sizes, setSizes, setSizeInput); } }}
-                      placeholder="e.g. S, M, L, XL"
-                      className="flex-1 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm"
-                    />
-                    <button type="button" onClick={() => addTag(sizeInput, sizes, setSizes, setSizeInput)} className="px-2.5 py-1.5 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors">
-                      <Plus className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
               </div>
             )}
 
@@ -968,6 +849,139 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
             </button>
           </div>
         </form>
+
+        {/* Color Modal */}
+        {showColorModal && (
+          <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md">
+              <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-700">
+                <h3 className="font-semibold text-gray-900 dark:text-white">
+                  {editingColorIndex !== null ? "Edit Color" : "Add New Color"}
+                </h3>
+                <button onClick={closeColorModal} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+                  <X className="w-5 h-5 text-gray-400" />
+                </button>
+              </div>
+              
+              <div className="p-4 space-y-4">
+                {error && (
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 text-sm p-2 rounded-lg">
+                    {error}
+                  </div>
+                )}
+
+                {/* Color name */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Color Name</label>
+                  <select
+                    value={colorForm.name}
+                    onChange={(e) => {
+                      const name = e.target.value;
+                      const predefined = predefinedColors.find(c => c.name === name);
+                      setColorForm({ 
+                        ...colorForm, 
+                        name,
+                        hex_code: predefined ? predefined.hex : colorForm.hex_code 
+                      });
+                    }}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white text-sm mb-2"
+                  >
+                    <option value="">Select or type custom</option>
+                    {predefinedColors.map(c => (
+                      <option key={c.name} value={c.name}>{c.name}</option>
+                    ))}
+                  </select>
+                  <input
+                    type="text"
+                    value={colorForm.name}
+                    onChange={(e) => setColorForm({ ...colorForm, name: e.target.value })}
+                    placeholder="Or enter custom color name"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white text-sm"
+                  />
+                </div>
+
+                {/* Hex picker */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Color Code</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="color"
+                      value={colorForm.hex_code}
+                      onChange={(e) => setColorForm({ ...colorForm, hex_code: e.target.value })}
+                      className="w-12 h-12 rounded border-0 p-0 cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={colorForm.hex_code}
+                      onChange={(e) => setColorForm({ ...colorForm, hex_code: e.target.value })}
+                      className="flex-1 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white text-sm font-mono uppercase"
+                    />
+                  </div>
+                </div>
+
+                {/* Images */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                    Images (max 4) <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex flex-wrap gap-2">
+                    {colorForm.images.map((url, idx) => (
+                      <div key={idx} className="relative w-16 h-20 rounded-lg overflow-hidden border border-gray-200 group">
+                        <Image src={url} alt="" fill className="object-cover" unoptimized />
+                        <button
+                          type="button"
+                          onClick={() => removeColorImage(idx)}
+                          className="absolute top-0.5 right-0.5 bg-white/90 p-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="w-3 h-3 text-red-500" />
+                        </button>
+                      </div>
+                    ))}
+                    {colorForm.images.length < 4 && (
+                      <button
+                        type="button"
+                        onClick={() => colorImageInputRef.current?.click()}
+                        disabled={uploadingColorImage}
+                        className="w-16 h-20 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-coral/50 flex flex-col items-center justify-center"
+                      >
+                        {uploadingColorImage ? (
+                          <Loader2 className="w-4 h-4 animate-spin text-coral" />
+                        ) : (
+                          <Plus className="w-4 h-4 text-gray-400" />
+                        )}
+                      </button>
+                    )}
+                  </div>
+                  <input 
+                    ref={colorImageInputRef}
+                    type="file" 
+                    accept="image/*" 
+                    multiple
+                    onChange={handleColorImageUpload}
+                    className="hidden"
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-2 px-4 py-3 border-t border-gray-100 dark:border-gray-700">
+                <button
+                  type="button"
+                  onClick={saveColor}
+                  className="flex-1 px-4 py-2 bg-coral text-white rounded-lg text-sm font-medium hover:bg-coral/90 transition-colors"
+                >
+                  {editingColorIndex !== null ? "Save Changes" : "Add Color"}
+                </button>
+                <button
+                  type="button"
+                  onClick={closeColorModal}
+                  className="px-4 py-2 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

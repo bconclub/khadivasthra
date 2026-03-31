@@ -3,6 +3,7 @@
 import { cn } from "@/lib/utils";
 
 export interface ColorOption {
+  id: string;
   name: string;
   hex: string;
   inStock: boolean;
@@ -12,35 +13,37 @@ export interface ColorOption {
 interface ColorSwatchesProps {
   colors: ColorOption[];
   selected: string | null;
-  onSelect: (name: string) => void;
+  onSelect: (id: string) => void;
 }
 
 export function ColorSwatches({ colors, selected, onSelect }: ColorSwatchesProps) {
   if (!colors || colors.length === 0) return null;
 
+  const selectedColor = colors.find(c => c.id === selected);
+
   return (
     <div>
       <p className="text-sm font-semibold text-text mb-3">
-        Colour{selected ? <span className="font-normal text-text-muted ml-1">— {selected}</span> : ""}
+        Colour{selectedColor ? <span className="font-normal text-text-muted ml-1">— {selectedColor.name}</span> : ""}
       </p>
       <div className="flex flex-wrap gap-3">
         {colors.map((color) => (
           <button
-            key={color.name}
+            key={color.id}
             type="button"
-            onClick={() => color.inStock && onSelect(color.name)}
+            onClick={() => color.inStock && onSelect(color.id)}
             disabled={!color.inStock}
             title={color.name}
             className={cn(
               "group relative w-8 h-8 md:w-10 md:h-10 rounded-full border-2 transition-all",
-              selected === color.name
+              selected === color.id
                 ? "ring-2 ring-offset-2 ring-coral border-transparent"
                 : "border-gray-200 hover:border-gray-300"
             )}
             style={{ backgroundColor: color.hex }}
           >
             {/* Low stock indicator dot */}
-            {color.lowStock && color.inStock && selected !== color.name && (
+            {color.lowStock && color.inStock && selected !== color.id && (
               <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-amber-500" />
             )}
             

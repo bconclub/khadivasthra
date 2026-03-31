@@ -21,21 +21,33 @@ export interface Category {
   updated_at: string;
 }
 
+// Product color with images
+export interface ProductColor {
+  id: string;
+  product_id: string;
+  name: string;
+  hex_code: string;
+  images: string[];
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+  variants?: ProductVariant[];
+}
+
+// Product variant (size-level stock)
 export interface ProductVariant {
   id: string;
   product_id: string;
-  sku: string;
-  color_name: string;
-  color_hex: string;
+  color_id: string;
   size: string;
-  price_adjustment: number;
+  sku: string;
   stock_quantity: number;
-  variant_image: string | null;
-  variant_images: string[];
+  price_adjustment: number;
   is_active: boolean;
-  is_default: boolean;
   created_at: string;
   updated_at: string;
+  // Joined data
+  color?: ProductColor;
 }
 
 export interface Product {
@@ -72,6 +84,7 @@ export interface Product {
 
 export interface ProductWithCategory extends Product {
   category: Category;
+  colors?: ProductColor[];
   variants?: ProductVariant[];
 }
 
@@ -83,7 +96,8 @@ export interface OrderItem {
   quantity: number;
   subtotal: number;
   variant_id?: string | null;
-  color?: string | null;
+  color_id?: string | null;
+  color_name?: string | null;
   size?: string | null;
 }
 
@@ -211,7 +225,8 @@ export interface CartItem {
   image: string;
   quantity: number;
   variant_id?: string;
-  color?: string;
+  color_id?: string;
+  color_name?: string;
   size?: string;
 }
 

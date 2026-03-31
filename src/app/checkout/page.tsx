@@ -560,10 +560,10 @@ export default function CheckoutPage() {
                     <div key={`${item.id}${item.variant_id ? `-${item.variant_id}` : ''}`} className="flex justify-between text-sm">
                       <span className="text-text-muted line-clamp-1 flex-1 mr-2">
                         {item.name} 
-                        {(item.color || item.size) && (
+                        {(item.color_name || item.size) && (
                           <span className="text-xs text-text-muted block">
-                            {item.color && `Color: ${item.color}`}
-                            {item.color && item.size && " / "}
+                            {item.color_name && `Color: ${item.color_name}`}
+                            {item.color_name && item.size && " / "}
                             {item.size && `Size: ${item.size}`}
                           </span>
                         )}

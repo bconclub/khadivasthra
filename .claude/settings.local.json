@@ -1,0 +1,24 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git pull:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm install:*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nFix navigation: Shop → /shop, Collections → /collections, add collections page\n\n- Updated all nav links \\(header, footer, homepage, cart\\) from /products to /shop\n- Created /collections page showing category-based product collections with images\n- Removed unused /products listing page \\(product detail routes preserved\\)\n\nCo-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(git push:*)",
+      "Bash(git fetch:*)",
+      "Bash(dir:*)",
+      "Bash(^d \")",
+      "Bash(npm run build:*)",
+      "Bash(git commit -m \"$\\(cat <<''EOF''\nMigrate from PHP/JSON backend to Supabase\n\nReplace the PHP admin panel and JSON file storage with a full Supabase\nbackend. All storefront pages now fetch data client-side via the Supabase\nJS SDK \\(preserving static export\\). Includes new checkout flow, order\nmanagement, and a complete admin panel with Supabase Auth.\n\n- Add Supabase client, types, services, and custom useSupabaseQuery hook\n- Rewrite storefront pages \\(home, shop, collections, product, cart, status\\)\n- Add checkout page with order creation and order-success confirmation\n- Build admin panel: dashboard, products CRUD, categories CRUD, orders,\n  settings, image upload to Supabase Storage\n- Add AdminAuthContext \\(Supabase Auth\\) and AdminShell with sidebar nav\n- Add ToastProvider \\(react-hot-toast\\) for admin notifications\n- Create database schema \\(supabase/schema.sql\\) and migration script\n- Remove legacy PHP admin, backend scripts, and duplicate product routes\n- Update ProductCard to accept both /images/ and https:// Supabase URLs\n\nCo-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>\nEOF\n\\)\")",
+      "Bash(timeout:*)",
+      "Bash(git commit:*)",
+      "Bash(npx next build:*)",
+      "Bash(npx vercel:*)",
+      "WebFetch(domain:khadivasthra.com)",
+      "WebFetch(domain:www.khadivasthra.com)",
+      "Bash(gh api:*)"
+    ]
+  }
+}
