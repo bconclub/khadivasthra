@@ -7,7 +7,7 @@ import { getOrders, updateOrderStatus, updateOrder, checkPaymentStatus } from "@
 import { deleteOrder } from "@/lib/services/admin";
 import { supabase } from "@/lib/supabase";
 import type { Order, OrderStatus, Product, PaymentMethod, PaymentStatus } from "@/types";
-import { Loader2, ChevronDown, ChevronUp, Trash2, CreditCard, Package, Plus, Search, X, Minus, Pencil, Printer, FileText, Tag } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp, Trash2, CreditCard, Package, Plus, Search, X, Minus, Pencil, Printer, FileText, Tag, CheckSquare } from "lucide-react";
 import { printOrder, printOrders } from "@/lib/print-order";
 import Image from "next/image";
 import toast from "react-hot-toast";
@@ -734,6 +734,23 @@ export default function AdminOrdersPage() {
     if (!error) refetch();
   };
 
+  const handleBulkStatusChange = async (newStatus: OrderStatus) => {
+    if (selectedOrders.size === 0) return;
+    const orderIds = Array.from(selectedOrders);
+    try {
+      const { error } = await supabase
+        .from("orders")
+        .update({ status: newStatus })
+        .in("id", orderIds);
+      if (error) throw error;
+      toast.success(`${orderIds.length} order(s) updated to ${newStatus}`);
+      setSelectedOrders(new Set());
+      refetch();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update status");
+    }
+  };
+
   const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
     try {
       await updateOrderStatus(orderId, newStatus);
@@ -788,34 +805,51 @@ export default function AdminOrdersPage() {
             {selectedOrders.size > 0 && (
               <>
                 <span className="text-sm text-gray-500 dark:text-gray-400">{selectedOrders.size} selected</span>
-                <button
-                  onClick={() => {
-                    const selected = allOrders.filter((o) => selectedOrders.has(o.id));
-                    printOrders(selected, "invoice");
-                    markAsBilled(selected.map((o) => o.id));
-                  }}
-                  className="px-3 py-2 bg-coral/10 text-coral rounded-lg text-sm font-medium hover:bg-coral/20 transition-colors flex items-center gap-1.5"
-                  title="Print invoices"
-                >
-                  <FileText className="w-4 h-4" /> Invoices
-                </button>
-                <button
-                  onClick={() => {
-                    const selected = allOrders.filter((o) => selectedOrders.has(o.id));
-                    printOrders(selected, "sticker");
-                  }}
-                  className="px-3 py-2 bg-coral/10 text-coral rounded-lg text-sm font-medium hover:bg-coral/20 transition-colors flex items-center gap-1.5"
-                  title="Print stickers"
-                >
-                  <Tag className="w-4 h-4" /> Stickers
-                </button>
-                <button
-                  onClick={() => setSelectedOrders(new Set())}
-                  className="px-2 py-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-                  title="Clear selection"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <select
+                    value=""
+                    onChange={(e) => {
+                      if (e.target.value) {
+                        handleBulkStatusChange(e.target.value as OrderStatus);
+                        e.target.value = "";
+                      }
+                    }}
+                    className="px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-coral focus:border-transparent"
+                  >
+                    <option value="" disabled>Change status…</option>
+                    {STATUS_OPTIONS.map((s) => (
+                      <option key={s} value={s} className="capitalize">{s}</option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={() => {
+                      const selected = allOrders.filter((o) => selectedOrders.has(o.id));
+                      printOrders(selected, "invoice");
+                      markAsBilled(selected.map((o) => o.id));
+                    }}
+                    className="px-3 py-2 bg-coral/10 text-coral rounded-lg text-sm font-medium hover:bg-coral/20 transition-colors flex items-center gap-1.5"
+                    title="Print invoices"
+                  >
+                    <FileText className="w-4 h-4" /> Invoices
+                  </button>
+                  <button
+                    onClick={() => {
+                      const selected = allOrders.filter((o) => selectedOrders.has(o.id));
+                      printOrders(selected, "sticker");
+                    }}
+                    className="px-3 py-2 bg-coral/10 text-coral rounded-lg text-sm font-medium hover:bg-coral/20 transition-colors flex items-center gap-1.5"
+                    title="Print stickers"
+                  >
+                    <Tag className="w-4 h-4" /> Stickers
+                  </button>
+                  <button
+                    onClick={() => setSelectedOrders(new Set())}
+                    className="px-2 py-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                    title="Clear selection"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </>
             )}
             <button
