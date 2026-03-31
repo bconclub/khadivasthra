@@ -157,8 +157,14 @@ function ProductContentInner() {
     // Handle add to cart
     const handleAddToCart = () => {
       if (!product) return;
-      if (product.has_variants && (!effectiveColorId || !effectiveSize)) {
-        alert("Please select a color and size");
+      const needsColor = product.has_variants && (product.colors?.length ?? 0) > 0;
+      const needsSize = product.has_variants && (product.sizes?.length ?? 0) > 0;
+      if (needsColor && !effectiveColorId) {
+        alert("Please select a color");
+        return;
+      }
+      if (needsSize && !effectiveSize) {
+        alert("Please select a size");
         return;
       }
       addToCart({
