@@ -352,6 +352,15 @@ export default function AdminProductsPage() {
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-2">
+                            <a
+                              href={`/product/${product.slug}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-2 text-gray-400 hover:text-blue-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                              title="View on storefront"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </a>
                             <button
                               onClick={() => openEdit(product)}
                               className="p-2 text-gray-400 hover:text-coral rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
