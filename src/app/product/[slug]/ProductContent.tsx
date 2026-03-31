@@ -47,6 +47,26 @@ function ProductContentInner() {
     const [selectedColorId, setSelectedColorId] = useState<string | null>(null);
     const [selectedSize, setSelectedSize] = useState<string | null>(null);
     const [activeTab, setActiveTab] = useState<"details" | "specs" | "care">("details");
+
+    // Effective selections considering URL params and auto-single-color
+    const effectiveColorId = useMemo(() => {
+      if (selectedColorId) return selectedColorId;
+      if (!product?.colors) return null;
+      const colorParam = searchParams.get('color');
+      if (colorParam) {
+        const matched = product.colors.find(c => c.name.toLowerCase() === colorParam.toLowerCase());
+        if (matched) return matched.id;
+      }
+      if (product.colors.length === 1) return product.colors[0].id;
+      return null;
+    }, [selectedColorId, product, searchParams]);
+
+    const effectiveSize = useMemo(() => {
+      if (selectedSize) return selectedSize;
+      const sizeParam = searchParams.get('size');
+      if (sizeParam) return sizeParam.toUpperCase();
+      return null;
+    }, [selectedSize, searchParams]);
     const [imageError, setImageError] = useState(false);
     const [selectedImageIndex, setSelectedImageIndex] = useState(0);
     const { addToCart } = useCart();
@@ -58,6 +78,8 @@ function ProductContentInner() {
       if (colorParam && product?.colors) {
         const color = product.colors.find(c => c.name.toLowerCase() === colorParam.toLowerCase());
         if (color) setSelectedColorId(color.id);
+      } else if (product?.colors?.length === 1) {
+        setSelectedColorId(product.colors[0].id);
       }
       if (sizeParam) {
         setSelectedSize(sizeParam.toUpperCase());
@@ -75,8 +97,8 @@ function ProductContentInner() {
     // Get selected color
     const selectedColor = useMemo(() => {
       if (!product?.colors) return null;
-      return product.colors.find(c => c.id === selectedColorId) || null;
-    }, [product, selectedColorId]);
+      return product.colors.find(c => c.id === effectiveColorId) || null;
+    }, [product, effectiveColorId]);
 
     // Get images for selected color or product images
     const images = useMemo(() => {
@@ -86,9 +108,9 @@ function ProductContentInner() {
 
     // Get variant for selected color+size
     const selectedVariant = useMemo(() => {
-      if (!selectedColorId || !selectedSize || !product?.variants) return null;
-      return product.variants.find(v => v.color_id === selectedColorId && v.size === selectedSize) || null;
-    }, [product, selectedColorId, selectedSize]);
+      if (!effectiveColorId || !effectiveSize || !product?.variants) return null;
+      return product.variants.find(v => v.color_id === effectiveColorId && v.size === effectiveSize) || null;
+    }, [product, effectiveColorId, effectiveSize]);
 
     // Final price calculation
     const finalPrice = useMemo(() => {
@@ -135,7 +157,7 @@ function ProductContentInner() {
     // Handle add to cart
     const handleAddToCart = () => {
       if (!product) return;
-      if (product.has_variants && (!selectedColorId || !selectedSize)) {
+      if (product.has_variants && (!effectiveColorId || !effectiveSize)) {
         alert("Please select a color and size");
         return;
       }
@@ -144,7 +166,7 @@ function ProductContentInner() {
         variant_id: selectedVariant?.id,
         name: product.name,
         color_name: selectedColor?.name,
-        size: selectedSize || undefined,
+        size: effectiveSize || undefined,
         price: finalPrice,
         image: selectedColor?.images?.[0] || product.image_url || '',
       }, quantity);
@@ -174,14 +196,14 @@ function ProductContentInner() {
     const discount = mrp > finalPrice ? Math.round(((mrp - finalPrice) / mrp) * 100) : 0;
 
     return (
-      <div className="min-h-screen bg-background py-4">
+      <div className="min-h-screen bg-background pt-20 md:pt-24 pb-4">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumbs */}
           <nav className="text-sm mb-6">
             <ol className="flex items-center gap-2 text-text-muted">
               <li><a href="/" className="hover:text-text">Home</a></li>
               <li>/</li>
-              <li><a href={`/category/${product.category?.slug}`} className="hover:text-text">{product.category?.name}</a></li>
+              <li><a href={`/shop/${product.category?.slug}`} className="hover:text-text">{product.category?.name}</a></li>
               <li>/</li>
               <li className="text-text font-medium truncate max-w-xs">{product.name}</li>
             </ol>
@@ -296,7 +318,7 @@ function ProductContentInner() {
                       hex: c.hex_code,
                       inStock: c.variants?.some(v => v.stock_quantity > 0) ?? true,
                     }))}
-                    selected={selectedColorId}
+                    selected={effectiveColorId}
                     onSelect={setSelectedColorId}
                   />
                 </div>
@@ -310,7 +332,7 @@ function ProductContentInner() {
                   </h3>
                   <SizeSelector
                     sizes={availableSizes.map(s => s.size)}
-                    selected={selectedSize}
+                    selected={effectiveSize}
                     availableSizes={availableSizes.filter(s => s.stock > 0).map(s => s.size)}
                     onSelect={setSelectedSize}
                   />
