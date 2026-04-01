@@ -1,17 +1,165 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { ProductForm } from "@/components/admin/ProductForm";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getAllProducts, updateProduct, createProduct, deleteProduct, updateProductOrder, triggerSiteDeploy } from "@/lib/services/admin";
 import { getCategories } from "@/lib/services/categories";
 import type { ProductWithCategory } from "@/types";
-import { Plus, Search, Pencil, Trash2, Loader2, Eye, EyeOff, Star, RefreshCw, ArrowUp, ArrowDown } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Loader2, Eye, EyeOff, Star, RefreshCw, ArrowUp, ArrowDown, CheckSquare, Package, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 
 type VisibilityFilter = "all" | "visible" | "hidden";
+
+// Inline stock editing component
+function StockBadge({
+  product,
+  isEditing,
+  editValue,
+  savingId,
+  onStartEdit,
+  onChange,
+  onSave,
+  onCancel,
+}: {
+  product: ProductWithCategory;
+  isEditing: boolean;
+  editValue: string;
+  savingId: string | null;
+  onStartEdit: (product: ProductWithCategory) => void;
+  onChange: (value: string) => void;
+  onSave: () => void;
+  onCancel: () => void;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isEditing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [isEditing]);
+
+  const stock = product.stock_quantity || 0;
+  const badgeClass = stock > 10
+    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+    : stock > 0
+      ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
+      : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400';
+
+  const isSaving = savingId === product.id;
+
+  if (isEditing) {
+    return (
+      <div className="relative inline-flex items-center">
+        <input
+          ref={inputRef}
+          type="number"
+          min="0"
+          step="1"
+          value={editValue}
+          onChange={(e) => onChange(e.target.value)}
+          onBlur={onSave}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') onSave();
+            if (e.key === 'Escape') onCancel();
+          }}
+          disabled={isSaving}
+          className="w-[60px] px-2 py-1 text-sm font-bold text-center rounded-full border-2 border-coral focus:outline-none focus:ring-2 focus:ring-coral/50 disabled:opacity-50 dark:bg-gray-800 dark:text-white"
+        />
+        {isSaving && (
+          <Loader2 className="absolute -right-6 w-4 h-4 animate-spin text-coral" />
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <button
+      onClick={() => onStartEdit(product)}
+      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold transition-all hover:opacity-80 ${badgeClass}`}
+      title="Click to edit stock"
+    >
+      {stock > 0 ? stock : 'Out'}
+    </button>
+  );
+}
+
+// Bulk stock update modal
+function BulkStockModal({
+  count,
+  onClose,
+  onUpdate,
+}: {
+  count: number;
+  onClose: () => void;
+  onUpdate: (value: number) => void;
+}) {
+  const [value, setValue] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+
+  const handleSubmit = async () => {
+    const numValue = parseInt(value, 10);
+    if (isNaN(numValue) || numValue < 0) {
+      toast.error("Please enter a valid non-negative number");
+      return;
+    }
+    setSubmitting(true);
+    await onUpdate(numValue);
+    setSubmitting(false);
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-sm">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="font-semibold text-gray-900 dark:text-white">Bulk Stock Update</h3>
+          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded">
+            <X className="w-5 h-5 text-gray-400" />
+          </button>
+        </div>
+        <div className="p-4 space-y-4">
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            Set stock quantity for <span className="font-bold text-coral">{count}</span> selected products
+          </p>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+              New Stock Quantity
+            </label>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              value={value}
+              onChange={(e) => setValue(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSubmit()}
+              className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-lg font-bold text-center"
+              placeholder="Enter quantity"
+              autoFocus
+            />
+          </div>
+        </div>
+        <div className="flex gap-2 px-4 py-3 border-t border-gray-200 dark:border-gray-700">
+          <button
+            onClick={handleSubmit}
+            disabled={submitting || !value}
+            className="flex-1 px-4 py-2 bg-coral text-white rounded-lg text-sm font-medium hover:bg-coral/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {submitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Updating...</> : "Update Stock"}
+          </button>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 rounded-lg text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function AdminProductsPage() {
   const { data: products, loading, refetch } = useSupabaseQuery(getAllProducts);
@@ -22,6 +170,15 @@ export default function AdminProductsPage() {
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductWithCategory | undefined>();
   const [syncing, setSyncing] = useState(false);
+
+  // Inline stock editing state
+  const [editingStockId, setEditingStockId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState<string>("");
+  const [savingId, setSavingId] = useState<string | null>(null);
+
+  // Bulk selection state
+  const [selectedProducts, setSelectedProducts] = useState<Set<string>>(new Set());
+  const [showBulkModal, setShowBulkModal] = useState(false);
 
   const handleSync = async () => {
     setSyncing(true);
@@ -49,6 +206,8 @@ export default function AdminProductsPage() {
       (visibilityFilter === "hidden" && !p.is_active);
     return matchesSearch && matchesCategory && matchesVisibility;
   });
+
+  const selectedCount = selectedProducts.size;
 
   const handleCreate = async (data: Record<string, unknown>) => {
     await createProduct(data as Parameters<typeof createProduct>[0]);
@@ -143,6 +302,106 @@ export default function AdminProductsPage() {
     setShowForm(true);
   };
 
+  // Inline stock editing handlers
+  const startStockEdit = (product: ProductWithCategory) => {
+    setEditingStockId(product.id);
+    setEditValue((product.stock_quantity || 0).toString());
+  };
+
+  const cancelStockEdit = () => {
+    setEditingStockId(null);
+    setEditValue("");
+  };
+
+  const saveStockEdit = async () => {
+    if (!editingStockId) return;
+
+    const newValue = parseInt(editValue, 10);
+    if (isNaN(newValue) || newValue < 0) {
+      toast.error("Please enter a valid non-negative number");
+      return;
+    }
+
+    // Find the product
+    const product = products?.find(p => p.id === editingStockId);
+    if (!product) return;
+
+    const oldValue = product.stock_quantity || 0;
+    if (newValue === oldValue) {
+      cancelStockEdit();
+      return;
+    }
+
+    setSavingId(editingStockId);
+
+    // Optimistic update - update local data immediately
+    const updatedProducts = products?.map(p =>
+      p.id === editingStockId ? { ...p, stock_quantity: newValue } : p
+    );
+    // Note: We can't directly set products since it's from useSupabaseQuery
+    // But the UI will show the spinner, and refetch will update it
+
+    try {
+      await updateProduct(editingStockId, { stock_quantity: newValue });
+      toast.success(`Stock updated to ${newValue}`);
+      await refetch();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update stock");
+    } finally {
+      setSavingId(null);
+      setEditingStockId(null);
+      setEditValue("");
+    }
+  };
+
+  // Bulk selection handlers
+  const toggleSelectProduct = (productId: string) => {
+    setSelectedProducts(prev => {
+      const next = new Set(prev);
+      if (next.has(productId)) {
+        next.delete(productId);
+      } else {
+        next.add(productId);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    const allSelected = filtered.length > 0 && filtered.every(p => selectedProducts.has(p.id));
+    setSelectedProducts(prev => {
+      const next = new Set(prev);
+      if (allSelected) {
+        filtered.forEach(p => next.delete(p.id));
+      } else {
+        filtered.forEach(p => next.add(p.id));
+      }
+      return next;
+    });
+  };
+
+  const clearSelection = () => {
+    setSelectedProducts(new Set());
+  };
+
+  // Bulk stock update handler
+  const handleBulkStockUpdate = async (newValue: number) => {
+    const ids = Array.from(selectedProducts);
+    if (ids.length === 0) return;
+
+    try {
+      // Update all selected products
+      const promises = ids.map(id => updateProduct(id, { stock_quantity: newValue }));
+      await Promise.all(promises);
+      toast.success(`Stock updated to ${newValue} for ${ids.length} products`);
+      await refetch();
+      setShowBulkModal(false);
+      clearSelection();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update stock");
+    }
+  };
+
   return (
     <AdminShell>
       <div className="space-y-6">
@@ -173,6 +432,15 @@ export default function AdminProductsPage() {
             product={editingProduct}
             onSubmit={editingProduct ? handleUpdate : handleCreate}
             onCancel={closeForm}
+          />
+        )}
+
+        {/* Bulk Stock Update Modal */}
+        {showBulkModal && (
+          <BulkStockModal
+            count={selectedCount}
+            onClose={() => setShowBulkModal(false)}
+            onUpdate={handleBulkStockUpdate}
           />
         )}
 
@@ -234,6 +502,36 @@ export default function AdminProductsPage() {
           </select>
         </div>
 
+        {/* Bulk Actions Bar */}
+        {selectedCount > 0 && (
+          <div className="flex items-center justify-between bg-coral/10 dark:bg-coral/20 border border-coral/20 rounded-xl px-4 py-3">
+            <div className="flex items-center gap-3">
+              <CheckSquare className="w-5 h-5 text-coral" />
+              <span className="text-sm font-medium text-gray-900 dark:text-white">
+                {selectedCount} product{selectedCount > 1 ? 's' : ''} selected
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowBulkModal(true)}
+                className="flex items-center gap-2"
+              >
+                <Package className="w-4 h-4" />
+                Update Stock
+              </Button>
+              <button
+                onClick={clearSelection}
+                className="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+                title="Clear selection"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Products Table */}
         {loading ? (
           <div className="flex justify-center py-12">
@@ -245,6 +543,14 @@ export default function AdminProductsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider bg-gray-50 dark:bg-gray-900/50">
+                    <th className="px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={filtered.length > 0 && filtered.every(p => selectedProducts.has(p.id))}
+                        onChange={toggleSelectAll}
+                        className="w-4 h-4 rounded border-gray-300 text-coral focus:ring-coral"
+                      />
+                    </th>
                     <th className="px-6 py-3">Order</th>
                     <th className="px-6 py-3">Product</th>
                     <th className="px-6 py-3">Price</th>
@@ -257,13 +563,21 @@ export default function AdminProductsPage() {
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                   {filtered.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center text-gray-400 dark:text-gray-500">
+                      <td colSpan={8} className="px-6 py-12 text-center text-gray-400 dark:text-gray-500">
                         No products found
                       </td>
                     </tr>
                   ) : (
                     filtered.map((product) => (
                       <tr key={product.id} className={`hover:bg-gray-50 dark:hover:bg-gray-700/50 ${!product.is_active ? 'bg-gray-50/50 dark:bg-gray-900/30' : ''}`}>
+                        <td className="px-4 py-4">
+                          <input
+                            type="checkbox"
+                            checked={selectedProducts.has(product.id)}
+                            onChange={() => toggleSelectProduct(product.id)}
+                            className="w-4 h-4 rounded border-gray-300 text-coral focus:ring-coral"
+                          />
+                        </td>
                         <td className="px-6 py-4">
                           <div className="flex flex-col items-center gap-0.5">
                             <button
@@ -310,15 +624,16 @@ export default function AdminProductsPage() {
                           ₹{Number(product.price).toLocaleString()}
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
-                            (product.stock_quantity || 0) > 10
-                              ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                              : (product.stock_quantity || 0) > 0
-                                ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400'
-                                : 'bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400'
-                          }`}>
-                            {(product.stock_quantity || 0) > 0 ? product.stock_quantity : 'Out'}
-                          </span>
+                          <StockBadge
+                            product={product}
+                            isEditing={editingStockId === product.id}
+                            editValue={editValue}
+                            savingId={savingId}
+                            onStartEdit={startStockEdit}
+                            onChange={setEditValue}
+                            onSave={saveStockEdit}
+                            onCancel={cancelStockEdit}
+                          />
                         </td>
                         <td className="px-6 py-4">
                           <button

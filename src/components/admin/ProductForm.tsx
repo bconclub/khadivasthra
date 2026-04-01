@@ -80,6 +80,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const [length, setLength] = useState(product?.length?.toString() || "13");
   const [breadth, setBreadth] = useState(product?.breadth?.toString() || "7");
   const [height, setHeight] = useState(product?.height?.toString() || "3");
+  const [stockQuantity, setStockQuantity] = useState(product?.stock_quantity?.toString() || "0");
   const [uploadingMain, setUploadingMain] = useState(false);
   const [uploadingGallery, setUploadingGallery] = useState(false);
   const mainInputRef = useRef<HTMLInputElement>(null);
@@ -297,6 +298,15 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       return;
     }
     
+    // Validate stock quantity for non-variant products
+    if (!hasVariants) {
+      const stockNum = parseInt(stockQuantity, 10);
+      if (isNaN(stockNum) || stockNum < 0) {
+        setError("Stock quantity must be a non-negative number");
+        return;
+      }
+    }
+
     // Validate variants if has_variants is true
     if (hasVariants) {
       if (colors.length === 0) {
@@ -318,9 +328,9 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
     
     setSubmitting(true);
     try {
-      const totalStock = hasVariants 
+      const totalStock = hasVariants
         ? colors.reduce((sum, c) => sum + c.sizes.reduce((s, sz) => s + sz.stock_quantity, 0), 0)
-        : 0;
+        : parseInt(stockQuantity, 10) || 0;
 
       const baseData = {
         name, slug, description,
@@ -332,7 +342,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         is_featured: isFeatured, is_best_seller: isBestSeller, is_active: isActive,
         has_variants: hasVariants,
         stock_quantity: totalStock,
-        in_stock: hasVariants ? totalStock > 0 : true,
+        in_stock: totalStock > 0,
         care_instructions: careInstructions.filter(Boolean),
         display_order: product?.display_order ?? 0,
         colours: hasVariants ? colors.map(c => c.name) : [],
@@ -564,7 +574,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
               </div>
             </div>
 
-            {/* === PRICING === */}
+            {/* === PRICING & STOCK === */}
             <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 space-y-3">
               <label className="block text-xs font-medium text-gray-500 dark:text-gray-400">Pricing</label>
               <div className="grid grid-cols-3 gap-3 items-end">
@@ -606,6 +616,33 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
                   )}
                 </div>
               </div>
+
+              {/* Stock Quantity (for non-variant products) */}
+              {!hasVariants && (
+                <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Stock</label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={stockQuantity}
+                      onChange={(e) => setStockQuantity(e.target.value)}
+                      className="w-24 px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm font-bold"
+                    />
+                    <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                      parseInt(stockQuantity, 10) > 10
+                        ? 'bg-green-100 text-green-700'
+                        : parseInt(stockQuantity, 10) > 0
+                          ? 'bg-amber-100 text-amber-700'
+                          : 'bg-red-100 text-red-700'
+                    }`}>
+                      {parseInt(stockQuantity, 10) > 10 ? 'In Stock' : parseInt(stockQuantity, 10) > 0 ? 'Low Stock' : 'Out of Stock'}
+                    </span>
+                  </div>
+                </div>
+              )}
+
               {hasVariants && (
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   Variant prices can be adjusted from the base price (+/-) per size.
