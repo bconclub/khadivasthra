@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { uploadProductImage } from "@/lib/services/storage";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getCategories } from "@/lib/services/categories";
@@ -116,6 +116,17 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
     ? Math.round(mrpNum * (1 - discountPct / 100))
     : mrpNum;
   const hasDiscount = discountPct > 0 && mrpNum > 0;
+
+  // Check if selected category supports variants (only shirts category)
+  const selectedCategory = categories?.find(c => c.id === categoryId);
+  const isShirtsCategory = selectedCategory?.slug === 'shirts';
+
+  // Auto-disable variants if category changes to non-shirts
+  useEffect(() => {
+    if (!isShirtsCategory && hasVariants) {
+      setHasVariants(false);
+    }
+  }, [isShirtsCategory, hasVariants]);
 
   const handleNameChange = (value: string) => {
     setName(value);
@@ -439,20 +450,30 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
           )}
 
           <div className="px-6 py-5 space-y-5 max-h-[calc(100vh-10rem)] overflow-y-auto">
-            {/* === HAS VARIANTS TOGGLE === */}
-            <div className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
-              <input
-                type="checkbox"
-                checked={hasVariants}
-                onChange={(e) => setHasVariants(e.target.checked)}
-                className="w-5 h-5 rounded border-gray-300 text-coral focus:ring-coral"
-                id="has-variants"
-              />
-              <label htmlFor="has-variants" className="flex-1 cursor-pointer">
-                <span className="font-semibold text-gray-900 dark:text-white block">This product has color variations</span>
-                <span className="text-sm text-gray-500 dark:text-gray-400">Enable to manage different colors with dedicated images and size variants</span>
-              </label>
-            </div>
+            {/* === HAS VARIANTS TOGGLE (only for shirts category) === */}
+            {isShirtsCategory ? (
+              <div className="flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl border border-blue-200 dark:border-blue-800">
+                <input
+                  type="checkbox"
+                  checked={hasVariants}
+                  onChange={(e) => setHasVariants(e.target.checked)}
+                  className="w-5 h-5 rounded border-gray-300 text-coral focus:ring-coral"
+                  id="has-variants"
+                />
+                <label htmlFor="has-variants" className="flex-1 cursor-pointer">
+                  <span className="font-semibold text-gray-900 dark:text-white block">This product has color variations</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Enable to manage different colors with dedicated images and size variants</span>
+                </label>
+              </div>
+            ) : (
+              <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700">
+                <Package className="w-5 h-5 text-gray-400" />
+                <div className="flex-1">
+                  <span className="font-semibold text-gray-700 dark:text-gray-300 block">Single product (no variations)</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">Color variations are only available for Shirts category</span>
+                </div>
+              </div>
+            )}
 
             {/* === IMAGES AT TOP === */}
             <div className="flex gap-4">
