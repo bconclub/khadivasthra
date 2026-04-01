@@ -207,7 +207,7 @@ export async function updateProduct(
         // Resolve color_id
         let colorId = variant.color_id;
         if (!colorId || !existingColorIds.has(colorId)) {
-          colorId = colorIdMap.get(colorId || '') || colorIdMap.get(variant.color?.name || '') || '';
+          colorId = colorIdMap.get(colorId || '') || colorIdMap.get(variant.color_name || '') || colorIdMap.get(variant.color?.name || '') || '';
         }
         
         if (!colorId) continue;

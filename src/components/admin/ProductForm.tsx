@@ -356,6 +356,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         c.sizes.map(s => ({
           ...(s.id ? { id: s.id } : {}),
           color_id: c.id, // Will be replaced by server if new color
+          color_name: c.name, // Include color name to help backend resolve new colors
           size: s.size,
           sku: s.sku,
           stock_quantity: s.stock_quantity,

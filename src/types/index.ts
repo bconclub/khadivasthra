@@ -48,6 +48,8 @@ export interface ProductVariant {
   updated_at: string;
   // Joined data
   color?: ProductColor;
+  // Used during form submission to resolve new colors
+  color_name?: string;
 }
 
 export interface Product {
