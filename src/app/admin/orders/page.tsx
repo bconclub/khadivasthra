@@ -716,15 +716,26 @@ export default function AdminOrdersPage() {
   const [showCreateOrder, setShowCreateOrder] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState("");
 
   const allOrders = orders || [];
-  const filtered = statusFilter === "billed"
-    ? allOrders.filter((o) => o.status === "billed")
-    : statusFilter === "cod"
-      ? allOrders.filter((o) => o.payment_method === "cod")
-      : statusFilter
-        ? allOrders.filter((o) => o.status === statusFilter)
-        : allOrders;
+  
+  // Filter orders by search AND status tab
+  const filtered = allOrders.filter((order) => {
+    const query = searchQuery.toLowerCase().trim();
+    const matchesSearch = !query ||
+      order.order_number.toLowerCase().includes(query) ||
+      order.customer_name.toLowerCase().includes(query) ||
+      order.customer_phone.includes(query);
+    
+    const matchesStatus = !statusFilter
+      ? true
+      : statusFilter === "cod"
+        ? order.payment_method === "cod"
+        : order.status === statusFilter;
+    
+    return matchesSearch && matchesStatus;
+  });
 
   const markAsBilled = async (orderIds: string[]) => {
     const { error } = await supabase
@@ -868,6 +879,28 @@ export default function AdminOrdersPage() {
           <EditOrderModal order={editingOrder} onClose={() => setEditingOrder(null)} onUpdated={refetch} />
         )}
 
+        {/* Search Bar */}
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-gray-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="Search by Order ID, Name, or Phone..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="block w-full pl-11 pr-10 py-3 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-coral focus:border-coral transition-colors"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          )}
+        </div>
+
         {/* Status Filter */}
         <div className="flex gap-2 flex-wrap">
           <button
@@ -876,7 +909,7 @@ export default function AdminOrdersPage() {
               !statusFilter ? "bg-coral text-white" : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
             }`}
           >
-            All ({allOrders.length})
+            All ({filtered.length})
           </button>
           {STATUS_OPTIONS.map((status) => {
             const count = allOrders.filter((o) => o.status === status).length;
@@ -891,7 +924,13 @@ export default function AdminOrdersPage() {
                     : (isBilled ? "bg-white dark:bg-gray-800 text-green-600 dark:text-green-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700" : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700")
                 }`}
               >
-                {status} ({count})
+                {status} ({allOrders.filter((o) => o.status === status).filter((o) => {
+                  const query = searchQuery.toLowerCase().trim();
+                  return !query ||
+                    o.order_number.toLowerCase().includes(query) ||
+                    o.customer_name.toLowerCase().includes(query) ||
+                    o.customer_phone.includes(query);
+                }).length})
               </button>
             );
           })}
@@ -903,7 +942,13 @@ export default function AdminOrdersPage() {
                 : "bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
             }`}
           >
-            COD ({allOrders.filter((o) => o.payment_method === "cod").length})
+            COD ({allOrders.filter((o) => o.payment_method === "cod").filter((o) => {
+              const query = searchQuery.toLowerCase().trim();
+              return !query ||
+                o.order_number.toLowerCase().includes(query) ||
+                o.customer_name.toLowerCase().includes(query) ||
+                o.customer_phone.includes(query);
+            }).length})
           </button>
         </div>
 
