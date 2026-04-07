@@ -376,6 +376,8 @@ export async function getDashboardStats() {
     { count: confirmedOrders },
     { count: totalViews },
     { count: cancelledOrders },
+    { count: codOrders },
+    { count: prepaidOrders },
   ] = await Promise.all([
     supabase.from('products').select('*', { count: 'exact', head: true }),
     supabase.from('categories').select('*', { count: 'exact', head: true }),
@@ -384,19 +386,49 @@ export async function getDashboardStats() {
     supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'confirmed'),
     supabase.from('product_views').select('*', { count: 'exact', head: true }),
     supabase.from('orders').select('*', { count: 'exact', head: true }).eq('status', 'cancelled'),
+    supabase.from('orders').select('*', { count: 'exact', head: true }).eq('payment_method', 'cod'),
+    supabase.from('orders').select('*', { count: 'exact', head: true }).neq('payment_method', 'cod'),
   ]);
 
-  const { data: orders } = await supabase
+  // Get all orders for revenue calculations (confirmed, shipped, delivered, billed)
+  const { data: revenueOrders } = await supabase
+    .from('orders')
+    .select('total, payment_method, settlement_status, status, payment_status')
+    .in('status', ['confirmed', 'shipped', 'delivered', 'billed']);
+
+  // Get all orders for abandoned cart calculation (pending + not paid, or cancelled + not paid)
+  const { data: allOrders } = await supabase
     .from('orders')
     .select('total, status, payment_status');
 
-  const totalRevenue = orders
-    ?.filter(o => ['confirmed', 'shipped', 'delivered'].includes(o.status))
-    .reduce((sum, o) => sum + Number(o.total), 0) || 0;
+  // Revenue calculations
+  const activeOrders = revenueOrders || [];
+  
+  // Total Revenue: Sum of all delivered/confirmed orders
+  const totalRevenue = activeOrders.reduce((sum, o) => sum + Number(o.total), 0);
+  
+  // COD Revenue: Sum of COD orders (delivered + settled)
+  const codRevenue = activeOrders
+    .filter(o => o.payment_method === 'cod' && o.settlement_status === 'settled')
+    .reduce((sum, o) => sum + Number(o.total), 0);
+  
+  // COD Pending: Sum of COD orders where settlement_status = 'pending'
+  const codPending = activeOrders
+    .filter(o => o.payment_method === 'cod' && o.settlement_status === 'pending')
+    .reduce((sum, o) => sum + Number(o.total), 0);
+  
+  // Prepaid Revenue: Sum of prepaid/online orders
+  const prepaidRevenue = activeOrders
+    .filter(o => o.payment_method !== 'cod')
+    .reduce((sum, o) => sum + Number(o.total), 0);
 
-  const totalOrderValue = orders?.reduce((sum, o) => sum + Number(o.total), 0) || 0;
+  // Total Order Value (all orders)
+  const totalOrderValue = (allOrders || []).reduce((sum, o) => sum + Number(o.total), 0);
 
-  const abandonedOrders = orders?.filter(o => (o.status === 'pending' || o.status === 'cancelled') && o.payment_status !== 'paid') || [];
+  // Abandoned cart calculations
+  const abandonedOrders = (allOrders || []).filter(
+    o => (o.status === 'pending' || o.status === 'cancelled') && o.payment_status !== 'paid'
+  );
   const abandonedCarts = abandonedOrders.length;
   const abandonedValue = abandonedOrders.reduce((sum, o) => sum + Number(o.total), 0);
 
@@ -407,10 +439,15 @@ export async function getDashboardStats() {
     pendingOrders: pendingOrders || 0,
     confirmedOrders: confirmedOrders || 0,
     cancelledOrders: cancelledOrders || 0,
+    codOrders: codOrders || 0,
+    prepaidOrders: prepaidOrders || 0,
     totalRevenue,
     totalOrderValue,
     totalViews: totalViews || 0,
     abandonedCarts,
     abandonedValue,
+    codRevenue,
+    codPending,
+    prepaidRevenue,
   };
 }

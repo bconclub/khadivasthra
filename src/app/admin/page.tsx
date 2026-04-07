@@ -7,15 +7,34 @@ import { getOrders } from "@/lib/services/orders";
 import {
   Package, FolderOpen, ShoppingCart, IndianRupee, Loader2, Eye,
   BarChart3, ShoppingBasket, TrendingUp, Clock, CheckCircle2, XCircle,
+  Search, Banknote, CreditCard, Wallet,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useState, useMemo } from "react";
 
 export default function AdminDashboardPage() {
   const { data: stats, loading: loadingStats } = useSupabaseQuery(getDashboardStats);
   const { data: orders, loading: loadingOrders } = useSupabaseQuery(getOrders);
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const recentOrders = (orders || []).slice(0, 5);
+  // Filter orders based on search query
+  const filteredOrders = useMemo(() => {
+    if (!orders) return [];
+    if (!searchQuery.trim()) return orders.slice(0, 5);
+    
+    const query = searchQuery.toLowerCase().trim();
+    return orders.filter(order => {
+      return (
+        order.order_number.toLowerCase().includes(query) ||
+        order.customer_name.toLowerCase().includes(query) ||
+        order.customer_phone.includes(query)
+      );
+    });
+  }, [orders, searchQuery]);
+
+  const displayOrders = searchQuery.trim() ? filteredOrders : (orders || []).slice(0, 5);
+  const isSearching = searchQuery.trim().length > 0;
 
   return (
     <AdminShell>
@@ -25,46 +44,79 @@ export default function AdminDashboardPage() {
           <p className="text-gray-500 dark:text-gray-400 mt-1">Welcome to Khadi Vasthra Admin</p>
         </div>
 
-        {/* Stat Cards */}
+        {/* Revenue Stats - Row 1 */}
         {loadingStats ? (
           <div className="flex justify-center py-12">
             <Loader2 className="w-6 h-6 animate-spin text-coral" />
           </div>
         ) : (
           <div className="space-y-4">
-            {/* Primary Stats */}
+            {/* Revenue Stats */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <StatCard
-                label="Total Traffic"
-                value={(stats?.totalViews ?? 0).toLocaleString()}
-                icon={BarChart3}
-                color="bg-cyan-50 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400"
-                subtitle="Product views"
-              />
-              <StatCard
-                label="Orders"
-                value={stats?.totalOrders ?? 0}
-                icon={ShoppingCart}
-                color="bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400"
-                href="/admin/orders"
-                subtitle={`${stats?.pendingOrders ?? 0} pending, ${stats?.confirmedOrders ?? 0} confirmed`}
-              />
-              <StatCard
-                label="Cart Abandon"
-                value={stats?.abandonedCarts ?? 0}
-                icon={ShoppingBasket}
-                color="bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400"
-                subtitle={`₹${(stats?.abandonedValue ?? 0).toLocaleString()} lost`}
-              />
-              <StatCard
-                label="Revenue"
+                label="Total Revenue"
                 value={`₹${(stats?.totalRevenue ?? 0).toLocaleString()}`}
                 icon={IndianRupee}
                 color="bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400"
-                subtitle={`₹${(stats?.totalOrderValue ?? 0).toLocaleString()} total`}
+                subtitle="All confirmed orders"
+              />
+              <StatCard
+                label="COD Revenue"
+                value={`₹${(stats?.codRevenue ?? 0).toLocaleString()}`}
+                icon={Banknote}
+                color="bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
+                subtitle="Settled COD"
+              />
+              <StatCard
+                label="COD Pending"
+                value={`₹${(stats?.codPending ?? 0).toLocaleString()}`}
+                icon={Wallet}
+                color="bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400"
+                subtitle="Awaiting settlement"
+              />
+              <StatCard
+                label="Prepaid Revenue"
+                value={`₹${(stats?.prepaidRevenue ?? 0).toLocaleString()}`}
+                icon={CreditCard}
+                color="bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400"
+                subtitle="Online payments"
               />
             </div>
-            {/* Secondary Stats */}
+
+            {/* Order Stats */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <StatCard
+                label="Cart Abandon"
+                value={`₹${(stats?.abandonedValue ?? 0).toLocaleString()}`}
+                icon={ShoppingBasket}
+                color="bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400"
+                subtitle={`${stats?.abandonedCarts ?? 0} abandoned carts`}
+              />
+              <StatCard
+                label="Total Orders"
+                value={stats?.totalOrders ?? 0}
+                icon={ShoppingCart}
+                color="bg-cyan-50 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400"
+                href="/admin/orders"
+                subtitle="All orders"
+              />
+              <StatCard
+                label="COD Orders"
+                value={stats?.codOrders ?? 0}
+                icon={Banknote}
+                color="bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400"
+                subtitle="Cash on delivery"
+              />
+              <StatCard
+                label="Prepaid Orders"
+                value={stats?.prepaidOrders ?? 0}
+                icon={CreditCard}
+                color="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
+                subtitle="Online payment"
+              />
+            </div>
+
+            {/* Quick Stats Bar */}
             <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
               <MiniStat icon={Package} label="Products" value={stats?.totalProducts ?? 0} href="/admin/products" />
               <MiniStat icon={FolderOpen} label="Categories" value={stats?.totalCategories ?? 0} href="/admin/categories" />
@@ -76,10 +128,34 @@ export default function AdminDashboardPage() {
           </div>
         )}
 
-        {/* Recent Orders */}
+        {/* Search Bar */}
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-gray-400" />
+          </div>
+          <input
+            type="text"
+            placeholder="Search orders by ID, name, or phone number..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-coral focus:border-coral transition-colors"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+            >
+              <XCircle className="h-5 w-5" />
+            </button>
+          )}
+        </div>
+
+        {/* Recent Orders / Search Results */}
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-            <h2 className="font-semibold text-gray-900 dark:text-white">Recent Orders</h2>
+            <h2 className="font-semibold text-gray-900 dark:text-white">
+              {isSearching ? `Search Results (${displayOrders.length})` : 'Recent Orders'}
+            </h2>
             <Link href="/admin/orders" className="text-sm text-coral hover:underline">
               View all
             </Link>
@@ -89,13 +165,13 @@ export default function AdminDashboardPage() {
             <div className="flex justify-center py-8">
               <Loader2 className="w-6 h-6 animate-spin text-coral" />
             </div>
-          ) : recentOrders.length === 0 ? (
+          ) : displayOrders.length === 0 ? (
             <div className="px-6 py-8 text-center text-gray-400">
-              No orders yet
+              {isSearching ? 'No orders found matching your search' : 'No orders yet'}
             </div>
           ) : (
             <div className="divide-y divide-gray-100 dark:divide-gray-700">
-              {recentOrders.map((order) => (
+              {displayOrders.map((order) => (
                 <Link key={order.id} href="/admin/orders" className="flex items-center gap-4 px-6 py-3.5 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                   {/* Product thumbnail */}
                   <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0 border border-gray-200 dark:border-gray-600">
