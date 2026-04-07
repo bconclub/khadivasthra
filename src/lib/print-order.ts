@@ -53,6 +53,9 @@ function generateInvoiceHTML(order: Order): string {
   @media print {
     body { padding:0; }
     .no-print { display:none !important; }
+    * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important; }
+    .logo-footer { display:flex !important; background:#000 !important; }
+    .logo-footer img { display:inline-block !important; visibility:visible !important; }
   }
   .invoice { max-width:720px; margin:0 auto; border:2px solid #222; }
   .section { padding:14px 20px; border-bottom:2px solid #222; }
@@ -201,6 +204,9 @@ function generateStickerHTML(order: Order): string {
   @media print {
     body { padding:0; }
     .no-print { display:none !important; }
+    * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important; }
+    .logo-footer { display:flex !important; background:#000 !important; }
+    .logo-footer img { display:inline-block !important; visibility:visible !important; }
   }
   .sticker { width:3.87in; margin:0 auto; border:2px solid #000; font-size:12px; }
   .row-section { padding:10px 12px; border-bottom:2px solid #000; }
@@ -236,8 +242,8 @@ function generateStickerHTML(order: Order): string {
   .items-total { display:flex; justify-content:space-between; border-top:1px solid #000; margin-top:4px; padding-top:4px; font-size:12px; font-weight:800; }
 
   /* Logo footer */
-  .logo-footer { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border-top:2px solid #000; background:#000; }
-  .logo-footer img { height:36px; width:auto; }
+  .logo-footer { display:flex !important; justify-content:space-between; align-items:center; padding:8px 12px; border-top:2px solid #000; background:#000 !important; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important; }
+  .logo-footer img { height:36px; width:auto; display:inline-block !important; visibility:visible !important; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
 </style>
 </head>
 <body>
@@ -282,16 +288,17 @@ function generateStickerHTML(order: Order): string {
   </div>
 
   <!-- Logo Footer -->
-  <div class="logo-footer">
-    <img src="${origin}/logo_languages/Artboard%201.png" alt="Khadi Vasthra logo 1" />
-    <img src="${origin}/logo_languages/Artboard%202.png" alt="Khadi Vasthra logo 2" />
-    <img src="${origin}/logo_languages/Artboard%203.png" alt="Khadi Vasthra logo 3" />
-    <img src="${origin}/logo_languages/Artboard%204.png" alt="Khadi Vasthra logo 4" />
+  <div class="logo-footer" style="display:flex !important; justify-content:space-between; align-items:center; padding:8px 12px; border-top:2px solid #000; background:#000 !important; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;">
+    <img src="${origin}/logo_languages/Artboard%201.png" alt="Khadi Vasthra logo 1" style="height:36px; width:auto; display:inline-block !important; visibility:visible !important;" />
+    <img src="${origin}/logo_languages/Artboard%202.png" alt="Khadi Vasthra logo 2" style="height:36px; width:auto; display:inline-block !important; visibility:visible !important;" />
+    <img src="${origin}/logo_languages/Artboard%203.png" alt="Khadi Vasthra logo 3" style="height:36px; width:auto; display:inline-block !important; visibility:visible !important;" />
+    <img src="${origin}/logo_languages/Artboard%204.png" alt="Khadi Vasthra logo 4" style="height:36px; width:auto; display:inline-block !important; visibility:visible !important;" />
   </div>
 </div>
 
 <div class="no-print" style="text-align:center;margin-top:24px;">
   <button onclick="window.print()" style="padding:10px 24px;background:#222;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;">Print Sticker</button>
+  <p style="margin-top:12px;font-size:12px;color:#666;">Tip: Enable "Print backgrounds" and "Print images" in your browser print settings for best results.</p>
 </div>
 </body>
 </html>`;
@@ -326,6 +333,9 @@ function generateBulkHTML(orders: Order[], type: 'invoice' | 'sticker'): string 
     body { padding:0; }
     .no-print { display:none !important; }
     .page-break { margin-bottom:0; }
+    * { -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; color-adjust:exact !important; }
+    .logo-footer { display:flex !important; background:#000 !important; }
+    .logo-footer img { display:inline-block !important; visibility:visible !important; }
   }
   ${pageSize}
 
@@ -382,14 +392,15 @@ function generateBulkHTML(orders: Order[], type: 'invoice' | 'sticker'): string 
   .items-heading { font-size:10px; font-weight:700; letter-spacing:1px; color:#000; margin-bottom:4px; }
   .item-row { display:flex; justify-content:space-between; padding:2px 0; }
   .items-total { display:flex; justify-content:space-between; border-top:1px solid #000; margin-top:4px; padding-top:4px; font-size:12px; font-weight:800; }
-  .logo-footer { display:flex; justify-content:space-between; align-items:center; padding:8px 12px; border-top:2px solid #000; background:#000; }
-  .logo-footer img { height:36px; width:auto; }
+  .logo-footer { display:flex !important; justify-content:space-between; align-items:center; padding:8px 12px; border-top:2px solid #000; background:#000 !important; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+  .logo-footer img { height:36px; width:auto; display:inline-block !important; visibility:visible !important; }
 </style>
 </head>
 <body>
   ${pages.map((p) => `<div class="page-break">${p}</div>`).join('\n')}
   <div class="no-print" style="text-align:center;margin-top:24px;">
     <button onclick="window.print()" style="padding:10px 24px;background:#222;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;">Print All (${orders.length})</button>
+    <p style="margin-top:12px;font-size:12px;color:#666;">Tip: Enable "Print backgrounds" and "Print images" in your browser print settings for best results.</p>
   </div>
 </body>
 </html>`;
