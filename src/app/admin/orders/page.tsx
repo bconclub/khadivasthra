@@ -7,7 +7,7 @@ import { getOrders, updateOrderStatus, updateOrder, checkPaymentStatus } from "@
 import { deleteOrder } from "@/lib/services/admin";
 import { supabase } from "@/lib/supabase";
 import type { Order, OrderStatus, Product, PaymentMethod, PaymentStatus } from "@/types";
-import { Loader2, ChevronDown, ChevronUp, Trash2, CreditCard, Package, Plus, Search, X, Minus, Pencil, Printer, FileText, Tag, CheckSquare } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp, Trash2, CreditCard, Package, Plus, Search, X, Minus, Pencil, Printer, FileText, Tag, CheckSquare, Download } from "lucide-react";
 import { printOrder, printOrders } from "@/lib/print-order";
 import Image from "next/image";
 import toast from "react-hot-toast";
@@ -713,6 +713,7 @@ export default function AdminOrdersPage() {
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [checkingPayment, setCheckingPayment] = useState<string | null>(null);
+  const [bulkCheckProgress, setBulkCheckProgress] = useState<{ done: number; total: number } | null>(null);
   const [showCreateOrder, setShowCreateOrder] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
@@ -804,6 +805,105 @@ export default function AdminOrdersPage() {
     }
   };
 
+  const handleCheckAllPending = async () => {
+    const pendingOrders = allOrders.filter((o) => o.payment_status === "pending");
+    if (pendingOrders.length === 0) {
+      toast("No pending orders to check", { icon: "ℹ️" });
+      return;
+    }
+
+    setBulkCheckProgress({ done: 0, total: pendingOrders.length });
+    let confirmedCount = 0;
+    let errorCount = 0;
+
+    for (let i = 0; i < pendingOrders.length; i++) {
+      try {
+        const result = await checkPaymentStatus(pendingOrders[i].id);
+        if (result.reconciled) confirmedCount++;
+      } catch {
+        errorCount++;
+      }
+      setBulkCheckProgress({ done: i + 1, total: pendingOrders.length });
+    }
+
+    setBulkCheckProgress(null);
+
+    if (confirmedCount > 0) {
+      toast.success(`${confirmedCount} payment${confirmedCount === 1 ? "" : "s"} confirmed out of ${pendingOrders.length} pending`);
+      refetch();
+    } else {
+      toast(`Checked ${pendingOrders.length} order${pendingOrders.length === 1 ? "" : "s"} — no new payments found${errorCount > 0 ? ` (${errorCount} failed)` : ""}`, { icon: "ℹ️" });
+    }
+  };
+
+  const pendingPaymentCount = allOrders.filter((o) => o.payment_status === "pending").length;
+
+  const handleDownloadCsv = () => {
+    if (filtered.length === 0) {
+      toast("No orders to download", { icon: "ℹ️" });
+      return;
+    }
+
+    const escape = (val: unknown): string => {
+      if (val === null || val === undefined) return "";
+      const s = String(val);
+      return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+
+    const headers = [
+      "Order Number", "Date", "Customer Name", "Phone", "Email",
+      "Address", "City", "State", "Pincode",
+      "Items", "Subtotal", "Shipping", "COD Charges", "Total",
+      "Status", "Payment Status", "Payment Method",
+      "Article Number", "Settlement Status", "Amount Received", "Settlement Date",
+      "Razorpay Order ID", "Razorpay Payment ID", "Notes",
+    ];
+
+    const rows = filtered.map((o) => [
+      o.order_number,
+      new Date(o.created_at).toLocaleString(),
+      o.customer_name,
+      o.customer_phone,
+      o.customer_email || "",
+      o.customer_address,
+      o.customer_city,
+      o.customer_state,
+      o.customer_pincode,
+      (o.items || []).map((i) => `${i.product_name} x${i.quantity}`).join("; "),
+      Number(o.subtotal),
+      Number(o.shipping),
+      Number(o.cod_charges || 0),
+      Number(o.total),
+      o.status,
+      o.payment_status,
+      o.payment_method,
+      o.article_number || "",
+      o.settlement_status || "",
+      o.amount_received != null ? Number(o.amount_received) : "",
+      o.settlement_date || "",
+      o.razorpay_order_id || "",
+      o.razorpay_payment_id || "",
+      o.notes || "",
+    ]);
+
+    const csv = [headers, ...rows].map((r) => r.map(escape).join(",")).join("\r\n");
+    // UTF-8 BOM so Excel renders ₹ and other unicode characters correctly
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const filterLabel = statusFilter || "all";
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `orders-${filterLabel}-${dateStr}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    toast.success(`Downloaded ${filtered.length} order${filtered.length === 1 ? "" : "s"}`);
+  };
+
   return (
     <AdminShell>
       <div className="space-y-6">
@@ -863,6 +963,28 @@ export default function AdminOrdersPage() {
                 </div>
               </>
             )}
+            {pendingPaymentCount > 0 && (
+              <button
+                onClick={handleCheckAllPending}
+                disabled={bulkCheckProgress !== null}
+                className="px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors disabled:opacity-50 flex items-center gap-2"
+                title="Check Razorpay for payments on all pending orders"
+              >
+                {bulkCheckProgress ? (
+                  <><Loader2 className="w-4 h-4 animate-spin" /> Checking {bulkCheckProgress.done}/{bulkCheckProgress.total}…</>
+                ) : (
+                  <><CreditCard className="w-4 h-4" /> Check {pendingPaymentCount} Pending</>
+                )}
+              </button>
+            )}
+            <button
+              onClick={handleDownloadCsv}
+              disabled={filtered.length === 0}
+              className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 flex items-center gap-2"
+              title={`Download ${filtered.length} order${filtered.length === 1 ? "" : "s"} (${statusFilter || "all"}) as CSV`}
+            >
+              <Download className="w-4 h-4" /> Download ({filtered.length})
+            </button>
             <button
               onClick={() => setShowCreateOrder(true)}
               className="px-4 py-2 bg-coral text-white rounded-lg text-sm font-medium hover:bg-coral/90 transition-colors flex items-center gap-2"
@@ -1104,7 +1226,7 @@ export default function AdminOrdersPage() {
                             <p><span className="text-gray-500 dark:text-gray-400">Payment ID:</span> {order.razorpay_payment_id}</p>
                           )}
                         </div>
-                        {order.payment_status !== "paid" && order.razorpay_order_id && (
+                        {order.payment_status === "pending" && (
                           <button
                             onClick={() => handleCheckPayment(order.id)}
                             disabled={checkingPayment === order.id}

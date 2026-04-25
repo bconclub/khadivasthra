@@ -46,13 +46,6 @@ serve(async (req) => {
       );
     }
 
-    if (!order.razorpay_order_id) {
-      return new Response(
-        JSON.stringify({ error: "No Razorpay order ID found for this order" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
     // If already paid, just return current status
     if (order.payment_status === "paid") {
       return new Response(
@@ -65,10 +58,52 @@ serve(async (req) => {
       );
     }
 
-    // Query Razorpay API for payments on this order
     const authHeader = btoa(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`);
+    let razorpayOrderId: string | null = order.razorpay_order_id;
+
+    // If no razorpay_order_id stored, search Razorpay by receipt (our internal order_id)
+    if (!razorpayOrderId) {
+      const lookupRes = await fetch(
+        `${RAZORPAY_BASE}/orders?receipt=${encodeURIComponent(order_id)}`,
+        { headers: { Authorization: `Basic ${authHeader}` } }
+      );
+
+      if (!lookupRes.ok) {
+        const errText = await lookupRes.text();
+        console.error("Razorpay order lookup error:", lookupRes.status, errText);
+        return new Response(
+          JSON.stringify({ error: "Failed to look up order on Razorpay", details: errText }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const lookupData = await lookupRes.json();
+      const razorpayOrders = lookupData.items || [];
+
+      if (razorpayOrders.length === 0) {
+        return new Response(
+          JSON.stringify({
+            payment_status: "no_razorpay_order",
+            reconciled: false,
+            message: "No Razorpay order found for this order — customer likely never started payment",
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      // Use the most recent matching Razorpay order
+      razorpayOrderId = razorpayOrders[0].id as string;
+
+      // Backfill it onto our order so future checks are direct
+      await supabase
+        .from("orders")
+        .update({ razorpay_order_id: razorpayOrderId })
+        .eq("id", order_id);
+    }
+
+    // Query Razorpay API for payments on this order
     const paymentsRes = await fetch(
-      `${RAZORPAY_BASE}/orders/${order.razorpay_order_id}/payments`,
+      `${RAZORPAY_BASE}/orders/${razorpayOrderId}/payments`,
       {
         headers: {
           Authorization: `Basic ${authHeader}`,
@@ -88,7 +123,7 @@ serve(async (req) => {
     const paymentsData = await paymentsRes.json();
     const payments = paymentsData.items || [];
 
-    console.log("Razorpay payments for order:", order.razorpay_order_id, JSON.stringify(payments.map((p: { id: string; status: string; amount: number }) => ({ id: p.id, status: p.status, amount: p.amount }))));
+    console.log("Razorpay payments for order:", razorpayOrderId, JSON.stringify(payments.map((p: { id: string; status: string; amount: number }) => ({ id: p.id, status: p.status, amount: p.amount }))));
 
     // Find a captured (successful) payment
     const capturedPayment = payments.find((p: { status: string }) => p.status === "captured");
