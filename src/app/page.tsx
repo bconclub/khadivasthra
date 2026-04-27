@@ -151,16 +151,14 @@ export default function Home() {
                 Shop Now
               </Button>
             </Link>
-            <div className="flex flex-wrap justify-center gap-2">
+            <div className="flex flex-wrap justify-center gap-3">
               {[
-                { label: "Kavi Mundu", href: "/shop/kavi-mundu" },
-                { label: "Printed Mundu", href: "/shop/printed-mundu" },
-                { label: "Set Mundu", href: "/shop/set-mundu" },
-                { label: "Set Sarees", href: "/shop/set-sarees" },
-                { label: "Men's Shirts", href: "/shop/men-shirts" },
+                { label: "Mundu", href: "/shop/group/mundu" },
+                { label: "Saree", href: "/shop/group/saree" },
+                { label: "Shirt", href: "/shop/group/shirt" },
               ].map(({ label, href }) => (
                 <Link key={href} href={href}
-                  className="px-4 py-1.5 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/25 text-white/90 hover:text-white text-xs font-medium tracking-wide transition-all duration-200 hover:-translate-y-0.5 hover:border-white/50 shadow-sm">
+                  className="px-5 py-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/25 text-white/90 hover:text-white text-sm font-medium tracking-wide transition-all duration-200 hover:-translate-y-0.5 hover:border-white/50 shadow-sm">
                   {label}
                 </Link>
               ))}
