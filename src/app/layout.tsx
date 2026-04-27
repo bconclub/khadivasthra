@@ -112,7 +112,7 @@ export default function RootLayout({
           />
         </noscript>
       </head>
-      <body className={`${outfit.variable} ${playfair.variable} font-sans min-h-screen flex flex-col bg-white text-text antialiased`}>
+      <body className={`${outfit.variable} ${playfair.variable} font-sans min-h-screen flex flex-col bg-white text-text antialiased overflow-x-hidden`}>
         <AdminAuthProvider>
           <CartProvider>
             <SearchProvider>

@@ -916,7 +916,7 @@ export default function AdminOrdersPage() {
             {selectedOrders.size > 0 && (
               <>
                 <span className="text-sm text-gray-500 dark:text-gray-400">{selectedOrders.size} selected</span>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <select
                     value=""
                     onChange={(e) => {
@@ -1187,8 +1187,8 @@ export default function AdminOrdersPage() {
 
                 {/* Expanded Details */}
                 {expandedOrder === order.id && (
-                  <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-                    <div className="grid md:grid-cols-2 gap-6">
+                  <div className="px-4 md:px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 overflow-hidden">
+                    <div className="grid md:grid-cols-2 gap-6 min-w-0">
                       {/* Customer Details */}
                       <div>
                         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Customer Details</h3>
@@ -1357,7 +1357,7 @@ export default function AdminOrdersPage() {
                         </div>
 
                         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Update Status</h3>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <select
                             value={order.status}
                             onChange={(e) => handleStatusChange(order.id, e.target.value as OrderStatus)}
