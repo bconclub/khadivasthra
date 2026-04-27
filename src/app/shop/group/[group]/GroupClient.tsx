@@ -21,10 +21,16 @@ function toCardProduct(product: ProductWithCategory) {
   };
 }
 
+interface GroupCategory {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 interface Props {
   groupLabel: string;
   groupSlug: string;
-  categoryIds: string[];
+  categories: GroupCategory[];
 }
 
 async function fetchProductsInCategories(categoryIds: string[]): Promise<ProductWithCategory[]> {
@@ -39,11 +45,13 @@ async function fetchProductsInCategories(categoryIds: string[]): Promise<Product
   return data || [];
 }
 
-export default function GroupClient({ groupLabel, groupSlug, categoryIds }: Props) {
+export default function GroupClient({ groupLabel, groupSlug, categories }: Props) {
+  const categoryIds = categories.map((c) => c.id);
   const { data: products, loading } = useSupabaseQuery(
     () => fetchProductsInCategories(categoryIds),
     [categoryIds.join(",")]
   );
+  const [selectedSubCategory, setSelectedSubCategory] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState<"price-asc" | "price-desc" | "newest" | null>(null);
 
   if (loading) {
@@ -56,7 +64,13 @@ export default function GroupClient({ groupLabel, groupSlug, categoryIds }: Prop
 
   const allProducts = products || [];
 
-  const sortedProducts = [...allProducts].sort((a, b) => {
+  // Apply sub-category filter
+  const filteredProducts = selectedSubCategory
+    ? allProducts.filter((p) => p.category_id === selectedSubCategory)
+    : allProducts;
+
+  // Sort
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sortBy === "price-asc") return Number(a.price) - Number(b.price);
     if (sortBy === "price-desc") return Number(b.price) - Number(a.price);
     if (sortBy === "newest") return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
@@ -64,6 +78,10 @@ export default function GroupClient({ groupLabel, groupSlug, categoryIds }: Prop
     const scoreB = (b.is_best_seller ? 2 : 0) + (b.is_featured ? 1 : 0);
     return scoreB - scoreA;
   });
+
+  // Count products per sub-category for chip badges
+  const countForCategory = (categoryId: string) =>
+    allProducts.filter((p) => p.category_id === categoryId).length;
 
   return (
     <div className="shop-group-page min-h-screen bg-cream">
@@ -83,11 +101,60 @@ export default function GroupClient({ groupLabel, groupSlug, categoryIds }: Prop
         </div>
       </div>
 
-      <div className="container mx-auto px-4 max-w-7xl py-8">
+      <div className="container mx-auto px-4 max-w-7xl py-6">
+        {/* Sub-category chips — only show if there's more than one sub-category */}
+        {categories.length > 1 && (
+          <div className="mb-6 -mx-4 px-4 md:mx-0 md:px-0 overflow-x-auto scrollbar-hide">
+            <div className="flex gap-2 w-max md:flex-wrap md:w-auto">
+              <button
+                onClick={() => setSelectedSubCategory(null)}
+                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+                  !selectedSubCategory
+                    ? "bg-coral text-white shadow-sm"
+                    : "bg-white text-text border border-gray-200 hover:bg-gray-50"
+                }`}
+              >
+                All
+                <span className={`inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-[10px] font-bold ${
+                  !selectedSubCategory ? "bg-white/20 text-white" : "bg-gray-100 text-text-muted"
+                }`}>
+                  {allProducts.length}
+                </span>
+              </button>
+              {categories.map((cat) => {
+                const count = countForCategory(cat.id);
+                if (count === 0) return null;
+                const isActive = selectedSubCategory === cat.id;
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => setSelectedSubCategory(cat.id)}
+                    className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+                      isActive
+                        ? "bg-coral text-white shadow-sm"
+                        : "bg-white text-text border border-gray-200 hover:bg-gray-50"
+                    }`}
+                  >
+                    {cat.name}
+                    <span className={`inline-flex items-center justify-center min-w-[1.25rem] h-5 px-1.5 rounded-full text-[10px] font-bold ${
+                      isActive ? "bg-white/20 text-white" : "bg-gray-100 text-text-muted"
+                    }`}>
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Sort bar */}
         <div className="sticky top-0 z-40 -mx-4 px-4 py-3 md:static md:mx-0 md:px-0 md:py-0 bg-cream/80 backdrop-blur-lg md:bg-transparent md:backdrop-blur-none border-b border-white/40 md:border-0 flex items-center justify-between mb-6">
           <p className="text-text-muted text-sm md:text-base">
             Showing <span className="font-semibold text-text">{sortedProducts.length}</span> {groupLabel.toLowerCase()}{sortedProducts.length === 1 ? "" : "s"}
+            {selectedSubCategory && (
+              <> in <span className="font-semibold text-coral">{categories.find((c) => c.id === selectedSubCategory)?.name}</span></>
+            )}
           </p>
           <div className="relative">
             <select
@@ -113,10 +180,15 @@ export default function GroupClient({ groupLabel, groupSlug, categoryIds }: Prop
           </div>
         ) : (
           <div className="text-center py-20 bg-white rounded-xl">
-            <p className="text-text-muted text-lg">No {groupLabel.toLowerCase()} products available right now.</p>
-            <Link href={`/shop/`} className="mt-4 text-coral hover:underline inline-block">
-              View all products →
-            </Link>
+            <p className="text-text-muted text-lg">
+              No {groupLabel.toLowerCase()} products{selectedSubCategory ? ` in ${categories.find((c) => c.id === selectedSubCategory)?.name}` : ""}.
+            </p>
+            <button
+              onClick={() => setSelectedSubCategory(null)}
+              className="mt-4 text-coral hover:underline inline-block"
+            >
+              View all {groupLabel.toLowerCase()}s →
+            </button>
           </div>
         )}
       </div>

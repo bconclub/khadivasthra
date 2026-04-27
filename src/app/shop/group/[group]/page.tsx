@@ -25,18 +25,19 @@ export async function generateMetadata({ params }: { params: Promise<{ group: st
   };
 }
 
-async function fetchCategoryIdsInGroup(groupSlug: GroupSlug): Promise<string[]> {
+async function fetchCategoriesInGroup(groupSlug: GroupSlug) {
   const supabase = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
   const { data } = await supabase
     .from("categories")
-    .select("id, slug")
-    .eq("is_active", true);
+    .select("id, name, slug, display_order")
+    .eq("is_active", true)
+    .order("display_order", { ascending: true });
   return (data || [])
     .filter((c) => categoryBelongsToGroup(c.slug, groupSlug))
-    .map((c) => c.id);
+    .map((c) => ({ id: c.id, name: c.name, slug: c.slug }));
 }
 
 export default async function GroupPage({ params }: { params: Promise<{ group: string }> }) {
@@ -44,7 +45,7 @@ export default async function GroupPage({ params }: { params: Promise<{ group: s
   const group = getGroupBySlug(groupSlug);
   if (!group) notFound();
 
-  const categoryIds = await fetchCategoryIdsInGroup(group.slug);
+  const categories = await fetchCategoriesInGroup(group.slug);
 
-  return <GroupClient groupLabel={group.label} groupSlug={group.slug} categoryIds={categoryIds} />;
+  return <GroupClient groupLabel={group.label} groupSlug={group.slug} categories={categories} />;
 }
