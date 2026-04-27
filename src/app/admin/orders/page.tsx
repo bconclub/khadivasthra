@@ -30,6 +30,280 @@ const PAYMENT_STYLES: Record<string, string> = {
   cod: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
 };
 
+type DateRangeKey = "3d" | "7d" | "14d" | "30d" | "all" | "custom";
+
+function getDateBounds(key: DateRangeKey, customStart: string, customEnd: string): { start: Date; end: Date } | null {
+  if (key === "all") return null;
+  const now = new Date();
+  if (key === "custom") {
+    if (!customStart && !customEnd) return null;
+    const start = customStart ? new Date(customStart + "T00:00:00") : new Date(0);
+    const end = customEnd ? new Date(customEnd + "T23:59:59.999") : new Date();
+    return { start, end };
+  }
+  const days = key === "3d" ? 3 : key === "7d" ? 7 : key === "14d" ? 14 : 30;
+  return { start: new Date(now.getTime() - days * 86_400_000), end: now };
+}
+
+function ordersToCsvBlob(orders: Order[]): Blob {
+  const escape = (val: unknown): string => {
+    if (val === null || val === undefined) return "";
+    const s = String(val);
+    return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const headers = [
+    "Order Number", "Date", "Customer Name", "Phone", "Email",
+    "Address", "City", "State", "Pincode",
+    "Items", "Subtotal", "Shipping", "COD Charges", "Total",
+    "Status", "Payment Status", "Payment Method",
+    "Article Number", "Settlement Status", "Amount Received", "Settlement Date",
+    "Razorpay Order ID", "Razorpay Payment ID", "Notes",
+  ];
+  const rows = orders.map((o) => [
+    o.order_number, new Date(o.created_at).toLocaleString(),
+    o.customer_name, o.customer_phone, o.customer_email || "",
+    o.customer_address, o.customer_city, o.customer_state, o.customer_pincode,
+    (o.items || []).map((i) => `${i.product_name} x${i.quantity}`).join("; "),
+    Number(o.subtotal), Number(o.shipping), Number(o.cod_charges || 0), Number(o.total),
+    o.status, o.payment_status, o.payment_method,
+    o.article_number || "", o.settlement_status || "",
+    o.amount_received != null ? Number(o.amount_received) : "",
+    o.settlement_date || "",
+    o.razorpay_order_id || "", o.razorpay_payment_id || "",
+    o.notes || "",
+  ]);
+  const csv = [headers, ...rows].map((r) => r.map(escape).join(",")).join("\r\n");
+  return new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+}
+
+// --- Check Pending Modal ---
+function CheckPendingModal({ orders, onClose, onComplete }: { orders: Order[]; onClose: () => void; onComplete: () => void }) {
+  const [range, setRange] = useState<DateRangeKey>("3d");
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+
+  const bounds = getDateBounds(range, customStart, customEnd);
+  const matching = orders.filter((o) => {
+    if (o.payment_status !== "pending") return false;
+    if (!bounds) return true;
+    const d = new Date(o.created_at);
+    return d >= bounds.start && d <= bounds.end;
+  });
+
+  const handleStart = async () => {
+    if (matching.length === 0) {
+      toast("No pending orders in this range", { icon: "ℹ️" });
+      return;
+    }
+    setProgress({ done: 0, total: matching.length });
+    let confirmed = 0, errors = 0;
+    for (let i = 0; i < matching.length; i++) {
+      try {
+        const r = await checkPaymentStatus(matching[i].id);
+        if (r.reconciled) confirmed++;
+      } catch { errors++; }
+      setProgress({ done: i + 1, total: matching.length });
+    }
+    setProgress(null);
+    if (confirmed > 0) {
+      toast.success(`${confirmed} payment${confirmed === 1 ? "" : "s"} confirmed out of ${matching.length}`);
+      onComplete();
+    } else {
+      toast(`Checked ${matching.length} order${matching.length === 1 ? "" : "s"} — no new payments found${errors > 0 ? ` (${errors} failed)` : ""}`, { icon: "ℹ️" });
+    }
+    onClose();
+  };
+
+  const rangeOptions: { key: DateRangeKey; label: string }[] = [
+    { key: "3d", label: "Last 3 days" },
+    { key: "7d", label: "Last 7 days" },
+    { key: "14d", label: "Last 14 days" },
+    { key: "30d", label: "Last 30 days" },
+    { key: "all", label: "All time" },
+    { key: "custom", label: "Custom range" },
+  ];
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">Check Pending Payments</h2>
+          <button onClick={onClose} disabled={progress !== null} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg disabled:opacity-50"><X className="w-5 h-5 text-gray-400" /></button>
+        </div>
+        <div className="px-6 py-4 space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Date range</label>
+            <div className="grid grid-cols-2 gap-2">
+              {rangeOptions.map((opt) => (
+                <button
+                  key={opt.key}
+                  onClick={() => setRange(opt.key)}
+                  disabled={progress !== null}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-50 ${range === opt.key ? "bg-coral text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"}`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          {range === "custom" && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">From</label>
+                <input type="date" value={customStart} onChange={(e) => setCustomStart(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">To</label>
+                <input type="date" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
+              </div>
+            </div>
+          )}
+          <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 text-sm">
+            <p className="text-blue-700 dark:text-blue-400 font-medium">{matching.length} pending order{matching.length === 1 ? "" : "s"} in this range</p>
+            <p className="text-xs text-blue-600 dark:text-blue-500 mt-1">Each order will be checked against Razorpay individually. ~1 second per order.</p>
+          </div>
+        </div>
+        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+          <button onClick={onClose} disabled={progress !== null} className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg disabled:opacity-50">Cancel</button>
+          <button
+            onClick={handleStart}
+            disabled={progress !== null || matching.length === 0}
+            className="px-5 py-2 bg-coral text-white rounded-lg text-sm font-medium hover:bg-coral/90 transition-colors disabled:opacity-50 flex items-center gap-2"
+          >
+            {progress ? <><Loader2 className="w-4 h-4 animate-spin" /> Checking {progress.done}/{progress.total}…</> : <><CreditCard className="w-4 h-4" /> Check {matching.length}</>}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// --- Download Orders Modal ---
+function DownloadOrdersModal({ orders, onClose }: { orders: Order[]; onClose: () => void }) {
+  const [statuses, setStatuses] = useState<Set<string>>(new Set(STATUS_OPTIONS));
+  const [paymentMethods, setPaymentMethods] = useState<Set<string>>(new Set(["cod", "online"]));
+  const [range, setRange] = useState<DateRangeKey>("all");
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
+
+  const bounds = getDateBounds(range, customStart, customEnd);
+  const matching = orders.filter((o) => {
+    if (!statuses.has(o.status)) return false;
+    if (!paymentMethods.has(o.payment_method)) return false;
+    if (bounds) {
+      const d = new Date(o.created_at);
+      if (d < bounds.start || d > bounds.end) return false;
+    }
+    return true;
+  });
+
+  const toggleStatus = (s: string) => {
+    setStatuses((prev) => { const next = new Set(prev); next.has(s) ? next.delete(s) : next.add(s); return next; });
+  };
+  const togglePayment = (m: string) => {
+    setPaymentMethods((prev) => { const next = new Set(prev); next.has(m) ? next.delete(m) : next.add(m); return next; });
+  };
+
+  const handleDownload = () => {
+    if (matching.length === 0) { toast("No orders matching filters", { icon: "ℹ️" }); return; }
+    const blob = ordersToCsvBlob(matching);
+    const url = URL.createObjectURL(blob);
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `orders-${dateStr}.csv`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast.success(`Downloaded ${matching.length} order${matching.length === 1 ? "" : "s"}`);
+    onClose();
+  };
+
+  const rangeOptions: { key: DateRangeKey; label: string }[] = [
+    { key: "all", label: "All time" },
+    { key: "3d", label: "Last 3 days" },
+    { key: "7d", label: "Last 7 days" },
+    { key: "14d", label: "Last 14 days" },
+    { key: "30d", label: "Last 30 days" },
+    { key: "custom", label: "Custom range" },
+  ];
+
+  const selectAll = () => setStatuses(new Set(STATUS_OPTIONS));
+  const selectNone = () => setStatuses(new Set());
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 overflow-y-auto p-4">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-lg my-8 border border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-lg font-bold text-gray-900 dark:text-white">Download Orders</h2>
+          <button onClick={onClose} className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"><X className="w-5 h-5 text-gray-400" /></button>
+        </div>
+        <div className="px-6 py-4 space-y-5 max-h-[70vh] overflow-y-auto">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Order status</label>
+              <div className="flex gap-2 text-xs">
+                <button onClick={selectAll} className="text-coral hover:underline">Select all</button>
+                <button onClick={selectNone} className="text-gray-400 hover:underline">None</button>
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {STATUS_OPTIONS.map((s) => (
+                <label key={s} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm capitalize ${statuses.has(s) ? "border-coral bg-coral/5 text-gray-900 dark:text-white" : "border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400"}`}>
+                  <input type="checkbox" checked={statuses.has(s)} onChange={() => toggleStatus(s)} className="w-4 h-4 rounded border-gray-300 text-coral focus:ring-coral" />
+                  {s}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Payment method</label>
+            <div className="grid grid-cols-2 gap-2">
+              {[{ key: "cod", label: "COD" }, { key: "online", label: "Online" }].map(({ key, label }) => (
+                <label key={key} className={`flex items-center gap-2 px-3 py-2 rounded-lg border cursor-pointer text-sm ${paymentMethods.has(key) ? "border-coral bg-coral/5 text-gray-900 dark:text-white" : "border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400"}`}>
+                  <input type="checkbox" checked={paymentMethods.has(key)} onChange={() => togglePayment(key)} className="w-4 h-4 rounded border-gray-300 text-coral focus:ring-coral" />
+                  {label}
+                </label>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-2">Date range</label>
+            <div className="grid grid-cols-3 gap-2">
+              {rangeOptions.map((opt) => (
+                <button key={opt.key} onClick={() => setRange(opt.key)} className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${range === opt.key ? "bg-coral text-white" : "bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"}`}>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+            {range === "custom" && (
+              <div className="grid grid-cols-2 gap-3 mt-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">From</label>
+                  <input type="date" value={customStart} onChange={(e) => setCustomStart(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">To</label>
+                  <input type="date" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="bg-coral/5 rounded-lg p-3 text-sm">
+            <p className="text-coral font-medium">{matching.length} order{matching.length === 1 ? "" : "s"} match these filters</p>
+          </div>
+        </div>
+        <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+          <button onClick={onClose} className="px-4 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Cancel</button>
+          <button onClick={handleDownload} disabled={matching.length === 0} className="px-5 py-2 bg-coral text-white rounded-lg text-sm font-medium hover:bg-coral/90 transition-colors disabled:opacity-50 flex items-center gap-2">
+            <Download className="w-4 h-4" /> Download {matching.length}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // --- Create Order Modal ---
 interface OrderLineItem {
   product: Product;
@@ -713,7 +987,8 @@ export default function AdminOrdersPage() {
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [checkingPayment, setCheckingPayment] = useState<string | null>(null);
-  const [bulkCheckProgress, setBulkCheckProgress] = useState<{ done: number; total: number } | null>(null);
+  const [showCheckPendingModal, setShowCheckPendingModal] = useState(false);
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [showCreateOrder, setShowCreateOrder] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
   const [selectedOrders, setSelectedOrders] = useState<Set<string>>(new Set());
@@ -805,104 +1080,7 @@ export default function AdminOrdersPage() {
     }
   };
 
-  const handleCheckAllPending = async () => {
-    const pendingOrders = allOrders.filter((o) => o.payment_status === "pending");
-    if (pendingOrders.length === 0) {
-      toast("No pending orders to check", { icon: "ℹ️" });
-      return;
-    }
-
-    setBulkCheckProgress({ done: 0, total: pendingOrders.length });
-    let confirmedCount = 0;
-    let errorCount = 0;
-
-    for (let i = 0; i < pendingOrders.length; i++) {
-      try {
-        const result = await checkPaymentStatus(pendingOrders[i].id);
-        if (result.reconciled) confirmedCount++;
-      } catch {
-        errorCount++;
-      }
-      setBulkCheckProgress({ done: i + 1, total: pendingOrders.length });
-    }
-
-    setBulkCheckProgress(null);
-
-    if (confirmedCount > 0) {
-      toast.success(`${confirmedCount} payment${confirmedCount === 1 ? "" : "s"} confirmed out of ${pendingOrders.length} pending`);
-      refetch();
-    } else {
-      toast(`Checked ${pendingOrders.length} order${pendingOrders.length === 1 ? "" : "s"} — no new payments found${errorCount > 0 ? ` (${errorCount} failed)` : ""}`, { icon: "ℹ️" });
-    }
-  };
-
   const pendingPaymentCount = allOrders.filter((o) => o.payment_status === "pending").length;
-
-  const handleDownloadCsv = () => {
-    if (filtered.length === 0) {
-      toast("No orders to download", { icon: "ℹ️" });
-      return;
-    }
-
-    const escape = (val: unknown): string => {
-      if (val === null || val === undefined) return "";
-      const s = String(val);
-      return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-    };
-
-    const headers = [
-      "Order Number", "Date", "Customer Name", "Phone", "Email",
-      "Address", "City", "State", "Pincode",
-      "Items", "Subtotal", "Shipping", "COD Charges", "Total",
-      "Status", "Payment Status", "Payment Method",
-      "Article Number", "Settlement Status", "Amount Received", "Settlement Date",
-      "Razorpay Order ID", "Razorpay Payment ID", "Notes",
-    ];
-
-    const rows = filtered.map((o) => [
-      o.order_number,
-      new Date(o.created_at).toLocaleString(),
-      o.customer_name,
-      o.customer_phone,
-      o.customer_email || "",
-      o.customer_address,
-      o.customer_city,
-      o.customer_state,
-      o.customer_pincode,
-      (o.items || []).map((i) => `${i.product_name} x${i.quantity}`).join("; "),
-      Number(o.subtotal),
-      Number(o.shipping),
-      Number(o.cod_charges || 0),
-      Number(o.total),
-      o.status,
-      o.payment_status,
-      o.payment_method,
-      o.article_number || "",
-      o.settlement_status || "",
-      o.amount_received != null ? Number(o.amount_received) : "",
-      o.settlement_date || "",
-      o.razorpay_order_id || "",
-      o.razorpay_payment_id || "",
-      o.notes || "",
-    ]);
-
-    const csv = [headers, ...rows].map((r) => r.map(escape).join(",")).join("\r\n");
-    // UTF-8 BOM so Excel renders ₹ and other unicode characters correctly
-    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-
-    const filterLabel = statusFilter || "all";
-    const dateStr = new Date().toISOString().slice(0, 10);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `orders-${filterLabel}-${dateStr}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-
-    toast.success(`Downloaded ${filtered.length} order${filtered.length === 1 ? "" : "s"}`);
-  };
 
   return (
     <AdminShell>
@@ -965,25 +1143,19 @@ export default function AdminOrdersPage() {
             )}
             {pendingPaymentCount > 0 && (
               <button
-                onClick={handleCheckAllPending}
-                disabled={bulkCheckProgress !== null}
-                className="px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors disabled:opacity-50 flex items-center gap-2"
-                title="Check Razorpay for payments on all pending orders"
+                onClick={() => setShowCheckPendingModal(true)}
+                className="px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors flex items-center gap-2"
+                title="Check Razorpay for payments on pending orders (with date range)"
               >
-                {bulkCheckProgress ? (
-                  <><Loader2 className="w-4 h-4 animate-spin" /> Checking {bulkCheckProgress.done}/{bulkCheckProgress.total}…</>
-                ) : (
-                  <><CreditCard className="w-4 h-4" /> Check {pendingPaymentCount} Pending</>
-                )}
+                <CreditCard className="w-4 h-4" /> Check Pending ({pendingPaymentCount})
               </button>
             )}
             <button
-              onClick={handleDownloadCsv}
-              disabled={filtered.length === 0}
-              className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors disabled:opacity-50 flex items-center gap-2"
-              title={`Download ${filtered.length} order${filtered.length === 1 ? "" : "s"} (${statusFilter || "all"}) as CSV`}
+              onClick={() => setShowDownloadModal(true)}
+              className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center gap-2"
+              title="Download orders with custom filters"
             >
-              <Download className="w-4 h-4" /> Download ({filtered.length})
+              <Download className="w-4 h-4" /> Download
             </button>
             <button
               onClick={() => setShowCreateOrder(true)}
@@ -999,6 +1171,12 @@ export default function AdminOrdersPage() {
         )}
         {editingOrder && (
           <EditOrderModal order={editingOrder} onClose={() => setEditingOrder(null)} onUpdated={refetch} />
+        )}
+        {showCheckPendingModal && (
+          <CheckPendingModal orders={allOrders} onClose={() => setShowCheckPendingModal(false)} onComplete={refetch} />
+        )}
+        {showDownloadModal && (
+          <DownloadOrdersModal orders={allOrders} onClose={() => setShowDownloadModal(false)} />
         )}
 
         {/* Search Bar */}
