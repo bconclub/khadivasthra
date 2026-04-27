@@ -1106,7 +1106,8 @@ export default function AdminOrdersPage() {
               <div key={order.id} className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
                 {/* Order Header */}
                 <div
-                  className="px-4 md:px-6 py-3 flex items-center gap-3 md:gap-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                  className="px-4 md:px-6 py-3 grid items-center gap-3 md:gap-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                  style={{ gridTemplateColumns: "auto auto minmax(0, 1fr) auto auto auto" }}
                   onClick={() => toggleExpand(order.id)}
                 >
                   {/* Checkbox */}
@@ -1123,10 +1124,10 @@ export default function AdminOrdersPage() {
                       });
                     }}
                     onClick={(e) => e.stopPropagation()}
-                    className="w-4 h-4 rounded border-gray-300 text-coral focus:ring-coral flex-shrink-0"
+                    className="w-4 h-4 rounded border-gray-300 text-coral focus:ring-coral"
                   />
                   {/* Product thumbnail */}
-                  <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 flex-shrink-0 border border-gray-200 dark:border-gray-600">
+                  <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600">
                     {order.items?.[0]?.product_image ? (
                       <Image
                         src={order.items[0].product_image}
@@ -1142,18 +1143,18 @@ export default function AdminOrdersPage() {
                       </div>
                     )}
                   </div>
-                  {/* Order info */}
-                  <div className="flex-1 min-w-0">
+                  {/* Order info — minmax(0,1fr) column lets this shrink and truncate */}
+                  <div className="min-w-0 overflow-hidden">
                     <div className="flex items-center gap-2 mb-0.5 min-w-0">
                       <span className="font-mono text-xs text-coral font-medium flex-shrink-0 whitespace-nowrap">{order.order_number}</span>
-                      <span className="text-sm text-gray-900 dark:text-white font-medium truncate flex-1 min-w-0">{order.customer_name}</span>
+                      <span className="text-sm text-gray-900 dark:text-white font-medium truncate min-w-0">{order.customer_name}</span>
                     </div>
                     <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
                       {order.items?.map((i) => `${i.product_name} x${i.quantity}`).join(", ")}
                     </p>
                   </div>
-                  {/* Amount + badges (right side, shrink-proof) */}
-                  <div className="flex items-center gap-1.5 flex-shrink-0">
+                  {/* Amount + badges (right side — guaranteed slot via grid auto column) */}
+                  <div className="flex items-center gap-1.5">
                     <span className="text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">₹{Number(order.total).toLocaleString()}</span>
                     <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${STATUS_STYLES[order.status] || "bg-gray-100 text-gray-700"}`}>
                       {order.status}
