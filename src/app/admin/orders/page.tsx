@@ -402,7 +402,8 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
       const codCharges = isCod ? Math.round(subtotal * 0.016) : 0;
 
       const items = lineItems.map((li) => ({
-        product_id: li.product.id,
+        // Custom items have synthetic IDs not in the products table — store as null
+        product_id: li.product.id.startsWith("custom-") ? null : li.product.id,
         product_name: li.product.name,
         product_image: li.product.image_url || null,
         price: li.product.price,
@@ -511,8 +512,8 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
                   placeholder="Search products to add..."
                 />
               </div>
-              {showSearch && searchResults.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 shadow-lg max-h-48 overflow-y-auto">
+              {showSearch && searchQuery.trim().length >= 2 && (
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 shadow-lg max-h-60 overflow-y-auto">
                   {searchResults.map((p) => (
                     <button
                       key={p.id}
@@ -533,6 +534,37 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
                       <Plus className="w-4 h-4 text-coral flex-shrink-0" />
                     </button>
                   ))}
+                  {/* Always show "Add as custom item" footer when there's a search query */}
+                  <button
+                    onClick={() => {
+                      const priceStr = window.prompt(`Add "${searchQuery.trim()}" as a custom item.\n\nEnter price (₹):`, "");
+                      if (priceStr === null) return;
+                      const price = Number(priceStr);
+                      if (!Number.isFinite(price) || price < 0) {
+                        toast.error("Invalid price");
+                        return;
+                      }
+                      const customProduct = {
+                        id: `custom-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                        name: searchQuery.trim(),
+                        price,
+                        image_url: null,
+                        in_stock: true,
+                      } as unknown as Product;
+                      addProduct(customProduct);
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2 text-left border-t border-gray-200 dark:border-gray-600 ${searchResults.length === 0 ? "bg-coral/5" : "hover:bg-coral/5"}`}
+                  >
+                    <div className="w-8 h-8 rounded bg-coral/10 flex items-center justify-center flex-shrink-0">
+                      <Plus className="w-4 h-4 text-coral" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-coral font-medium truncate">
+                        {searchResults.length === 0 ? `Add "${searchQuery.trim()}" as custom item` : `Not in list? Add "${searchQuery.trim()}" as custom item`}
+                      </p>
+                      <p className="text-xs text-gray-400">Enter a price — won&apos;t be saved to catalog</p>
+                    </div>
+                  </button>
                 </div>
               )}
             </div>
@@ -542,7 +574,9 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
               <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-4">No products added yet</p>
             ) : (
               <div className="space-y-2">
-                {lineItems.map((li) => (
+                {lineItems.map((li) => {
+                  const isCustom = li.product.id.startsWith("custom-");
+                  return (
                   <div key={li.product.id} className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-2">
                     <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-600 flex-shrink-0">
                       {li.product.image_url ? (
@@ -552,7 +586,10 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900 dark:text-white truncate">{li.product.name}</p>
+                      <p className="text-sm text-gray-900 dark:text-white truncate">
+                        {li.product.name}
+                        {isCustom && <span className="ml-2 text-[10px] uppercase tracking-wide text-coral bg-coral/10 px-1.5 py-0.5 rounded">Custom</span>}
+                      </p>
                       <p className="text-xs text-gray-400">₹{li.product.price.toLocaleString()} each</p>
                     </div>
                     <div className="flex items-center gap-1">
@@ -563,7 +600,8 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
                     <span className="text-sm font-medium text-gray-900 dark:text-white w-20 text-right">₹{(li.product.price * li.quantity).toLocaleString()}</span>
                     <button onClick={() => removeItem(li.product.id)} className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30"><X className="w-3.5 h-3.5 text-red-500" /></button>
                   </div>
-                ))}
+                  );
+                })}
                 <div className="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-600 text-sm font-bold text-gray-900 dark:text-white">
                   <span>Total</span>
                   <span>₹{subtotal.toLocaleString()}</span>
@@ -716,7 +754,8 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
     setSubmitting(true);
     try {
       const items = lineItems.map((li) => ({
-        product_id: li.product_id,
+        // Custom items (synthetic IDs) aren't real products in the catalog — store product_id as null
+        product_id: li.product_id.startsWith("custom-") ? null : li.product_id,
         product_name: li.product_name,
         product_image: li.product_image,
         price: li.price,
@@ -818,8 +857,8 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
                   placeholder="Search products to add..."
                 />
               </div>
-              {showSearch && searchResults.length > 0 && (
-                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 shadow-lg max-h-48 overflow-y-auto">
+              {showSearch && searchQuery.trim().length >= 2 && (
+                <div className="absolute z-10 w-full mt-1 bg-white dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 shadow-lg max-h-60 overflow-y-auto">
                   {searchResults.map((p) => (
                     <button
                       key={p.id}
@@ -840,6 +879,39 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
                       <Plus className="w-4 h-4 text-coral flex-shrink-0" />
                     </button>
                   ))}
+                  <button
+                    onClick={() => {
+                      const priceStr = window.prompt(`Add "${searchQuery.trim()}" as a custom item.\n\nEnter price (₹):`, "");
+                      if (priceStr === null) return;
+                      const price = Number(priceStr);
+                      if (!Number.isFinite(price) || price < 0) {
+                        toast.error("Invalid price");
+                        return;
+                      }
+                      const customId = `custom-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+                      setLineItems([...lineItems, {
+                        product_id: customId,
+                        product_name: searchQuery.trim(),
+                        product_image: null,
+                        price,
+                        quantity: 1,
+                      }]);
+                      setSearchQuery("");
+                      setSearchResults([]);
+                      setShowSearch(false);
+                    }}
+                    className={`w-full flex items-center gap-3 px-3 py-2 text-left border-t border-gray-200 dark:border-gray-600 ${searchResults.length === 0 ? "bg-coral/5" : "hover:bg-coral/5"}`}
+                  >
+                    <div className="w-8 h-8 rounded bg-coral/10 flex items-center justify-center flex-shrink-0">
+                      <Plus className="w-4 h-4 text-coral" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-coral font-medium truncate">
+                        {searchResults.length === 0 ? `Add "${searchQuery.trim()}" as custom item` : `Not in list? Add "${searchQuery.trim()}" as custom item`}
+                      </p>
+                      <p className="text-xs text-gray-400">Enter a price — won&apos;t be saved to catalog</p>
+                    </div>
+                  </button>
                 </div>
               )}
             </div>
