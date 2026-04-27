@@ -985,6 +985,9 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
 export default function AdminOrdersPage() {
   const { data: orders, loading, refetch } = useSupabaseQuery(getOrders);
   const [statusFilter, setStatusFilter] = useState<string>("");
+  const [dateRange, setDateRange] = useState<"all" | "this_month" | "last_month" | "custom">("all");
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [checkingPayment, setCheckingPayment] = useState<string | null>(null);
   const [showCheckPendingModal, setShowCheckPendingModal] = useState(false);
@@ -995,21 +998,48 @@ export default function AdminOrdersPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const allOrders = orders || [];
-  
-  // Filter orders by search AND status tab
+
+  // Compute date bounds for current selection
+  const monthBounds = (() => {
+    const now = new Date();
+    if (dateRange === "this_month") {
+      const start = new Date(now.getFullYear(), now.getMonth(), 1);
+      const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+      return { start, end };
+    }
+    if (dateRange === "last_month") {
+      const start = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const end = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
+      return { start, end };
+    }
+    if (dateRange === "custom") {
+      if (!customStart && !customEnd) return null;
+      const start = customStart ? new Date(customStart + "T00:00:00") : new Date(0);
+      const end = customEnd ? new Date(customEnd + "T23:59:59.999") : new Date();
+      return { start, end };
+    }
+    return null;
+  })();
+
+  // Filter orders by search, status, and date range
   const filtered = allOrders.filter((order) => {
     const query = searchQuery.toLowerCase().trim();
     const matchesSearch = !query ||
       order.order_number.toLowerCase().includes(query) ||
       order.customer_name.toLowerCase().includes(query) ||
       order.customer_phone.includes(query);
-    
+
     const matchesStatus = !statusFilter
       ? true
       : statusFilter === "cod"
         ? order.payment_method === "cod"
         : order.status === statusFilter;
-    
+
+    if (monthBounds) {
+      const d = new Date(order.created_at);
+      if (d < monthBounds.start || d > monthBounds.end) return false;
+    }
+
     return matchesSearch && matchesStatus;
   });
 
@@ -1198,6 +1228,36 @@ export default function AdminOrdersPage() {
             >
               <X className="h-5 w-5" />
             </button>
+          )}
+        </div>
+
+        {/* Date Range Filter */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mr-1">When</span>
+          {[
+            { key: "all", label: "All time" },
+            { key: "this_month", label: "This month" },
+            { key: "last_month", label: "Last month" },
+            { key: "custom", label: "Custom" },
+          ].map((opt) => (
+            <button
+              key={opt.key}
+              onClick={() => setDateRange(opt.key as typeof dateRange)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                dateRange === opt.key
+                  ? "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900"
+                  : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+          {dateRange === "custom" && (
+            <div className="flex items-center gap-2 ml-1">
+              <input type="date" value={customStart} onChange={(e) => setCustomStart(e.target.value)} className="px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
+              <span className="text-gray-400 text-sm">→</span>
+              <input type="date" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)} className="px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
+            </div>
           )}
         </div>
 

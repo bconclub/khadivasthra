@@ -13,27 +13,79 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useMemo } from "react";
 
+type DateRange = "all" | "this_month" | "last_month" | "custom";
+
 export default function AdminDashboardPage() {
   const { data: stats, loading: loadingStats } = useSupabaseQuery(getDashboardStats);
   const { data: orders, loading: loadingOrders } = useSupabaseQuery(getOrders);
   const [searchQuery, setSearchQuery] = useState('');
+  const [dateRange, setDateRange] = useState<DateRange>("all");
+  const [customStart, setCustomStart] = useState("");
+  const [customEnd, setCustomEnd] = useState("");
 
-  // Filter orders based on search query
-  const filteredOrders = useMemo(() => {
+  const dateBounds = useMemo(() => {
+    const now = new Date();
+    if (dateRange === "this_month") {
+      return { start: new Date(now.getFullYear(), now.getMonth(), 1), end: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999) };
+    }
+    if (dateRange === "last_month") {
+      return { start: new Date(now.getFullYear(), now.getMonth() - 1, 1), end: new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999) };
+    }
+    if (dateRange === "custom") {
+      if (!customStart && !customEnd) return null;
+      return { start: customStart ? new Date(customStart + "T00:00:00") : new Date(0), end: customEnd ? new Date(customEnd + "T23:59:59.999") : new Date() };
+    }
+    return null;
+  }, [dateRange, customStart, customEnd]);
+
+  // Orders within selected date range (or all if "all time")
+  const ordersInRange = useMemo(() => {
     if (!orders) return [];
-    if (!searchQuery.trim()) return orders.slice(0, 5);
-    
-    const query = searchQuery.toLowerCase().trim();
-    return orders.filter(order => {
-      return (
-        order.order_number.toLowerCase().includes(query) ||
-        order.customer_name.toLowerCase().includes(query) ||
-        order.customer_phone.includes(query)
-      );
+    if (!dateBounds) return orders;
+    return orders.filter((o) => {
+      const d = new Date(o.created_at);
+      return d >= dateBounds.start && d <= dateBounds.end;
     });
-  }, [orders, searchQuery]);
+  }, [orders, dateBounds]);
 
-  const displayOrders = searchQuery.trim() ? filteredOrders : (orders || []).slice(0, 5);
+  // Compute filtered stats from ordersInRange (overrides server stats when range != all)
+  const filteredStats = useMemo(() => {
+    if (dateRange === "all") return null;
+    const active = ordersInRange.filter((o) => ["confirmed", "shipped", "delivered", "billed"].includes(o.status));
+    const totalRevenue = active.reduce((s, o) => s + Number(o.total), 0);
+    const codRevenue = active.filter((o) => o.payment_method === "cod" && o.settlement_status === "settled").reduce((s, o) => s + Number(o.total), 0);
+    const codPending = active.filter((o) => o.payment_method === "cod" && (o.settlement_status === "pending" || !o.settlement_status)).reduce((s, o) => s + Number(o.total), 0);
+    const prepaidRevenue = active.filter((o) => o.payment_method !== "cod").reduce((s, o) => s + Number(o.total), 0);
+    const totalOrderValue = ordersInRange.reduce((s, o) => s + Number(o.total), 0);
+    const abandoned = ordersInRange.filter((o) => (o.status === "pending" || o.status === "cancelled") && o.payment_status !== "paid");
+    const abandonedValue = abandoned.reduce((s, o) => s + Number(o.total), 0);
+    return {
+      totalOrders: ordersInRange.length,
+      pendingOrders: ordersInRange.filter((o) => o.status === "pending").length,
+      confirmedOrders: ordersInRange.filter((o) => o.status === "confirmed").length,
+      cancelledOrders: ordersInRange.filter((o) => o.status === "cancelled").length,
+      codOrders: ordersInRange.filter((o) => o.payment_method === "cod").length,
+      prepaidOrders: ordersInRange.filter((o) => o.payment_method !== "cod").length,
+      totalRevenue, codRevenue, codPending, prepaidRevenue,
+      totalOrderValue, abandonedCarts: abandoned.length, abandonedValue,
+    };
+  }, [ordersInRange, dateRange]);
+
+  // Use filteredStats if a date range is selected, otherwise server stats
+  const displayStats = filteredStats ?? stats;
+
+  // Filter orders based on search query (within the date range)
+  const filteredOrders = useMemo(() => {
+    if (!searchQuery.trim()) return ordersInRange.slice(0, 5);
+    const query = searchQuery.toLowerCase().trim();
+    return ordersInRange.filter(order => (
+      order.order_number.toLowerCase().includes(query) ||
+      order.customer_name.toLowerCase().includes(query) ||
+      order.customer_phone.includes(query)
+    ));
+  }, [ordersInRange, searchQuery]);
+
+  const displayOrders = searchQuery.trim() ? filteredOrders : ordersInRange.slice(0, 5);
   const isSearching = searchQuery.trim().length > 0;
 
   return (
@@ -42,6 +94,36 @@ export default function AdminDashboardPage() {
         <div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">Welcome to Khadi Vasthra Admin</p>
+        </div>
+
+        {/* Date Range Filter */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mr-1">Showing</span>
+          {([
+            { key: "all", label: "All time" },
+            { key: "this_month", label: "This month" },
+            { key: "last_month", label: "Last month" },
+            { key: "custom", label: "Custom" },
+          ] as { key: DateRange; label: string }[]).map((opt) => (
+            <button
+              key={opt.key}
+              onClick={() => setDateRange(opt.key)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                dateRange === opt.key
+                  ? "bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900"
+                  : "bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+          {dateRange === "custom" && (
+            <div className="flex items-center gap-2 ml-1">
+              <input type="date" value={customStart} onChange={(e) => setCustomStart(e.target.value)} className="px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
+              <span className="text-gray-400 text-sm">→</span>
+              <input type="date" value={customEnd} onChange={(e) => setCustomEnd(e.target.value)} className="px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm" />
+            </div>
+          )}
         </div>
 
         {/* Revenue Stats - Row 1 */}
@@ -55,28 +137,28 @@ export default function AdminDashboardPage() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <StatCard
                 label="Total Revenue"
-                value={`₹${(stats?.totalRevenue ?? 0).toLocaleString()}`}
+                value={`₹${(displayStats?.totalRevenue ?? 0).toLocaleString()}`}
                 icon={IndianRupee}
                 color="bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400"
-                subtitle="All confirmed orders"
+                subtitle="Confirmed/shipped/delivered"
               />
               <StatCard
                 label="COD Revenue"
-                value={`₹${(stats?.codRevenue ?? 0).toLocaleString()}`}
+                value={`₹${(displayStats?.codRevenue ?? 0).toLocaleString()}`}
                 icon={Banknote}
                 color="bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400"
                 subtitle="Settled COD"
               />
               <StatCard
                 label="COD Pending"
-                value={`₹${(stats?.codPending ?? 0).toLocaleString()}`}
+                value={`₹${(displayStats?.codPending ?? 0).toLocaleString()}`}
                 icon={Wallet}
                 color="bg-orange-50 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400"
                 subtitle="Awaiting settlement"
               />
               <StatCard
                 label="Prepaid Revenue"
-                value={`₹${(stats?.prepaidRevenue ?? 0).toLocaleString()}`}
+                value={`₹${(displayStats?.prepaidRevenue ?? 0).toLocaleString()}`}
                 icon={CreditCard}
                 color="bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400"
                 subtitle="Online payments"
@@ -87,14 +169,14 @@ export default function AdminDashboardPage() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <StatCard
                 label="Cart Abandon"
-                value={`₹${(stats?.abandonedValue ?? 0).toLocaleString()}`}
+                value={`₹${(displayStats?.abandonedValue ?? 0).toLocaleString()}`}
                 icon={ShoppingBasket}
                 color="bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400"
-                subtitle={`${stats?.abandonedCarts ?? 0} abandoned carts`}
+                subtitle={`${displayStats?.abandonedCarts ?? 0} abandoned carts`}
               />
               <StatCard
                 label="Total Orders"
-                value={stats?.totalOrders ?? 0}
+                value={displayStats?.totalOrders ?? 0}
                 icon={ShoppingCart}
                 color="bg-cyan-50 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400"
                 href="/admin/orders"
@@ -102,14 +184,14 @@ export default function AdminDashboardPage() {
               />
               <StatCard
                 label="COD Orders"
-                value={stats?.codOrders ?? 0}
+                value={displayStats?.codOrders ?? 0}
                 icon={Banknote}
                 color="bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400"
                 subtitle="Cash on delivery"
               />
               <StatCard
                 label="Prepaid Orders"
-                value={stats?.prepaidOrders ?? 0}
+                value={displayStats?.prepaidOrders ?? 0}
                 icon={CreditCard}
                 color="bg-emerald-50 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
                 subtitle="Online payment"
@@ -120,10 +202,10 @@ export default function AdminDashboardPage() {
             <div className="grid grid-cols-3 lg:grid-cols-6 gap-3">
               <MiniStat icon={Package} label="Products" value={stats?.totalProducts ?? 0} href="/admin/products" />
               <MiniStat icon={FolderOpen} label="Categories" value={stats?.totalCategories ?? 0} href="/admin/categories" />
-              <MiniStat icon={Clock} label="Pending" value={stats?.pendingOrders ?? 0} />
-              <MiniStat icon={CheckCircle2} label="Confirmed" value={stats?.confirmedOrders ?? 0} />
-              <MiniStat icon={XCircle} label="Cancelled" value={stats?.cancelledOrders ?? 0} />
-              <MiniStat icon={TrendingUp} label="Order Value" value={`₹${(stats?.totalOrderValue ?? 0).toLocaleString()}`} />
+              <MiniStat icon={Clock} label="Pending" value={displayStats?.pendingOrders ?? 0} />
+              <MiniStat icon={CheckCircle2} label="Confirmed" value={displayStats?.confirmedOrders ?? 0} />
+              <MiniStat icon={XCircle} label="Cancelled" value={displayStats?.cancelledOrders ?? 0} />
+              <MiniStat icon={TrendingUp} label="Order Value" value={`₹${(displayStats?.totalOrderValue ?? 0).toLocaleString()}`} />
             </div>
           </div>
         )}
@@ -154,7 +236,7 @@ export default function AdminDashboardPage() {
         <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
             <h2 className="font-semibold text-gray-900 dark:text-white">
-              {isSearching ? `Search Results (${displayOrders.length})` : 'Recent Orders'}
+              {isSearching ? `Search Results (${displayOrders.length})` : (dateRange === "all" ? "Recent Orders" : `Orders — ${dateRange === "this_month" ? "This month" : dateRange === "last_month" ? "Last month" : "Custom range"} (${ordersInRange.length})`)}
             </h2>
             <Link href="/admin/orders" className="text-sm text-coral hover:underline">
               View all
