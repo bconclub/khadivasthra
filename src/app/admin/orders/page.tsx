@@ -1144,9 +1144,9 @@ export default function AdminOrdersPage() {
                   </div>
                   {/* Order info */}
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="font-mono text-xs text-coral font-medium">{order.order_number}</span>
-                      <span className="text-sm text-gray-900 dark:text-white font-medium truncate">{order.customer_name}</span>
+                    <div className="flex items-center gap-2 mb-0.5 min-w-0">
+                      <span className="font-mono text-xs text-coral font-medium flex-shrink-0 whitespace-nowrap">{order.order_number}</span>
+                      <span className="text-sm text-gray-900 dark:text-white font-medium truncate flex-1 min-w-0">{order.customer_name}</span>
                     </div>
                     <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
                       {order.items?.map((i) => `${i.product_name} x${i.quantity}`).join(", ")}
