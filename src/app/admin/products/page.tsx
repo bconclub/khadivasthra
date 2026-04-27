@@ -7,11 +7,13 @@ import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getAllProducts, updateProduct, createProduct, deleteProduct, updateProductOrder, triggerSiteDeploy } from "@/lib/services/admin";
 import { getCategories } from "@/lib/services/categories";
 import type { ProductWithCategory } from "@/types";
-import { Plus, Search, Pencil, Trash2, Loader2, Eye, EyeOff, Star, RefreshCw, ArrowUp, ArrowDown, CheckSquare, Package, X } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Loader2, Eye, EyeOff, Star, RefreshCw, ArrowUp, ArrowDown, CheckSquare, Package, X, AlertTriangle, PackageX } from "lucide-react";
+
+const LOW_STOCK_THRESHOLD = 10;
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 
-type VisibilityFilter = "all" | "visible" | "hidden";
+type VisibilityFilter = "all" | "visible" | "hidden" | "low-stock" | "sold-out";
 
 // Inline stock editing component
 function StockBadge({
@@ -194,8 +196,16 @@ export default function AdminProductsPage() {
 
   const allProducts = products || [];
 
+  const isSoldOut = (p: ProductWithCategory) => (p.stock_quantity || 0) === 0 || !p.in_stock;
+  const isLowStock = (p: ProductWithCategory) => {
+    const qty = p.stock_quantity || 0;
+    return qty > 0 && qty <= LOW_STOCK_THRESHOLD && p.in_stock;
+  };
+
   const visibleCount = allProducts.filter((p) => p.is_active).length;
   const hiddenCount = allProducts.filter((p) => !p.is_active).length;
+  const lowStockCount = allProducts.filter(isLowStock).length;
+  const soldOutCount = allProducts.filter(isSoldOut).length;
 
   const filtered = allProducts.filter((p) => {
     const matchesSearch = !search || p.name.toLowerCase().includes(search.toLowerCase());
@@ -203,7 +213,9 @@ export default function AdminProductsPage() {
     const matchesVisibility =
       visibilityFilter === "all" ||
       (visibilityFilter === "visible" && p.is_active) ||
-      (visibilityFilter === "hidden" && !p.is_active);
+      (visibilityFilter === "hidden" && !p.is_active) ||
+      (visibilityFilter === "low-stock" && isLowStock(p)) ||
+      (visibilityFilter === "sold-out" && isSoldOut(p));
     return matchesSearch && matchesCategory && matchesVisibility;
   });
 
@@ -475,6 +487,28 @@ export default function AdminProductsPage() {
             }`}
           >
             <EyeOff className="w-3.5 h-3.5" /> Hidden ({hiddenCount})
+          </button>
+          <button
+            onClick={() => setVisibilityFilter("low-stock")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors inline-flex items-center gap-1.5 ${
+              visibilityFilter === "low-stock"
+                ? "bg-amber-500 text-white"
+                : "bg-white dark:bg-gray-800 text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900/50 hover:bg-amber-50 dark:hover:bg-amber-900/20"
+            }`}
+            title={`Stock between 1 and ${LOW_STOCK_THRESHOLD}`}
+          >
+            <AlertTriangle className="w-3.5 h-3.5" /> Low Stock ({lowStockCount})
+          </button>
+          <button
+            onClick={() => setVisibilityFilter("sold-out")}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors inline-flex items-center gap-1.5 ${
+              visibilityFilter === "sold-out"
+                ? "bg-red-500 text-white"
+                : "bg-white dark:bg-gray-800 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-900/50 hover:bg-red-50 dark:hover:bg-red-900/20"
+            }`}
+            title="Stock is 0 or marked out of stock"
+          >
+            <PackageX className="w-3.5 h-3.5" /> Sold Out ({soldOutCount})
           </button>
         </div>
 
