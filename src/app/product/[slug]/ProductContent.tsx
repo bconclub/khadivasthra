@@ -383,11 +383,7 @@ function ProductContentInner() {
               </div>
 
               {/* Trust Badges */}
-              <div className="grid grid-cols-3 gap-4 py-4 border-t border-b border-gray-100">
-                <div className="text-center">
-                  <Truck className="w-5 h-5 mx-auto mb-1 text-text-muted" />
-                  <p className="text-xs text-text-muted">Free Shipping</p>
-                </div>
+              <div className="grid grid-cols-2 gap-4 py-4 border-t border-b border-gray-100">
                 <div className="text-center">
                   <ShieldCheck className="w-5 h-5 mx-auto mb-1 text-text-muted" />
                   <p className="text-xs text-text-muted">Quality Assured</p>
