@@ -289,10 +289,10 @@ function generateStickerHTML(order: Order): string {
 
   <!-- Logo Footer -->
   <div class="logo-footer" style="display:flex !important; justify-content:space-between; align-items:center; padding:8px 12px; border-top:2px solid #000; background:#000 !important; -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important;">
-    <img src="${origin}/logo_languages/Artboard%201.png" alt="Khadi Vasthra logo 1" style="height:36px; width:auto; display:inline-block !important; visibility:visible !important;" />
-    <img src="${origin}/logo_languages/Artboard%202.png" alt="Khadi Vasthra logo 2" style="height:36px; width:auto; display:inline-block !important; visibility:visible !important;" />
-    <img src="${origin}/logo_languages/Artboard%203.png" alt="Khadi Vasthra logo 3" style="height:36px; width:auto; display:inline-block !important; visibility:visible !important;" />
-    <img src="${origin}/logo_languages/Artboard%204.png" alt="Khadi Vasthra logo 4" style="height:36px; width:auto; display:inline-block !important; visibility:visible !important;" />
+    <img src="${origin}/logo_languages/Artboard%201.webp" alt="Khadi Vasthra logo 1" style="height:36px; width:auto; display:inline-block !important; visibility:visible !important;" />
+    <img src="${origin}/logo_languages/Artboard%202.webp" alt="Khadi Vasthra logo 2" style="height:36px; width:auto; display:inline-block !important; visibility:visible !important;" />
+    <img src="${origin}/logo_languages/Artboard%203.webp" alt="Khadi Vasthra logo 3" style="height:36px; width:auto; display:inline-block !important; visibility:visible !important;" />
+    <img src="${origin}/logo_languages/Artboard%204.webp" alt="Khadi Vasthra logo 4" style="height:36px; width:auto; display:inline-block !important; visibility:visible !important;" />
   </div>
 </div>
 

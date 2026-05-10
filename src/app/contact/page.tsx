@@ -8,7 +8,7 @@ export default function ContactPage() {
             <div className="contact-page__header text-center mb-12">
                 <div className="contact-page__logo-wrapper flex justify-center mb-6">
                     <Image
-                        src="/Khadi Vasthra White Transparnt.png"
+                        src="/Khadi Vasthra White Transparnt.webp"
                         alt="Khadi Vasthra Logo"
                         width={400}
                         height={160}

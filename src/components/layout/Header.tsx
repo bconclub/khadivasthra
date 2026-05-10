@@ -86,7 +86,7 @@ export function Header() {
                     }`}>
                     <Link href="/" className="header__logo-link flex items-center">
                         <Image
-                            src="/Khadi Vasthra White Transparnt.png"
+                            src="/Khadi Vasthra White Transparnt.webp"
                             alt="Khadi Vasthra Logo"
                             width={180}
                             height={60}
@@ -103,7 +103,7 @@ export function Header() {
                     }`}>
                     <Link href="/" className="header__logo-link flex items-center">
                         <Image
-                            src="/Khadi Vasthra White Transparnt.png"
+                            src="/Khadi Vasthra White Transparnt.webp"
                             alt="Khadi Vasthra Logo"
                             width={120}
                             height={40}

@@ -51,10 +51,10 @@ export default function Home() {
 
   // Multilingual logo cycling
   const heroLogos = [
-    "/logo-lanuages_hero/Artboard 1.png",
-    "/logo-lanuages_hero/Artboard 2.png",
-    "/logo-lanuages_hero/Artboard 3.png",
-    "/logo-lanuages_hero/Artboard 4.png",
+    "/logo-lanuages_hero/Artboard 1.webp",
+    "/logo-lanuages_hero/Artboard 2.webp",
+    "/logo-lanuages_hero/Artboard 3.webp",
+    "/logo-lanuages_hero/Artboard 4.webp",
   ];
   const [logoIndex, setLogoIndex] = useState(0);
 
@@ -205,9 +205,9 @@ export default function Home() {
         <section className="banners-section bg-white py-12">
           <div className="container mx-auto px-4 max-w-7xl">
             <div className="banners-section__grid grid md:grid-cols-3 gap-6">
-              <StaticBannerCard title="Festival Collection" overlay="coral" image="/images/card covers/festival collection.png" />
-              <StaticBannerCard title="25% Off" overlay="orange" image="/images/card covers/offer.png" />
-              <StaticBannerCard title="New Arrivals" overlay="cream" image="/images/card covers/new-arrivals.png" />
+              <StaticBannerCard title="Festival Collection" overlay="coral" image="/images/card covers/festival collection.webp" />
+              <StaticBannerCard title="25% Off" overlay="orange" image="/images/card covers/offer.webp" />
+              <StaticBannerCard title="New Arrivals" overlay="cream" image="/images/card covers/new-arrivals.webp" />
             </div>
           </div>
         </section>

@@ -27,11 +27,11 @@ export function getProductImageFilename(productId: string, category: string): st
   // Mapping of product IDs to actual image filenames in category folders
   const imageMap: Record<string, string> = {
     // White Mundus
-    "wm-001": "blur-border-white.png",
-    "wm-002": "grey-border-white.png",
-    "wm-003": "purple borde sitiing.png",
+    "wm-001": "blur-border-white.webp",
+    "wm-002": "grey-border-white.webp",
+    "wm-003": "purple borde sitiing.webp",
     // Offwhite Mundus
-    "om-001": "goldern border white.png",
+    "om-001": "goldern border white.webp",
     // Add more mappings as needed
   };
   
@@ -148,7 +148,7 @@ export function normalizeProductImagePath(productId: string, imagePath?: string,
   if (category && (!imagePath || imagePath === '' || imagePath.trim() === '')) {
     const categorySlug = categoryToSlug(category);
     // Try common extensions in category folder - start with png as most images in white-mundus are png
-     return `/images/products/${categorySlug}/${productId}.png`;
+     return `/images/products/${categorySlug}/${productId}.webp`;
   }
   
   // Try new standardized location (product name slug)

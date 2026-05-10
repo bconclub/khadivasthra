@@ -12,7 +12,7 @@ export function Footer() {
                     <div className="footer__section footer__section--about">
                         <Link href="/" className="footer__logo-link block mb-4">
                             <Image
-                                src="/Khadi Vasthra White Transparnt.png"
+                                src="/Khadi Vasthra White Transparnt.webp"
                                 alt="Khadi Vasthra Logo"
                                 width={200}
                                 height={70}
