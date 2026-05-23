@@ -14,7 +14,24 @@ import { trackInitiateCheckout } from "@/lib/fbq";
 
 type PaymentStep = "form" | "creating" | "paying";
 
+const PINCODE_DETAIL_FALLBACKS: Record<string, { city: string; state: string }> = {
+  // Keep checkout usable when the public postal API is unavailable or misses a valid serviceable pincode.
+  "560016": { city: "Bengaluru", state: "Karnataka" },
+};
+
+function formatRupees(amount: number): string {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: Number.isInteger(amount) ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
 async function fetchPincodeDetails(pincode: string): Promise<{ city: string; state: string } | null> {
+  const fallback = PINCODE_DETAIL_FALLBACKS[pincode];
+  if (fallback) return fallback;
+
   try {
     const res = await fetch(`https://api.postalpincode.in/pincode/${pincode}`);
     const data = await res.json();
@@ -79,11 +96,14 @@ export default function CheckoutPage() {
   // COD availability: pincode must support COD and cart total must be ≥ ₹1000
   const COD_MINIMUM = 1000;
   const codAvailable = codEnabledGlobal && (shippingInfo?.cod_available ?? false) && cartTotal >= COD_MINIMUM;
+  const pincodeLookupFailed = pincodeValid === false && shippingInfo?.available;
+  const cityStateReadOnly = pincodeValid === true || !shippingInfo?.available;
 
   // Fetch city/state from pincode API + check shipping serviceability
   useEffect(() => {
     if (pincodeDebounceRef.current) clearTimeout(pincodeDebounceRef.current);
     if (debounceRef.current) clearTimeout(debounceRef.current);
+    let cancelled = false;
 
     const trimmed = pincode.trim();
     if (trimmed.length !== 6 || !/^\d{6}$/.test(trimmed)) {
@@ -100,6 +120,7 @@ export default function CheckoutPage() {
     setPincodeValid(null);
     pincodeDebounceRef.current = setTimeout(async () => {
       const details = await fetchPincodeDetails(trimmed);
+      if (cancelled) return;
       if (details) {
         setCity(details.city);
         setState(details.state);
@@ -118,6 +139,7 @@ export default function CheckoutPage() {
     debounceRef.current = setTimeout(async () => {
       try {
         const result = await checkShippingServiceability(trimmed, totalItems);
+        if (cancelled) return;
         setShippingInfo(result);
         if (!result.available) {
           setPincodeError("Delivery not available to this pincode.");
@@ -126,18 +148,21 @@ export default function CheckoutPage() {
           setPaymentMethod("online");
         }
       } catch {
+        if (cancelled) return;
         setPincodeError("Could not check delivery availability.");
         setShippingInfo(null);
       } finally {
+        if (cancelled) return;
         setCheckingPincode(false);
       }
     }, 500);
 
     return () => {
+      cancelled = true;
       if (pincodeDebounceRef.current) clearTimeout(pincodeDebounceRef.current);
       if (debounceRef.current) clearTimeout(debounceRef.current);
     };
-  }, [pincode, totalItems]);
+  }, [pincode, totalItems, paymentMethod]);
 
   const buildFormData = (): CheckoutFormData => {
     const addressParts = [houseNo.trim(), street.trim()];
@@ -440,7 +465,7 @@ export default function CheckoutPage() {
                         <Loader2 className="w-3 h-3 animate-spin" /> Checking pincode...
                       </p>
                     )}
-                    {!fetchingPincode && !checkingPincode && pincodeValid === false && (
+                    {!fetchingPincode && !checkingPincode && pincodeValid === false && !shippingInfo?.available && (
                       <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
                         <XCircle className="w-3 h-3" /> Invalid pincode
                       </p>
@@ -455,6 +480,11 @@ export default function CheckoutPage() {
                         <XCircle className="w-3 h-3" /> {pincodeError}
                       </p>
                     )}
+                    {!fetchingPincode && !checkingPincode && pincodeLookupFailed && (
+                      <p className="text-xs text-text-muted mt-1">
+                        City and state could not be auto-filled. Please enter them below.
+                      </p>
+                    )}
                   </div>
                   <div className="grid md:grid-cols-2 gap-4">
                     <div>
@@ -465,9 +495,10 @@ export default function CheckoutPage() {
                         type="text"
                         required
                         value={city}
-                        readOnly
-                        className={readOnlyCls}
-                        placeholder="Auto-filled from pincode"
+                        onChange={(e) => setCity(e.target.value)}
+                        readOnly={cityStateReadOnly}
+                        className={cityStateReadOnly ? readOnlyCls : inputCls}
+                        placeholder={cityStateReadOnly ? "Auto-filled from pincode" : "Enter city"}
                       />
                     </div>
                     <div>
@@ -478,9 +509,10 @@ export default function CheckoutPage() {
                         type="text"
                         required
                         value={state}
-                        readOnly
-                        className={readOnlyCls}
-                        placeholder="Auto-filled from pincode"
+                        onChange={(e) => setState(e.target.value)}
+                        readOnly={cityStateReadOnly}
+                        className={cityStateReadOnly ? readOnlyCls : inputCls}
+                        placeholder={cityStateReadOnly ? "Auto-filled from pincode" : "Enter state"}
                       />
                     </div>
                   </div>
@@ -540,7 +572,7 @@ export default function CheckoutPage() {
                           Cash on Delivery
                         </p>
                         <p className="text-xs text-text-muted">
-                          {codAvailable ? "Pay when delivered" : cartTotal < COD_MINIMUM ? `Min. order ₹${COD_MINIMUM}` : "Not available"}
+                          {codAvailable ? "Pay when delivered" : cartTotal < COD_MINIMUM ? `Min. order ${formatRupees(COD_MINIMUM)}` : "Not available"}
                         </p>
                       </div>
                     </button>
@@ -570,7 +602,7 @@ export default function CheckoutPage() {
                         x {item.quantity}
                       </span>
                       <span className="font-medium text-text whitespace-nowrap">
-                        ₹{item.price * item.quantity}
+                        {formatRupees(item.price * item.quantity)}
                       </span>
                     </div>
                   ))}
@@ -579,7 +611,7 @@ export default function CheckoutPage() {
                 <div className="border-t border-cream/30 pt-4 space-y-2 mb-6">
                   <div className="flex justify-between text-sm text-text-muted">
                     <span>Subtotal</span>
-                    <span>₹{cartTotal}</span>
+                    <span>{formatRupees(cartTotal)}</span>
                   </div>
                   <div className="flex justify-between text-sm text-text-muted">
                     <span className="flex items-center gap-1">
@@ -588,7 +620,7 @@ export default function CheckoutPage() {
                     {checkingPincode ? (
                       <span className="text-text-muted">Calculating...</span>
                     ) : shippingInfo?.available ? (
-                      <span>{shippingCost > 0 ? `₹${shippingCost}` : "Free"}</span>
+                      <span>{shippingCost > 0 ? formatRupees(shippingCost) : "Free"}</span>
                     ) : (
                       <span className="text-text-muted">Enter pincode</span>
                     )}
@@ -598,7 +630,7 @@ export default function CheckoutPage() {
                       <span className="flex items-center gap-1">
                         <Banknote className="w-3.5 h-3.5" /> COD Charges (1.6%)
                       </span>
-                      <span>₹{codCharges}</span>
+                      <span>{formatRupees(codCharges)}</span>
                     </div>
                   )}
                   {shippingInfo?.available && shippingInfo.fastest_etd && (
@@ -608,11 +640,11 @@ export default function CheckoutPage() {
                   )}
                   <div className="flex justify-between font-bold text-lg text-orange border-t border-cream/30 pt-3">
                     <span>Total</span>
-                    <span>₹{orderTotal}</span>
+                    <span>{formatRupees(orderTotal)}</span>
                   </div>
                   {isCod && (
                     <p className="text-xs text-text-muted flex items-center gap-1">
-                      <Banknote className="w-3 h-3" /> Pay ₹{orderTotal} at delivery
+                      <Banknote className="w-3 h-3" /> Pay {formatRupees(orderTotal)} at delivery
                     </p>
                   )}
                 </div>
