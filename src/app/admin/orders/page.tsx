@@ -345,6 +345,10 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<Product[]>([]);
   const [showSearch, setShowSearch] = useState(false);
+  const [showCustomItemForm, setShowCustomItemForm] = useState(false);
+  const [customItemName, setCustomItemName] = useState("");
+  const [customItemPrice, setCustomItemPrice] = useState("");
+  const [customItemDiscount, setCustomItemDiscount] = useState("");
   const searchRef = useRef<HTMLDivElement>(null);
 
   const searchProducts = useCallback(async (query: string) => {
@@ -384,6 +388,54 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
     setSearchQuery("");
     setSearchResults([]);
     setShowSearch(false);
+  };
+
+  const openCustomItemForm = (name: string) => {
+    setCustomItemName(name.trim());
+    setCustomItemPrice("");
+    setCustomItemDiscount("");
+    setShowCustomItemForm(true);
+    setShowSearch(false);
+  };
+
+  const resetCustomItemForm = () => {
+    setShowCustomItemForm(false);
+    setCustomItemName("");
+    setCustomItemPrice("");
+    setCustomItemDiscount("");
+  };
+
+  const addCustomItem = () => {
+    const nameValue = customItemName.trim();
+    const price = Number(customItemPrice);
+    const discountPercent = customItemDiscount.trim() === "" ? 0 : Number(customItemDiscount);
+
+    if (!nameValue) {
+      toast.error("Enter a custom item name");
+      return;
+    }
+    if (!Number.isFinite(price) || price < 0) {
+      toast.error("Enter a valid original price");
+      return;
+    }
+    if (!Number.isFinite(discountPercent) || discountPercent < 0 || discountPercent > 100) {
+      toast.error("Discount must be between 0 and 100");
+      return;
+    }
+
+    const finalPrice = Math.round(price * (1 - discountPercent / 100) * 100) / 100;
+    const customProduct = {
+      id: `custom-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      name: nameValue,
+      price: finalPrice,
+      compare_price: discountPercent > 0 ? price : null,
+      discount_percent: discountPercent > 0 ? discountPercent : undefined,
+      image_url: null,
+      in_stock: true,
+    } as unknown as Product & { discount_percent?: number };
+
+    addProduct(customProduct);
+    resetCustomItemForm();
   };
 
   const updateQty = (productId: string, delta: number) => {
@@ -612,31 +664,7 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
                   {/* Always show "Add as custom item" footer when there's a search query */}
                   <button
                     onClick={() => {
-                      const priceStr = window.prompt(`Add "${searchQuery.trim()}" as a custom item.\n\nEnter original price (₹):`, "");
-                      if (priceStr === null) return;
-                      const price = Number(priceStr);
-                      if (!Number.isFinite(price) || price < 0) {
-                        toast.error("Invalid price");
-                        return;
-                      }
-                      const discountStr = window.prompt("Discount percentage (optional):", "");
-                      if (discountStr === null) return;
-                      const discountPercent = discountStr.trim() === "" ? 0 : Number(discountStr);
-                      if (!Number.isFinite(discountPercent) || discountPercent < 0 || discountPercent > 100) {
-                        toast.error("Discount must be between 0 and 100");
-                        return;
-                      }
-                      const finalPrice = Math.round(price * (1 - discountPercent / 100) * 100) / 100;
-                      const customProduct = {
-                        id: `custom-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-                        name: searchQuery.trim(),
-                        price: finalPrice,
-                        compare_price: discountPercent > 0 ? price : null,
-                        discount_percent: discountPercent > 0 ? discountPercent : undefined,
-                        image_url: null,
-                        in_stock: true,
-                      } as unknown as Product & { discount_percent?: number };
-                      addProduct(customProduct);
+                      openCustomItemForm(searchQuery);
                     }}
                     className={`w-full flex items-center gap-3 px-3 py-2 text-left border-t border-gray-200 dark:border-gray-600 ${searchResults.length === 0 ? "bg-coral/5" : "hover:bg-coral/5"}`}
                   >
@@ -653,6 +681,70 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
                 </div>
               )}
             </div>
+
+            {showCustomItemForm && (
+              <div className="mb-3 rounded-lg border border-coral/20 bg-coral/5 p-3">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="col-span-2">
+                    <label className={labelCls}>Custom Product Name</label>
+                    <input
+                      className={inputCls}
+                      value={customItemName}
+                      onChange={(e) => setCustomItemName(e.target.value)}
+                      placeholder="Product name"
+                    />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Original Price</label>
+                    <input
+                      type="number"
+                      min={0}
+                      className={inputCls}
+                      value={customItemPrice}
+                      onChange={(e) => setCustomItemPrice(e.target.value)}
+                      placeholder="₹"
+                    />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Discount %</label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      className={inputCls}
+                      value={customItemDiscount}
+                      onChange={(e) => setCustomItemDiscount(e.target.value)}
+                      placeholder="Optional"
+                    />
+                  </div>
+                </div>
+                <div className="mt-3 flex items-center justify-between gap-3">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Final price: ₹{(() => {
+                      const price = Number(customItemPrice) || 0;
+                      const discount = customItemDiscount.trim() === "" ? 0 : Number(customItemDiscount) || 0;
+                      return Math.round(price * (1 - discount / 100) * 100) / 100;
+                    })().toLocaleString()}
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={resetCustomItemForm}
+                      className="px-3 py-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-white/70 dark:hover:bg-gray-700 rounded-lg"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="button"
+                      onClick={addCustomItem}
+                      className="px-3 py-2 text-sm font-medium text-white bg-coral hover:bg-coral/90 rounded-lg"
+                    >
+                      Add Custom Item
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Selected items */}
             {lineItems.length === 0 ? (
