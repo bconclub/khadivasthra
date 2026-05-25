@@ -7,7 +7,7 @@ import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getAllProducts, updateProduct, createProduct, deleteProduct, updateProductOrder, triggerSiteDeploy } from "@/lib/services/admin";
 import { getCategories } from "@/lib/services/categories";
 import type { ProductWithCategory } from "@/types";
-import { Plus, Search, Pencil, Trash2, Loader2, Eye, EyeOff, Star, RefreshCw, ArrowUp, ArrowDown, CheckSquare, Package, X, AlertTriangle, PackageX } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Loader2, Eye, EyeOff, Star, RefreshCw, ArrowUp, ArrowDown, CheckSquare, Package, X, AlertTriangle, PackageX, Check } from "lucide-react";
 
 const LOW_STOCK_THRESHOLD = 10;
 import { Button } from "@/components/ui/button";
@@ -55,7 +55,7 @@ function StockBadge({
 
   if (isEditing) {
     return (
-      <div className="relative inline-flex items-center">
+      <div className="inline-flex items-center gap-1">
         <input
           ref={inputRef}
           type="number"
@@ -69,11 +69,28 @@ function StockBadge({
             if (e.key === 'Escape') onCancel();
           }}
           disabled={isSaving}
-          className="w-[60px] px-2 py-1 text-sm font-bold text-center rounded-full border-2 border-coral focus:outline-none focus:ring-2 focus:ring-coral/50 disabled:opacity-50 dark:bg-gray-800 dark:text-white"
+          className="w-[68px] px-2 py-1 text-sm font-bold text-center rounded-lg border-2 border-coral focus:outline-none focus:ring-2 focus:ring-coral/50 disabled:opacity-50 dark:bg-gray-800 dark:text-white"
         />
-        {isSaving && (
-          <Loader2 className="absolute -right-6 w-4 h-4 animate-spin text-coral" />
-        )}
+        <button
+          type="button"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={onSave}
+          disabled={isSaving}
+          className="p-1.5 rounded-lg bg-green-50 text-green-600 hover:bg-green-100 disabled:opacity-50 dark:bg-green-900/30 dark:text-green-400"
+          title="Save stock"
+        >
+          {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+        </button>
+        <button
+          type="button"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={onCancel}
+          disabled={isSaving}
+          className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 disabled:opacity-50 dark:bg-red-900/30"
+          title="Cancel"
+        >
+          <X className="w-3.5 h-3.5" />
+        </button>
       </div>
     );
   }
@@ -81,9 +98,10 @@ function StockBadge({
   return (
     <button
       onClick={() => onStartEdit(product)}
-      className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold transition-all hover:opacity-80 ${badgeClass}`}
+      className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold transition-all hover:ring-2 hover:ring-coral/30 ${badgeClass}`}
       title="Click to edit stock"
     >
+      <Pencil className="w-3 h-3 opacity-60" />
       {stock > 0 ? stock : 'Out'}
     </button>
   );
@@ -346,15 +364,11 @@ export default function AdminProductsPage() {
 
     setSavingId(editingStockId);
 
-    // Optimistic update - update local data immediately
-    const updatedProducts = products?.map(p =>
-      p.id === editingStockId ? { ...p, stock_quantity: newValue } : p
-    );
-    // Note: We can't directly set products since it's from useSupabaseQuery
-    // But the UI will show the spinner, and refetch will update it
-
     try {
-      await updateProduct(editingStockId, { stock_quantity: newValue });
+      await updateProduct(editingStockId, {
+        stock_quantity: newValue,
+        in_stock: newValue > 0,
+      });
       toast.success(`Stock updated to ${newValue}`);
       await refetch();
     } catch (err) {

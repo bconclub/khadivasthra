@@ -310,6 +310,16 @@ interface OrderLineItem {
   quantity: number;
 }
 
+interface CustomerLookupOrder {
+  customer_name: string;
+  customer_phone: string;
+  customer_email: string | null;
+  customer_address: string;
+  customer_city: string;
+  customer_state: string;
+  customer_pincode: string;
+}
+
 function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreated: () => void }) {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -319,9 +329,17 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
   const [state, setState] = useState("");
   const [pincode, setPincode] = useState("");
   const [notes, setNotes] = useState("");
+  const [status, setStatus] = useState<OrderStatus>("confirmed");
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("cod");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cod");
+  const [shipping, setShipping] = useState<number | "">("");
+  const [articleNumber, setArticleNumber] = useState("");
+  const [settlementStatus, setSettlementStatus] = useState<string>("pending");
+  const [amountReceived, setAmountReceived] = useState<number | "">("");
+  const [settlementDate, setSettlementDate] = useState("");
   const [lineItems, setLineItems] = useState<OrderLineItem[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [loadingCustomer, setLoadingCustomer] = useState(false);
 
   // Product search
   const [searchQuery, setSearchQuery] = useState("");
@@ -381,6 +399,56 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
   };
 
   const subtotal = lineItems.reduce((sum, li) => sum + li.product.price * li.quantity, 0);
+  const isCodCreate = paymentMethod === "cod";
+  const shippingAmount = shipping === "" ? 0 : shipping;
+  const codCharges = isCodCreate ? Math.round((subtotal + shippingAmount) * 0.016) : 0;
+  const total = subtotal + shippingAmount + codCharges;
+
+  const handlePaymentMethodChange = (method: PaymentMethod) => {
+    setPaymentMethod(method);
+    setPaymentStatus(method === "cod" ? "cod" : "paid");
+  };
+
+  const loadCustomerDetails = async () => {
+    const phoneDigits = phone.replace(/\D/g, "").slice(-10);
+    if (phoneDigits.length !== 10) {
+      toast.error("Enter a valid 10-digit phone number first");
+      return;
+    }
+
+    setLoadingCustomer(true);
+    try {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("customer_name, customer_phone, customer_email, customer_address, customer_city, customer_state, customer_pincode")
+        .ilike("customer_phone", `%${phoneDigits}`)
+        .order("created_at", { ascending: false })
+        .limit(10);
+
+      if (error) throw error;
+
+      const matchingOrder = (data as CustomerLookupOrder[] | null)?.find(
+        (order) => order.customer_phone.replace(/\D/g, "").slice(-10) === phoneDigits
+      );
+
+      if (!matchingOrder) {
+        toast.error("No previous customer found for this phone number");
+        return;
+      }
+
+      setName(matchingOrder.customer_name || "");
+      setEmail(matchingOrder.customer_email || "");
+      setAddress(matchingOrder.customer_address || "");
+      setCity(matchingOrder.customer_city || "");
+      setState(matchingOrder.customer_state || "");
+      setPincode(matchingOrder.customer_pincode || "");
+      toast.success("Customer details loaded");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to load customer details");
+    } finally {
+      setLoadingCustomer(false);
+    }
+  };
 
   const handleSubmit = async () => {
     if (!name.trim() || !phone.trim() || !address.trim() || !city.trim() || !pincode.trim()) {
@@ -398,15 +466,14 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
       const random = Math.floor(Math.random() * 1000).toString().padStart(3, "0");
       const orderNumber = `KV-${dateStr}-${random}`;
 
-      const isCod = paymentMethod === "cod";
-      const codCharges = isCod ? Math.round(subtotal * 0.016) : 0;
-
       const items = lineItems.map((li) => ({
         // Custom items have synthetic IDs not in the products table — store as null
         product_id: li.product.id.startsWith("custom-") ? null : li.product.id,
         product_name: li.product.name,
         product_image: li.product.image_url || null,
         price: li.product.price,
+        compare_price: li.product.compare_price || null,
+        discount_percent: (li.product as Product & { discount_percent?: number }).discount_percent || null,
         quantity: li.quantity,
         subtotal: li.product.price * li.quantity,
       }));
@@ -422,12 +489,16 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
         customer_pincode: pincode.trim(),
         items,
         subtotal,
-        shipping: 0,
+        shipping: shippingAmount,
         cod_charges: codCharges,
-        total: subtotal + codCharges,
-        status: "confirmed",
-        payment_status: isCod ? "cod" : "paid",
+        total,
+        status,
+        payment_status: paymentStatus,
         payment_method: paymentMethod,
+        article_number: articleNumber.trim() || null,
+        settlement_status: settlementStatus,
+        amount_received: amountReceived !== "" ? Number(amountReceived) : null,
+        settlement_date: settlementDate || null,
         notes: notes.trim() || null,
       });
 
@@ -466,7 +537,18 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
               </div>
               <div>
                 <label className={labelCls}>Phone *</label>
-                <input className={inputCls} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="10-digit phone" />
+                <div className="flex gap-2">
+                  <input className={inputCls} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="10-digit phone" />
+                  <button
+                    type="button"
+                    onClick={loadCustomerDetails}
+                    disabled={loadingCustomer}
+                    className="shrink-0 px-3 py-2 rounded-lg border border-coral/30 text-coral text-sm font-medium hover:bg-coral/5 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
+                  >
+                    {loadingCustomer ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
+                    Load
+                  </button>
+                </div>
               </div>
               <div className="col-span-2">
                 <label className={labelCls}>Email</label>
@@ -487,13 +569,6 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
               <div>
                 <label className={labelCls}>Pincode *</label>
                 <input className={inputCls} value={pincode} onChange={(e) => setPincode(e.target.value)} placeholder="6-digit pincode" />
-              </div>
-              <div>
-                <label className={labelCls}>Payment Method</label>
-                <select className={inputCls} value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value as PaymentMethod)}>
-                  <option value="cod">Cash on Delivery</option>
-                  <option value="online">Paid Online</option>
-                </select>
               </div>
             </div>
           </div>
@@ -537,20 +612,30 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
                   {/* Always show "Add as custom item" footer when there's a search query */}
                   <button
                     onClick={() => {
-                      const priceStr = window.prompt(`Add "${searchQuery.trim()}" as a custom item.\n\nEnter price (₹):`, "");
+                      const priceStr = window.prompt(`Add "${searchQuery.trim()}" as a custom item.\n\nEnter original price (₹):`, "");
                       if (priceStr === null) return;
                       const price = Number(priceStr);
                       if (!Number.isFinite(price) || price < 0) {
                         toast.error("Invalid price");
                         return;
                       }
+                      const discountStr = window.prompt("Discount percentage (optional):", "");
+                      if (discountStr === null) return;
+                      const discountPercent = discountStr.trim() === "" ? 0 : Number(discountStr);
+                      if (!Number.isFinite(discountPercent) || discountPercent < 0 || discountPercent > 100) {
+                        toast.error("Discount must be between 0 and 100");
+                        return;
+                      }
+                      const finalPrice = Math.round(price * (1 - discountPercent / 100) * 100) / 100;
                       const customProduct = {
                         id: `custom-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
                         name: searchQuery.trim(),
-                        price,
+                        price: finalPrice,
+                        compare_price: discountPercent > 0 ? price : null,
+                        discount_percent: discountPercent > 0 ? discountPercent : undefined,
                         image_url: null,
                         in_stock: true,
-                      } as unknown as Product;
+                      } as unknown as Product & { discount_percent?: number };
                       addProduct(customProduct);
                     }}
                     className={`w-full flex items-center gap-3 px-3 py-2 text-left border-t border-gray-200 dark:border-gray-600 ${searchResults.length === 0 ? "bg-coral/5" : "hover:bg-coral/5"}`}
@@ -562,7 +647,7 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
                       <p className="text-sm text-coral font-medium truncate">
                         {searchResults.length === 0 ? `Add "${searchQuery.trim()}" as custom item` : `Not in list? Add "${searchQuery.trim()}" as custom item`}
                       </p>
-                      <p className="text-xs text-gray-400">Enter a price — won&apos;t be saved to catalog</p>
+                      <p className="text-xs text-gray-400">Enter price and optional discount — won&apos;t be saved to catalog</p>
                     </div>
                   </button>
                 </div>
@@ -576,6 +661,8 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
               <div className="space-y-2">
                 {lineItems.map((li) => {
                   const isCustom = li.product.id.startsWith("custom-");
+                  const customDiscountPercent = (li.product as Product & { discount_percent?: number }).discount_percent;
+                  const originalPrice = li.product.compare_price;
                   return (
                   <div key={li.product.id} className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-2">
                     <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-600 flex-shrink-0">
@@ -590,7 +677,17 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
                         {li.product.name}
                         {isCustom && <span className="ml-2 text-[10px] uppercase tracking-wide text-coral bg-coral/10 px-1.5 py-0.5 rounded">Custom</span>}
                       </p>
-                      <p className="text-xs text-gray-400">₹{li.product.price.toLocaleString()} each</p>
+                      <p className="text-xs text-gray-400">
+                        {originalPrice && originalPrice > li.product.price ? (
+                          <>
+                            <span className="line-through">₹{originalPrice.toLocaleString()}</span>{" "}
+                            <span>₹{li.product.price.toLocaleString()} each</span>
+                            {customDiscountPercent && <span className="ml-1 text-green-600">{customDiscountPercent}% off</span>}
+                          </>
+                        ) : (
+                          <>₹{li.product.price.toLocaleString()} each</>
+                        )}
+                      </p>
                     </div>
                     <div className="flex items-center gap-1">
                       <button onClick={() => updateQty(li.product.id, -1)} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600"><Minus className="w-3.5 h-3.5 text-gray-500" /></button>
@@ -609,6 +706,86 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
               </div>
             )}
           </div>
+
+          {/* Order Status & Payment */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Status & Payment</h3>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <label className={labelCls}>Order Status</label>
+                <select className={inputCls} value={status} onChange={(e) => setStatus(e.target.value as OrderStatus)}>
+                  {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>Payment Status</label>
+                <select className={inputCls} value={paymentStatus} onChange={(e) => setPaymentStatus(e.target.value as PaymentStatus)}>
+                  {PAYMENT_STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div>
+                <label className={labelCls}>Payment Method</label>
+                <select className={inputCls} value={paymentMethod} onChange={(e) => handlePaymentMethodChange(e.target.value as PaymentMethod)}>
+                  <option value="cod">COD</option>
+                  <option value="online">Online</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          {/* Shipping & Total */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Shipping & Total</h3>
+            <div className={`grid ${isCodCreate ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
+              <div>
+                <label className={labelCls}>Shipping Cost</label>
+                <input
+                  type="number"
+                  className={inputCls}
+                  value={shipping}
+                  onChange={(e) => setShipping(e.target.value === "" ? "" : Number(e.target.value))}
+                  min={0}
+                />
+              </div>
+              {isCodCreate && (
+                <div>
+                  <label className={labelCls}>Article Number (India Post)</label>
+                  <input className={inputCls} value={articleNumber} onChange={(e) => setArticleNumber(e.target.value)} placeholder="Enter India Post article number" />
+                </div>
+              )}
+            </div>
+            <div className="mt-3 text-sm space-y-1">
+              <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Subtotal</span><span>₹{subtotal.toLocaleString()}</span></div>
+              <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Shipping</span><span>₹{shippingAmount.toLocaleString()}</span></div>
+              {isCodCreate && <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>COD Charges (1.6%)</span><span>₹{codCharges.toLocaleString()}</span></div>}
+              <div className="flex justify-between font-bold text-gray-900 dark:text-white border-t border-gray-200 dark:border-gray-600 pt-1"><span>Total</span><span>₹{total.toLocaleString()}</span></div>
+            </div>
+          </div>
+
+          {/* COD Settlement - only for COD orders */}
+          {isCodCreate && (
+            <div>
+              <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">COD Settlement</h3>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <label className={labelCls}>Status</label>
+                  <select className={inputCls} value={settlementStatus} onChange={(e) => setSettlementStatus(e.target.value)}>
+                    <option value="pending">Pending</option>
+                    <option value="received">Received</option>
+                    <option value="settled">Settled</option>
+                  </select>
+                </div>
+                <div>
+                  <label className={labelCls}>Amount Received</label>
+                  <input type="number" className={inputCls} value={amountReceived} onChange={(e) => setAmountReceived(e.target.value === "" ? "" : Number(e.target.value))} placeholder="₹" min={0} />
+                </div>
+                <div>
+                  <label className={labelCls}>Settlement Date</label>
+                  <input type="date" className={inputCls} value={settlementDate} onChange={(e) => setSettlementDate(e.target.value)} />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Notes */}
           <div>
@@ -637,7 +814,7 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
 const PAYMENT_STATUS_OPTIONS: PaymentStatus[] = ["pending", "paid", "failed", "cod"];
 
 interface EditLineItem {
-  product_id: string;
+  product_id: string | null;
   product_name: string;
   product_image: string | null;
   price: number;
@@ -656,7 +833,7 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>(order.payment_status);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(order.payment_method);
   const [notes, setNotes] = useState(order.notes || "");
-  const [shipping, setShipping] = useState(Number(order.shipping));
+  const [shipping, setShipping] = useState<number | "">(Number(order.shipping) || "");
   const [articleNumber, setArticleNumber] = useState(order.article_number || "");
   const [settlementStatus, setSettlementStatus] = useState<string>(order.settlement_status || "pending");
   const [amountReceived, setAmountReceived] = useState(order.amount_received != null ? Number(order.amount_received) : "");
@@ -724,22 +901,25 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
     setShowSearch(false);
   };
 
-  const updateQty = (productId: string, delta: number) => {
+  const getLineItemKey = (item: EditLineItem) => item.product_id || `custom-${item.product_name}-${item.price}`;
+
+  const updateQty = (itemKey: string, delta: number) => {
     setLineItems(lineItems.map((li) => {
-      if (li.product_id !== productId) return li;
+      if (getLineItemKey(li) !== itemKey) return li;
       const newQty = li.quantity + delta;
       return newQty < 1 ? li : { ...li, quantity: newQty };
     }));
   };
 
-  const removeItem = (productId: string) => {
-    setLineItems(lineItems.filter((li) => li.product_id !== productId));
+  const removeItem = (itemKey: string) => {
+    setLineItems(lineItems.filter((li) => getLineItemKey(li) !== itemKey));
   };
 
   const subtotal = lineItems.reduce((sum, li) => sum + li.price * li.quantity, 0);
   const isCodEdit = paymentMethod === "cod";
-  const codCharges = isCodEdit ? Math.round((subtotal + shipping) * 0.016) : 0;
-  const total = subtotal + shipping + codCharges;
+  const shippingAmount = shipping === "" ? 0 : shipping;
+  const codCharges = isCodEdit ? Math.round((subtotal + shippingAmount) * 0.016) : 0;
+  const total = subtotal + shippingAmount + codCharges;
 
   const handleSubmit = async () => {
     if (!name.trim() || !phone.trim() || !address.trim() || !city.trim() || !pincode.trim()) {
@@ -755,7 +935,7 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
     try {
       const items = lineItems.map((li) => ({
         // Custom items (synthetic IDs) aren't real products in the catalog — store product_id as null
-        product_id: li.product_id.startsWith("custom-") ? null : li.product_id,
+        product_id: li.product_id?.startsWith("custom-") ? null : li.product_id,
         product_name: li.product_name,
         product_image: li.product_image,
         price: li.price,
@@ -773,7 +953,7 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
         customer_pincode: pincode.trim(),
         items,
         subtotal,
-        shipping,
+        shipping: shippingAmount,
         cod_charges: codCharges,
         total,
         status,
@@ -920,8 +1100,10 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
               <p className="text-sm text-gray-400 dark:text-gray-500 text-center py-4">No products — add items above</p>
             ) : (
               <div className="space-y-2">
-                {lineItems.map((li) => (
-                  <div key={li.product_id} className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-2">
+                {lineItems.map((li) => {
+                  const itemKey = getLineItemKey(li);
+                  return (
+                  <div key={itemKey} className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-2">
                     <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-600 flex-shrink-0">
                       {li.product_image ? (
                         <Image src={li.product_image} alt="" width={40} height={40} className="w-full h-full object-cover" unoptimized />
@@ -934,14 +1116,15 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
                       <p className="text-xs text-gray-400">₹{li.price.toLocaleString()} each</p>
                     </div>
                     <div className="flex items-center gap-1">
-                      <button onClick={() => updateQty(li.product_id, -1)} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600"><Minus className="w-3.5 h-3.5 text-gray-500" /></button>
+                      <button onClick={() => updateQty(itemKey, -1)} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600"><Minus className="w-3.5 h-3.5 text-gray-500" /></button>
                       <span className="w-6 text-center text-sm font-medium text-gray-900 dark:text-white">{li.quantity}</span>
-                      <button onClick={() => updateQty(li.product_id, 1)} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600"><Plus className="w-3.5 h-3.5 text-gray-500" /></button>
+                      <button onClick={() => updateQty(itemKey, 1)} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600"><Plus className="w-3.5 h-3.5 text-gray-500" /></button>
                     </div>
                     <span className="text-sm font-medium text-gray-900 dark:text-white w-20 text-right">₹{(li.price * li.quantity).toLocaleString()}</span>
-                    <button onClick={() => removeItem(li.product_id)} className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30"><X className="w-3.5 h-3.5 text-red-500" /></button>
+                    <button onClick={() => removeItem(itemKey)} className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30"><X className="w-3.5 h-3.5 text-red-500" /></button>
                   </div>
-                ))}
+                  );
+                })}
                 <div className="flex justify-between pt-2 border-t border-gray-200 dark:border-gray-600 text-sm font-bold text-gray-900 dark:text-white">
                   <span>Subtotal</span>
                   <span>₹{subtotal.toLocaleString()}</span>
@@ -986,7 +1169,7 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
                   type="number"
                   className={inputCls}
                   value={shipping}
-                  onChange={(e) => setShipping(Number(e.target.value) || 0)}
+                  onChange={(e) => setShipping(e.target.value === "" ? "" : Number(e.target.value))}
                   min={0}
                 />
               </div>
@@ -999,7 +1182,7 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
             </div>
             <div className="mt-3 text-sm space-y-1">
               <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Subtotal</span><span>₹{subtotal.toLocaleString()}</span></div>
-              <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Shipping</span><span>₹{shipping.toLocaleString()}</span></div>
+              <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Shipping</span><span>₹{shippingAmount.toLocaleString()}</span></div>
               {isCodEdit && <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>COD Charges (1.6%)</span><span>₹{codCharges.toLocaleString()}</span></div>}
               <div className="flex justify-between font-bold text-gray-900 dark:text-white border-t border-gray-200 dark:border-gray-600 pt-1"><span>Total</span><span>₹{total.toLocaleString()}</span></div>
             </div>
