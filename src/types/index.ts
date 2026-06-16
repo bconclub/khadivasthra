@@ -1,5 +1,31 @@
 // Database row types (matching Supabase table schemas)
 
+// Admin access control -------------------------------------------------------
+// Per-section permission keys. 'super_admin' role implies all of these.
+export const ADMIN_SECTIONS = [
+  'dashboard',
+  'products',
+  'categories',
+  'orders',
+  'banners',
+  'settings',
+  'users',
+] as const;
+
+export type AdminSection = (typeof ADMIN_SECTIONS)[number];
+
+export type AdminRole = 'super_admin' | 'staff';
+
+export interface AdminProfile {
+  id: string;
+  email: string | null;
+  full_name: string | null;
+  role: AdminRole;
+  permissions: AdminSection[];
+  is_active: boolean;
+  created_at: string;
+}
+
 export interface ProductDetails {
   material?: string;
   weave?: string;

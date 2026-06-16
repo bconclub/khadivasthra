@@ -17,17 +17,28 @@ import {
   ImageIcon,
   Moon,
   Sun,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { AdminSection } from "@/types";
 
-const NAV_ITEMS = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/products", label: "Products", icon: Package },
-  { href: "/admin/categories", label: "Categories", icon: FolderOpen },
-  { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
-  { href: "/admin/banners", label: "Banners", icon: ImageIcon },
-  { href: "/admin/settings", label: "Settings", icon: Settings },
+const NAV_ITEMS: { href: string; label: string; icon: typeof LayoutDashboard; section: AdminSection }[] = [
+  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, section: "dashboard" },
+  { href: "/admin/products", label: "Products", icon: Package, section: "products" },
+  { href: "/admin/categories", label: "Categories", icon: FolderOpen, section: "categories" },
+  { href: "/admin/orders", label: "Orders", icon: ShoppingCart, section: "orders" },
+  { href: "/admin/banners", label: "Banners", icon: ImageIcon, section: "banners" },
+  { href: "/admin/settings", label: "Settings", icon: Settings, section: "settings" },
+  { href: "/admin/users", label: "Users", icon: Users, section: "users" },
 ];
+
+// Resolve the permission a given pathname requires (longest prefix wins).
+function sectionForPath(pathname: string): AdminSection {
+  const match = [...NAV_ITEMS]
+    .filter((i) => pathname === i.href || (i.href !== "/admin" && pathname.startsWith(i.href)))
+    .sort((a, b) => b.href.length - a.href.length)[0];
+  return match?.section ?? "dashboard";
+}
 
 function useDarkMode() {
   const [dark, setDark] = useState(false);
@@ -48,13 +59,25 @@ function useDarkMode() {
 }
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
-  const { user, loading, signOut } = useAdminAuth();
+  const { user, profile, ready, signOut, hasPermission } = useAdminAuth();
   const pathname = usePathname();
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { dark, toggle: toggleDark } = useDarkMode();
 
-  if (loading) {
+  const navItems = NAV_ITEMS.filter((item) => hasPermission(item.section));
+  const firstAllowedHref = navItems[0]?.href;
+
+  // Redirect away from sections the user can't access.
+  useEffect(() => {
+    if (!ready || !user || !profile) return;
+    const required = sectionForPath(pathname);
+    if (!hasPermission(required) && firstAllowedHref && pathname !== firstAllowedHref) {
+      router.replace(firstAllowedHref);
+    }
+  }, [ready, user, profile, pathname, hasPermission, firstAllowedHref, router]);
+
+  if (!ready) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <Loader2 className="w-8 h-8 animate-spin text-coral" />
@@ -67,10 +90,31 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     return null;
   }
 
+  // Logged in but no active admin profile / no permissions at all.
+  if (!profile || navItems.length === 0) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-gray-50 px-6 text-center">
+        <p className="text-gray-700 font-medium">Your account has no admin access.</p>
+        <p className="text-sm text-gray-500">Ask a super admin to grant you section permissions.</p>
+        <button
+          onClick={async () => { await signOut(); router.push("/admin/login"); }}
+          className="text-sm text-coral hover:underline"
+        >
+          Sign out
+        </button>
+      </div>
+    );
+  }
+
   const handleSignOut = async () => {
     await signOut();
     router.push("/admin/login");
   };
+
+  // Guard: block rendering protected content the user can't access
+  // (redirect above handles navigation; this prevents a flash).
+  const requiredSection = sectionForPath(pathname);
+  const allowed = hasPermission(requiredSection);
 
   return (
     <div className={cn("min-h-screen flex", dark ? "dark" : "")}>
@@ -88,7 +132,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </div>
 
           <nav className="flex-1 p-2 space-y-1 overflow-hidden">
-            {NAV_ITEMS.map((item) => {
+            {navItems.map((item) => {
               const isActive = pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href));
               return (
                 <Link
@@ -155,7 +199,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
           {mobileMenuOpen && (
             <div className="bg-white dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 px-4 py-2 shadow-lg max-h-[calc(100vh-3.5rem)] overflow-y-auto">
-              {NAV_ITEMS.map((item) => {
+              {navItems.map((item) => {
                 const isActive = pathname === item.href || (item.href !== "/admin" && pathname.startsWith(item.href));
                 return (
                   <Link
@@ -188,7 +232,14 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         {/* Main Content — offset by collapsed sidebar width */}
         <main className="flex-1 min-w-0 overflow-x-hidden lg:overflow-y-auto lg:pl-16">
           <div className="lg:p-8 p-4 pt-18 lg:pt-8">
-            {children}
+            {allowed ? (
+              children
+            ) : (
+              <div className="flex flex-col items-center justify-center py-24 text-center">
+                <Loader2 className="w-6 h-6 animate-spin text-coral mb-3" />
+                <p className="text-sm text-gray-500 dark:text-gray-400">Redirecting…</p>
+              </div>
+            )}
           </div>
         </main>
       </div>
