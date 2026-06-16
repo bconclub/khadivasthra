@@ -79,7 +79,6 @@ function CreateUserForm({ onCreated }: { onCreated: () => void }) {
   const [password, setPassword] = useState("");
   const [role, setRole] = useState<AdminRole>("staff");
   const [permissions, setPermissions] = useState<AdminSection[]>([
-    "dashboard",
     "products",
     "categories",
   ]);
@@ -90,7 +89,7 @@ function CreateUserForm({ onCreated }: { onCreated: () => void }) {
     setFullName("");
     setPassword("");
     setRole("staff");
-    setPermissions(["dashboard", "products", "categories"]);
+    setPermissions(["products", "categories"]);
   };
 
   const submit = async () => {
