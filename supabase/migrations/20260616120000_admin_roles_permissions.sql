@@ -72,47 +72,60 @@ CREATE POLICY "super admin manage profiles" ON admin_profiles
 -- 4. Rewrite write policies on content tables ---------------------------------
 -- Drop every previously-known admin write policy name, then recreate gated.
 
--- categories
-DROP POLICY IF EXISTS "Admin manage categories" ON categories;
-CREATE POLICY "Admin manage categories" ON categories
-  FOR ALL USING (public.admin_can('categories')) WITH CHECK (public.admin_can('categories'));
+-- Guarded so the migration is safe even if a table is absent on a given
+-- environment (e.g. 'banners' not yet created on some projects).
+DO $$
+BEGIN
+  IF to_regclass('public.categories') IS NOT NULL THEN
+    DROP POLICY IF EXISTS "Admin manage categories" ON categories;
+    CREATE POLICY "Admin manage categories" ON categories
+      FOR ALL USING (public.admin_can('categories')) WITH CHECK (public.admin_can('categories'));
+  END IF;
 
--- products
-DROP POLICY IF EXISTS "Admin manage products" ON products;
-CREATE POLICY "Admin manage products" ON products
-  FOR ALL USING (public.admin_can('products')) WITH CHECK (public.admin_can('products'));
+  IF to_regclass('public.products') IS NOT NULL THEN
+    DROP POLICY IF EXISTS "Admin manage products" ON products;
+    CREATE POLICY "Admin manage products" ON products
+      FOR ALL USING (public.admin_can('products')) WITH CHECK (public.admin_can('products'));
+  END IF;
 
--- product_colors (gated under 'products')
-DROP POLICY IF EXISTS "Admin manage product colors" ON product_colors;
-DROP POLICY IF EXISTS "admin_manage_colors" ON product_colors;
-CREATE POLICY "admin_manage_colors" ON product_colors
-  FOR ALL USING (public.admin_can('products')) WITH CHECK (public.admin_can('products'));
+  IF to_regclass('public.product_colors') IS NOT NULL THEN
+    DROP POLICY IF EXISTS "Admin manage product colors" ON product_colors;
+    DROP POLICY IF EXISTS "admin_manage_colors" ON product_colors;
+    CREATE POLICY "admin_manage_colors" ON product_colors
+      FOR ALL USING (public.admin_can('products')) WITH CHECK (public.admin_can('products'));
+  END IF;
 
--- product_variants (gated under 'products')
-DROP POLICY IF EXISTS "Admin manage product variants" ON product_variants;
-DROP POLICY IF EXISTS "admin_manage_variants" ON product_variants;
-CREATE POLICY "admin_manage_variants" ON product_variants
-  FOR ALL USING (public.admin_can('products')) WITH CHECK (public.admin_can('products'));
+  IF to_regclass('public.product_variants') IS NOT NULL THEN
+    DROP POLICY IF EXISTS "Admin manage product variants" ON product_variants;
+    DROP POLICY IF EXISTS "admin_manage_variants" ON product_variants;
+    CREATE POLICY "admin_manage_variants" ON product_variants
+      FOR ALL USING (public.admin_can('products')) WITH CHECK (public.admin_can('products'));
+  END IF;
 
--- orders
-DROP POLICY IF EXISTS "Admin manage orders" ON orders;
-CREATE POLICY "Admin manage orders" ON orders
-  FOR ALL USING (public.admin_can('orders')) WITH CHECK (public.admin_can('orders'));
+  IF to_regclass('public.orders') IS NOT NULL THEN
+    DROP POLICY IF EXISTS "Admin manage orders" ON orders;
+    CREATE POLICY "Admin manage orders" ON orders
+      FOR ALL USING (public.admin_can('orders')) WITH CHECK (public.admin_can('orders'));
+  END IF;
 
--- settings
-DROP POLICY IF EXISTS "Admin manage settings" ON settings;
-CREATE POLICY "Admin manage settings" ON settings
-  FOR ALL USING (public.admin_can('settings')) WITH CHECK (public.admin_can('settings'));
+  IF to_regclass('public.settings') IS NOT NULL THEN
+    DROP POLICY IF EXISTS "Admin manage settings" ON settings;
+    CREATE POLICY "Admin manage settings" ON settings
+      FOR ALL USING (public.admin_can('settings')) WITH CHECK (public.admin_can('settings'));
+  END IF;
 
--- banners
-DROP POLICY IF EXISTS "Admin manage banners" ON banners;
-CREATE POLICY "Admin manage banners" ON banners
-  FOR ALL USING (public.admin_can('banners')) WITH CHECK (public.admin_can('banners'));
+  IF to_regclass('public.banners') IS NOT NULL THEN
+    DROP POLICY IF EXISTS "Admin manage banners" ON banners;
+    CREATE POLICY "Admin manage banners" ON banners
+      FOR ALL USING (public.admin_can('banners')) WITH CHECK (public.admin_can('banners'));
+  END IF;
 
--- product_views (dashboard stats) — readable by anyone who can see the dashboard
-DROP POLICY IF EXISTS "Admin read views" ON product_views;
-CREATE POLICY "Admin read views" ON product_views
-  FOR SELECT USING (public.admin_can('dashboard'));
+  IF to_regclass('public.product_views') IS NOT NULL THEN
+    DROP POLICY IF EXISTS "Admin read views" ON product_views;
+    CREATE POLICY "Admin read views" ON product_views
+      FOR SELECT USING (public.admin_can('dashboard'));
+  END IF;
+END $$;
 
 -- 5. Storage policies — gate uploads per matching section ---------------------
 DROP POLICY IF EXISTS "Admin upload product images" ON storage.objects;
