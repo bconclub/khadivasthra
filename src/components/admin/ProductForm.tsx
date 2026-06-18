@@ -86,6 +86,32 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const mainInputRef = useRef<HTMLInputElement>(null);
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
+  // Investable design fields
+  const [isInvestable, setIsInvestable] = useState(product?.is_investable || false);
+  const [designName, setDesignName] = useState(product?.design_name || "");
+  const [designCode, setDesignCode] = useState(product?.design_code || "");
+  const [designPreviewUrl, setDesignPreviewUrl] = useState(product?.design_preview_url || "");
+  const [productType, setProductType] = useState(product?.product_type || "");
+  const [manufacturedQuantity, setManufacturedQuantity] = useState(product?.manufactured_quantity?.toString() || "0");
+  const [unitCost, setUnitCost] = useState(product?.unit_cost?.toString() || "");
+  const [uploadingPreview, setUploadingPreview] = useState(false);
+  const previewInputRef = useRef<HTMLInputElement>(null);
+
+  const handlePreviewUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !file.type.startsWith("image/") || file.size > 5 * 1024 * 1024) return;
+    setUploadingPreview(true);
+    try {
+      const url = await uploadProductImage(file, `${slug || slugify(name)}-design`);
+      setDesignPreviewUrl(url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploadingPreview(false);
+      if (previewInputRef.current) previewInputRef.current.value = "";
+    }
+  };
+
   // Colors and variants state
   const existingColors: ColorFormData[] = (product?.colors || []).map((c, idx) => ({
     id: c.id,
@@ -357,6 +383,14 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         length: parseFloat(length) || 13,
         breadth: parseFloat(breadth) || 7,
         height: parseFloat(height) || 3,
+        // Investable design fields
+        is_investable: isInvestable,
+        design_name: isInvestable ? (designName || null) : null,
+        design_code: isInvestable ? (designCode || null) : null,
+        design_preview_url: isInvestable ? (designPreviewUrl || null) : null,
+        product_type: isInvestable && productType ? productType : null,
+        manufactured_quantity: isInvestable ? (parseInt(manufacturedQuantity, 10) || 0) : 0,
+        unit_cost: isInvestable && unitCost ? parseFloat(unitCost) : null,
       };
 
       // Prepare colors and variants for submission
@@ -462,6 +496,110 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
                     : "Enable to manage colors / designs with their own images and stock. Use \"One Size\" if size doesn't apply."}
                 </span>
               </label>
+            </div>
+
+            {/* === INVESTABLE DESIGN === */}
+            <div className="bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-200 dark:border-amber-800 p-4 space-y-4">
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={isInvestable}
+                  onChange={(e) => setIsInvestable(e.target.checked)}
+                  className="w-5 h-5 rounded border-gray-300 text-coral focus:ring-coral"
+                  id="is-investable"
+                />
+                <label htmlFor="is-investable" className="flex-1 cursor-pointer">
+                  <span className="font-semibold text-gray-900 dark:text-white block">Investable design</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    Investors can be allocated units of this design and track its performance.
+                  </span>
+                </label>
+              </div>
+
+              {isInvestable && (
+                <div className="space-y-3 pt-2 border-t border-amber-200 dark:border-amber-800">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Design Name</label>
+                      <input
+                        type="text" value={designName}
+                        onChange={(e) => setDesignName(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm"
+                        placeholder="Kasavu Classic"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Design ID</label>
+                      <input
+                        type="text" value={designCode}
+                        onChange={(e) => setDesignCode(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm font-mono"
+                        placeholder="DSN-001"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Product Type</label>
+                      <select
+                        value={productType}
+                        onChange={(e) => setProductType(e.target.value as typeof productType)}
+                        className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm"
+                      >
+                        <option value="">Select</option>
+                        <option value="single_mundu">Single Mundu</option>
+                        <option value="double_mundu">Double Mundu</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Units Manufactured</label>
+                      <input
+                        type="number" min="0" value={manufacturedQuantity}
+                        onChange={(e) => setManufacturedQuantity(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 items-start">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Unit Cost (₹)</label>
+                      <input
+                        type="number" min="0" step="0.01" value={unitCost}
+                        onChange={(e) => setUnitCost(e.target.value)}
+                        className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm"
+                        placeholder="Optional"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Design Photo</label>
+                      {designPreviewUrl ? (
+                        <div className="relative w-20 h-24 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 group">
+                          <Image src={designPreviewUrl} alt="Design" fill className="object-cover" unoptimized />
+                          <button
+                            type="button"
+                            onClick={() => { setDesignPreviewUrl(""); if (previewInputRef.current) previewInputRef.current.value = ""; }}
+                            className="absolute top-0.5 right-0.5 bg-white/90 p-0.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="w-3 h-3 text-red-500" />
+                          </button>
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => previewInputRef.current?.click()}
+                          disabled={uploadingPreview}
+                          className="w-20 h-24 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-coral/50 flex flex-col items-center justify-center bg-white dark:bg-gray-800"
+                        >
+                          {uploadingPreview ? <Loader2 className="w-5 h-5 animate-spin text-coral" /> : <Camera className="w-5 h-5 text-gray-400" />}
+                        </button>
+                      )}
+                      <input ref={previewInputRef} type="file" accept="image/*" onChange={handlePreviewUpload} className="hidden" />
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* === IMAGES AT TOP === */}

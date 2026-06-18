@@ -11,9 +11,10 @@ import { useSearch } from "@/context/SearchContext";
 export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith("/admin");
+  const isInvestorRoute = pathname?.startsWith("/investor");
   const { isSearchOpen, closeSearch } = useSearch();
 
-  if (isAdminRoute) {
+  if (isAdminRoute || isInvestorRoute) {
     return <>{children}</>;
   }
 

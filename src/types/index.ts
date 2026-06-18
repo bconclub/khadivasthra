@@ -10,6 +10,7 @@ export const ADMIN_SECTIONS = [
   'banners',
   'settings',
   'users',
+  'investors',
 ] as const;
 
 export type AdminSection = (typeof ADMIN_SECTIONS)[number];
@@ -106,9 +107,19 @@ export interface Product {
   length: number;
   breadth: number;
   height: number;
+  // Investable bifurcation + design metadata
+  is_investable: boolean;
+  design_name: string | null;
+  design_code: string | null;        // human "Design ID"
+  design_preview_url: string | null; // Design Photo (distinct from product photo)
+  product_type: ProductType | null;
+  manufactured_quantity: number;
+  unit_cost: number | null;
   created_at: string;
   updated_at: string;
 }
+
+export type ProductType = 'single_mundu' | 'double_mundu';
 
 export interface ProductWithCategory extends Product {
   category: Category;
@@ -256,6 +267,129 @@ export interface CartItem {
   color_id?: string;
   color_name?: string;
   size?: string;
+  /** Available stock snapshot — caps quantity in cart/checkout. */
+  stock?: number;
+}
+
+// Investor portal -----------------------------------------------------------
+
+export type InvestmentStatus = 'active' | 'completed';
+export type SettlementStatus = 'pending' | 'paid';
+export type InvestorDocType =
+  | 'agreement'
+  | 'settlement_statement'
+  | 'sales_report'
+  | 'tax_gst'
+  | 'other';
+
+export interface Investor {
+  id: string;
+  investor_code: string | null;
+  full_name: string;
+  mobile: string | null;
+  email: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface Investment {
+  id: string;
+  investor_id: string;
+  product_id: string;
+  start_date: string;
+  end_date: string | null;
+  status: InvestmentStatus;
+  amount_invested: number;
+  units_allocated: number;
+  per_unit_payout: number;
+  next_settlement_date: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  // joined
+  product?: Product;
+  investor?: Investor;
+}
+
+export interface Settlement {
+  id: string;
+  investment_id: string;
+  period_start: string | null;
+  period_end: string | null;
+  units_settled: number;
+  amount: number;
+  settlement_date: string;
+  next_due_date: string | null;
+  status: SettlementStatus;
+  notes: string | null;
+  created_by: string | null;
+  created_at: string;
+}
+
+export interface InvestorDocument {
+  id: string;
+  investor_id: string;
+  investment_id: string | null;
+  doc_type: InvestorDocType;
+  title: string;
+  file_path: string;
+  uploaded_by: string | null;
+  created_at: string;
+}
+
+export interface InvestorNotification {
+  id: string;
+  investor_id: string;
+  title: string;
+  body: string;
+  is_read: boolean;
+  created_by: string | null;
+  created_at: string;
+}
+
+export interface ActivityLogEntry {
+  id: string;
+  actor_id: string | null;
+  actor_type: 'admin' | 'investor' | 'system';
+  action: string;
+  entity: string | null;
+  entity_id: string | null;
+  metadata: Record<string, unknown> | null;
+  created_at: string;
+}
+
+// Row returned by the get_investor_dashboard() RPC — one per investment.
+export interface DesignPerformance {
+  investment_id: string;
+  product_id: string;
+  design_code: string | null;
+  design_name: string | null;
+  product_name: string;
+  product_image: string | null;
+  design_preview: string | null;
+  category_name: string | null;
+  product_type: ProductType | null;
+  status: InvestmentStatus;
+  start_date: string;
+  end_date: string | null;
+  next_settlement_date: string | null;
+  amount_invested: number;
+  units_allocated: number;
+  per_unit_payout: number;
+  manufactured_quantity: number;
+  remaining_stock: number;
+  units_sold: number;
+  sales_value: number;
+  earnings: number;
+  settled_amount: number;
+  pending_amount: number;
+  progress_pct: number;
+}
+
+export interface SalesTrendPoint {
+  period: string;
+  units: number;
+  sales_value: number;
 }
 
 // Checkout form data

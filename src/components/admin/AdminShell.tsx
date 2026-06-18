@@ -18,6 +18,7 @@ import {
   Moon,
   Sun,
   Users,
+  Briefcase,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AdminSection } from "@/types";
@@ -29,6 +30,7 @@ const NAV_ITEMS: { href: string; label: string; icon: typeof LayoutDashboard; se
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart, section: "orders" },
   { href: "/admin/banners", label: "Banners", icon: ImageIcon, section: "banners" },
   { href: "/admin/settings", label: "Settings", icon: Settings, section: "settings" },
+  { href: "/admin/investors", label: "Investors", icon: Briefcase, section: "investors" },
   { href: "/admin/users", label: "Users", icon: Users, section: "users" },
 ];
 
