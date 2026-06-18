@@ -16,6 +16,8 @@ interface CartProduct {
   color_id?: string;
   color_name?: string;
   size?: string;
+  /** Available stock for this product/variant — caps how many can be added. */
+  stock?: number;
 }
 
 interface CartContextType {
@@ -67,6 +69,9 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const closeCart = useCallback(() => setIsCartOpen(false), []);
 
     const addToCart = (product: CartProduct, quantity = 1) => {
+        // Cap a desired quantity to available stock when known (0 = unlimited/unknown).
+        const cap = (desired: number) =>
+            product.stock != null && product.stock > 0 ? Math.min(desired, product.stock) : desired;
         setItems((prev) => {
             const existingIndex = prev.findIndex(
                 (item) => item.id === product.id && item.variant_id === product.variant_id
@@ -74,7 +79,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             if (existingIndex >= 0) {
                 return prev.map((item, idx) =>
                     idx === existingIndex
-                        ? { ...item, quantity: item.quantity + quantity }
+                        ? {
+                              ...item,
+                              // refresh known stock, then cap the cumulative quantity to it
+                              stock: product.stock ?? item.stock,
+                              quantity: cap(item.quantity + quantity),
+                          }
                         : item
                 );
             }
@@ -86,11 +96,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                     slug: product.slug,
                     price: product.price,
                     image: product.image,
-                    quantity,
+                    quantity: cap(quantity),
                     variant_id: product.variant_id,
                     color_id: product.color_id,
                     color_name: product.color_name,
                     size: product.size,
+                    stock: product.stock,
                 },
             ];
         });
@@ -105,7 +116,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const updateQuantity = (id: string, quantity: number, variant_id?: string) => {
         if (quantity < 1) return;
         setItems((prev) =>
-            prev.map((item) => (item.id === id && item.variant_id === variant_id ? { ...item, quantity } : item))
+            prev.map((item) => {
+                if (item.id !== id || item.variant_id !== variant_id) return item;
+                // never let the quantity exceed known stock
+                const capped = item.stock != null && item.stock > 0 ? Math.min(quantity, item.stock) : quantity;
+                return { ...item, quantity: capped };
+            })
         );
     };
 

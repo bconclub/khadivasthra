@@ -99,6 +99,14 @@ export default function CheckoutPage() {
   const pincodeLookupFailed = pincodeValid === false && shippingInfo?.available;
   const cityStateReadOnly = pincodeValid === true || !shippingInfo?.available;
 
+  // If COD is selected but the cart drops below the minimum (or COD becomes
+  // unavailable), fall back to online so the ₹1000 rule can't be bypassed.
+  useEffect(() => {
+    if (paymentMethod === "cod" && !codAvailable) {
+      setPaymentMethod("online");
+    }
+  }, [paymentMethod, codAvailable]);
+
   // Fetch city/state from pincode API + check shipping serviceability
   useEffect(() => {
     if (pincodeDebounceRef.current) clearTimeout(pincodeDebounceRef.current);

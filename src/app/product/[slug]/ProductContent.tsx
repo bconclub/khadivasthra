@@ -170,6 +170,7 @@ function ProductContentInner() {
       addToCart({
         id: product.id,
         variant_id: selectedVariant?.id,
+        stock: stockQuantity,
         name: product.name,
         color_name: selectedColor?.name,
         size: effectiveSize || undefined,

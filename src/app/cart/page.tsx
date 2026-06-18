@@ -89,21 +89,25 @@ export default function CartPage() {
                                 <div className="cart-page__item-quantity flex items-center border border-cream/30 rounded-md bg-white">
                                     <button
                                         className="cart-page__item-quantity-decrease p-1 hover:bg-cream/50 transition-colors text-coral"
-                                        onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                        onClick={() => updateQuantity(item.id, item.quantity - 1, item.variant_id)}
                                         disabled={item.quantity <= 1}
                                     >
                                         <Minus className="h-3 w-3" />
                                     </button>
                                     <span className="cart-page__item-quantity-value w-8 text-center text-sm font-medium text-text">{item.quantity}</span>
                                     <button
-                                        className="cart-page__item-quantity-increase p-1 hover:bg-cream/50 transition-colors text-coral"
-                                        onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                        className="cart-page__item-quantity-increase p-1 hover:bg-cream/50 transition-colors text-coral disabled:opacity-40 disabled:cursor-not-allowed"
+                                        onClick={() => updateQuantity(item.id, item.quantity + 1, item.variant_id)}
+                                        disabled={item.stock != null && item.stock > 0 && item.quantity >= item.stock}
                                     >
                                         <Plus className="h-3 w-3" />
                                     </button>
                                 </div>
+                                {item.stock != null && item.stock > 0 && item.quantity >= item.stock && (
+                                    <span className="text-[11px] text-coral">Only {item.stock} in stock</span>
+                                )}
                                 <button
-                                    onClick={() => removeFromCart(item.id)}
+                                    onClick={() => removeFromCart(item.id, item.variant_id)}
                                     className="cart-page__item-remove text-text-muted hover:text-coral text-sm flex items-center"
                                 >
                                     <Trash2 className="h-3 w-3 mr-1" /> Remove
