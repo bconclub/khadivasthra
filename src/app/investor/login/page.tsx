@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useInvestorAuth } from "@/context/InvestorAuthContext";
 import { Button } from "@/components/ui/button";
+import { AuthPortalHeader } from "@/components/auth/AuthPortalHeader";
 import { Loader2 } from "lucide-react";
 
 export default function InvestorLoginPage() {
@@ -43,10 +44,7 @@ export default function InvestorLoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-cream/30 px-4">
       <div className="w-full max-w-sm">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-coral font-serif">Khadi Vasthra</h1>
-          <p className="text-gray-500 mt-2">Investor Login</p>
-        </div>
+        <AuthPortalHeader active="investor" subtitle="Investor Login" />
 
         <form onSubmit={handleSubmit} className="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
           {error && (

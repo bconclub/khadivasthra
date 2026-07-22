@@ -85,6 +85,16 @@ export async function listInvestments(): Promise<Investment[]> {
   return (data || []) as Investment[];
 }
 
+export async function listInvestmentsForProduct(productId: string): Promise<Investment[]> {
+  const { data, error } = await supabase
+    .from("investments")
+    .select("*, investor:investor_profiles(*)")
+    .eq("product_id", productId)
+    .order("created_at", { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data || []) as Investment[];
+}
+
 export async function listInvestmentsForInvestor(investorId: string): Promise<Investment[]> {
   const { data, error } = await supabase
     .from("investments")

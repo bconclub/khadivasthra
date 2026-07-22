@@ -3,11 +3,12 @@
 import { useState, useRef, useEffect } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { ProductForm } from "@/components/admin/ProductForm";
+import { ProductInvestorModal } from "@/components/admin/ProductInvestorModal";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getAllProducts, updateProduct, createProduct, deleteProduct, updateProductOrder, triggerSiteDeploy } from "@/lib/services/admin";
 import { getCategories } from "@/lib/services/categories";
 import type { ProductWithCategory } from "@/types";
-import { Plus, Search, Pencil, Trash2, Loader2, Eye, EyeOff, Star, RefreshCw, ArrowUp, ArrowDown, CheckSquare, Package, X, AlertTriangle, PackageX, Check } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, Loader2, Eye, EyeOff, Star, RefreshCw, ArrowUp, ArrowDown, CheckSquare, Package, X, AlertTriangle, PackageX, Check, TrendingUp } from "lucide-react";
 
 const LOW_STOCK_THRESHOLD = 10;
 import { Button } from "@/components/ui/button";
@@ -189,6 +190,7 @@ export default function AdminProductsPage() {
   const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>("all");
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductWithCategory | undefined>();
+  const [investorModalProduct, setInvestorModalProduct] = useState<ProductWithCategory | undefined>();
   const [syncing, setSyncing] = useState(false);
 
   // Inline stock editing state
@@ -292,6 +294,7 @@ export default function AdminProductsPage() {
       toast.error(err instanceof Error ? err.message : "Failed to update");
     }
   };
+
 
   const moveProduct = async (productId: string, direction: "up" | "down") => {
     const list = filtered;
@@ -461,6 +464,15 @@ export default function AdminProductsPage() {
           />
         )}
 
+        {/* Investor Assignment Modal */}
+        {investorModalProduct && (
+          <ProductInvestorModal
+            product={investorModalProduct}
+            onClose={() => setInvestorModalProduct(undefined)}
+            onSaved={refetch}
+          />
+        )}
+
         {/* Bulk Stock Update Modal */}
         {showBulkModal && (
           <BulkStockModal
@@ -605,13 +617,14 @@ export default function AdminProductsPage() {
                     <th className="px-6 py-3">Stock</th>
                     <th className="px-6 py-3">Visible</th>
                     <th className="px-6 py-3">Featured</th>
+                    <th className="px-6 py-3">Investable</th>
                     <th className="px-6 py-3 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                   {filtered.length === 0 ? (
                     <tr>
-                      <td colSpan={8} className="px-6 py-12 text-center text-gray-400 dark:text-gray-500">
+                      <td colSpan={9} className="px-6 py-12 text-center text-gray-400 dark:text-gray-500">
                         No products found
                       </td>
                     </tr>
@@ -711,6 +724,20 @@ export default function AdminProductsPage() {
                           >
                             <Star className={`w-3.5 h-3.5 ${product.is_featured ? 'fill-amber-500 dark:fill-amber-400' : ''}`} />
                             {product.is_featured ? "Featured" : "Not featured"}
+                          </button>
+                        </td>
+                        <td className="px-6 py-4">
+                          <button
+                            onClick={() => setInvestorModalProduct(product)}
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-colors cursor-pointer ${
+                              product.is_investable
+                                ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:hover:bg-emerald-900/50"
+                                : "bg-gray-100 text-gray-400 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-500 dark:hover:bg-gray-600"
+                            }`}
+                            title="Manage investable design & investors"
+                          >
+                            <TrendingUp className="w-3.5 h-3.5" />
+                            {product.is_investable ? (product.design_code || "Investable") : "Not investable"}
                           </button>
                         </td>
                         <td className="px-6 py-4 text-right">
