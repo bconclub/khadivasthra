@@ -233,13 +233,16 @@ export interface ProductView {
 // Banner types
 export type BannerSize = 'hero' | 'wide' | 'square' | 'tall';
 export type BannerLinkType = 'product' | 'category' | 'url' | 'none';
+export type BannerPlacement = 'homepage_hero' | 'shop' | 'offers' | 'general';
 
 export interface Banner {
   id: string;
   title: string;
   subtitle: string | null;
   image_url: string;
+  mobile_image_url: string | null;
   size: BannerSize;
+  placement: BannerPlacement;
   link_type: BannerLinkType;
   link_value: string | null;
   display_order: number;

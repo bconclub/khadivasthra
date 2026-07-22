@@ -68,7 +68,7 @@ function BannerCard({ banner }: { banner: Banner }) {
 }
 
 export default function OffersPage() {
-  const { data: banners, loading: loadingBanners } = useSupabaseQuery(getActiveBanners);
+  const { data: banners, loading: loadingBanners } = useSupabaseQuery(() => getActiveBanners("offers"), []);
   const { data: products, loading: loadingProducts } = useSupabaseQuery(getProducts);
 
   const activeBanners = banners || [];

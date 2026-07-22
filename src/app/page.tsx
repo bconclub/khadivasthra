@@ -8,6 +8,7 @@ import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getFeaturedProducts, getBestSellingProducts, getProducts } from "@/lib/services/products";
 import { getCategories } from "@/lib/services/categories";
 import { getActiveBanners } from "@/lib/services/admin";
+import { SiteBanner } from "@/components/SiteBanner";
 import type { Banner, Category, ProductWithCategory } from "@/types";
 import { ArrowRight, ChevronLeft, ChevronRight, Loader2, ImageOff } from "lucide-react";
 import { useState, useCallback, useEffect } from "react";
@@ -32,7 +33,7 @@ export default function Home() {
   const { data: categories, loading: isLoadingCategories } = useSupabaseQuery(getCategories);
   const { data: allProducts, loading: isLoadingProducts } = useSupabaseQuery(getProducts);
   const { data: bestSellingData } = useSupabaseQuery(getBestSellingProducts);
-  const { data: activeBanners } = useSupabaseQuery(getActiveBanners);
+  const { data: activeBanners } = useSupabaseQuery(() => getActiveBanners("general"), []);
 
   // Group products by category name
   const productsByCategory: Record<string, ProductWithCategory[]> = {};
@@ -164,6 +165,13 @@ export default function Home() {
               ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* 1.5. HOMEPAGE HERO BANNER STRIP (admin managed) */}
+      <section className="site-banner-section bg-cream pt-8 md:pt-10">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <SiteBanner placement="homepage_hero" />
         </div>
       </section>
 

@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import type { Product, Category, Banner, ProductFormData, CategoryFormData, BannerFormData, ProductWithCategory, ProductColor, ProductVariant } from '@/types';
+import type { Product, Category, Banner, BannerPlacement, ProductFormData, CategoryFormData, BannerFormData, ProductWithCategory, ProductColor, ProductVariant } from '@/types';
 
 // Admin: get ALL products (including hidden) with category data
 export async function getAllProducts(): Promise<ProductWithCategory[]> {
@@ -320,15 +320,17 @@ export async function getBanners(): Promise<Banner[]> {
   return data || [];
 }
 
-export async function getActiveBanners(): Promise<Banner[]> {
+export async function getActiveBanners(placement?: BannerPlacement): Promise<Banner[]> {
   const now = new Date().toISOString();
-  const { data, error } = await supabase
+  let query = supabase
     .from('banners')
     .select('*')
     .eq('is_active', true)
     .or(`starts_at.is.null,starts_at.lte.${now}`)
     .or(`ends_at.is.null,ends_at.gte.${now}`)
     .order('display_order', { ascending: true });
+  if (placement) query = query.eq('placement', placement);
+  const { data, error } = await query;
   if (error) throw new Error(error.message || error.details || JSON.stringify(error));
   return data || [];
 }

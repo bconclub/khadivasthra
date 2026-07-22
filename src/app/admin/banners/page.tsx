@@ -18,6 +18,13 @@ const SIZE_LABELS: Record<string, string> = {
   tall: "Tall (2:3)",
 };
 
+const PLACEMENT_LABELS: Record<string, string> = {
+  homepage_hero: "Homepage Hero",
+  shop: "Shop Page",
+  offers: "Offers Page",
+  general: "Homepage Cards",
+};
+
 const LINK_LABELS: Record<string, string> = {
   none: "No Link",
   product: "Product",
@@ -181,6 +188,7 @@ export default function AdminBannersPage() {
                         <p className="text-sm text-gray-500 dark:text-gray-400 truncate mb-1">{banner.subtitle}</p>
                       )}
                       <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-500">
+                        <span className="text-coral font-medium">{PLACEMENT_LABELS[banner.placement] || banner.placement}</span>
                         <span>{LINK_LABELS[banner.link_type]}</span>
                         {getLinkDisplay(banner) && (
                           <span className="flex items-center gap-1 text-coral">

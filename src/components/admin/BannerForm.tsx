@@ -7,7 +7,7 @@ import { uploadBannerImage } from "@/lib/services/storage";
 import { getCategories } from "@/lib/services/categories";
 import { getProducts } from "@/lib/services/products";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
-import type { Banner, BannerSize, BannerLinkType } from "@/types";
+import type { Banner, BannerSize, BannerLinkType, BannerPlacement } from "@/types";
 import { Upload, X, Loader2 } from "lucide-react";
 
 interface BannerFormProps {
@@ -23,6 +23,13 @@ const SIZES: { value: BannerSize; label: string; desc: string }[] = [
   { value: "tall", label: "Tall", desc: "Tall banner (2:3)" },
 ];
 
+const PLACEMENTS: { value: BannerPlacement; label: string; desc: string }[] = [
+  { value: "homepage_hero", label: "Homepage Hero Strip", desc: "Full-width, right below the main hero" },
+  { value: "shop", label: "Shop Page", desc: "Between products on the shop page" },
+  { value: "offers", label: "Offers Page", desc: "Featured on the offers page" },
+  { value: "general", label: "Homepage Cards", desc: "3-up promo grid on the homepage" },
+];
+
 const LINK_TYPES: { value: BannerLinkType; label: string }[] = [
   { value: "none", label: "No Link" },
   { value: "product", label: "Link to Product" },
@@ -34,7 +41,9 @@ export function BannerForm({ banner, onSubmit, onCancel }: BannerFormProps) {
   const [title, setTitle] = useState(banner?.title || "");
   const [subtitle, setSubtitle] = useState(banner?.subtitle || "");
   const [imageUrl, setImageUrl] = useState(banner?.image_url || "");
+  const [mobileImageUrl, setMobileImageUrl] = useState(banner?.mobile_image_url || "");
   const [size, setSize] = useState<BannerSize>(banner?.size || "wide");
+  const [placement, setPlacement] = useState<BannerPlacement>(banner?.placement || "general");
   const [linkType, setLinkType] = useState<BannerLinkType>(banner?.link_type || "none");
   const [linkValue, setLinkValue] = useState(banner?.link_value || "");
   const [displayOrder, setDisplayOrder] = useState(banner?.display_order ?? 0);
@@ -61,6 +70,20 @@ export function BannerForm({ banner, onSubmit, onCancel }: BannerFormProps) {
     }
   };
 
+  const handleMobileImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const url = await uploadBannerImage(file);
+      setMobileImageUrl(url);
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim() || !imageUrl) return;
@@ -70,7 +93,9 @@ export function BannerForm({ banner, onSubmit, onCancel }: BannerFormProps) {
         title: title.trim(),
         subtitle: subtitle.trim() || null,
         image_url: imageUrl,
+        mobile_image_url: mobileImageUrl || null,
         size,
+        placement,
         link_type: linkType,
         link_value: linkType === "none" ? null : linkValue || null,
         display_order: displayOrder,
@@ -123,7 +148,7 @@ export function BannerForm({ banner, onSubmit, onCancel }: BannerFormProps) {
 
       {/* Image Upload */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Banner Image *</label>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Desktop Banner Image * <span className="text-gray-400 font-normal">(2172×724px)</span></label>
         {imageUrl ? (
           <div className="relative rounded-lg overflow-hidden border border-gray-200 bg-gray-50">
             <Image
@@ -155,6 +180,64 @@ export function BannerForm({ banner, onSubmit, onCancel }: BannerFormProps) {
             <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
           </label>
         )}
+      </div>
+
+      {/* Mobile Image Upload */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Banner Image <span className="text-gray-400 font-normal">(1448×1086px, optional — falls back to desktop image)</span></label>
+        {mobileImageUrl ? (
+          <div className="relative rounded-lg overflow-hidden border border-gray-200 bg-gray-50 w-32 mx-auto">
+            <Image
+              src={mobileImageUrl}
+              alt="Mobile banner preview"
+              width={200}
+              height={150}
+              className="w-full aspect-[4/3] object-cover"
+              unoptimized
+            />
+            <button
+              type="button"
+              onClick={() => setMobileImageUrl("")}
+              className="absolute top-1 right-1 bg-white/90 p-1 rounded-full shadow hover:bg-white"
+            >
+              <X className="w-3 h-3 text-gray-600" />
+            </button>
+          </div>
+        ) : (
+          <label className="flex flex-col items-center justify-center h-24 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-coral hover:bg-coral/5 transition-colors">
+            {uploading ? (
+              <Loader2 className="w-5 h-5 animate-spin text-coral" />
+            ) : (
+              <>
+                <Upload className="w-5 h-5 text-gray-400 mb-1" />
+                <span className="text-xs text-gray-500">Click to upload</span>
+              </>
+            )}
+            <input type="file" accept="image/*" className="hidden" onChange={handleMobileImageUpload} />
+          </label>
+        )}
+      </div>
+
+      {/* Placement */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">Where should this show?</label>
+        <div className="grid grid-cols-2 gap-2">
+          {PLACEMENTS.map((p) => (
+            <button
+              key={p.value}
+              type="button"
+              onClick={() => setPlacement(p.value)}
+              className={`text-left px-3 py-2 rounded-lg border text-sm transition-colors ${
+                placement === p.value
+                  ? "border-coral bg-coral/10 text-coral"
+                  : "border-gray-200 text-gray-600 hover:border-gray-300"
+              }`}
+            >
+              <span className="font-medium">{p.label}</span>
+              <span className="block text-xs text-gray-400 mt-0.5">{p.desc}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Size */}

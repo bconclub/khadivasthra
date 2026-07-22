@@ -5,6 +5,7 @@ import { ProductCard } from "@/components/product/ProductCard";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getProducts } from "@/lib/services/products";
 import { getCategories } from "@/lib/services/categories";
+import { SiteBanner } from "@/components/SiteBanner";
 import type { ProductWithCategory } from "@/types";
 import { ArrowUpDown, Loader2, Check } from "lucide-react";
 
@@ -231,6 +232,11 @@ export default function ShopPage() {
                   <option value="newest">Newest First</option>
                 </select>
               </div>
+            </div>
+
+            {/* Shop Banner (admin managed) */}
+            <div className="mb-6">
+              <SiteBanner placement="shop" />
             </div>
 
             {/* Products Grid */}
