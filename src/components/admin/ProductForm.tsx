@@ -4,7 +4,8 @@ import { useState, useRef, useEffect } from "react";
 import { uploadProductImage } from "@/lib/services/storage";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getCategories } from "@/lib/services/categories";
-import type { ProductWithCategory, ProductColor, ProductVariant } from "@/types";
+import { listInvestors, listInvestmentsForProduct } from "@/lib/services/investors";
+import type { ProductWithCategory, ProductColor, ProductVariant, Investor, Investment } from "@/types";
 import { Loader2, X, Plus, Camera, Package, Trash2, RefreshCw, Palette, GripVertical } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
@@ -94,6 +95,24 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const [productType, setProductType] = useState(product?.product_type || "");
   const [manufacturedQuantity, setManufacturedQuantity] = useState(product?.manufactured_quantity?.toString() || "0");
   const [unitCost, setUnitCost] = useState(product?.unit_cost?.toString() || "");
+
+  // Investor assignment (only relevant while isInvestable is checked)
+  const [investors, setInvestors] = useState<Investor[]>([]);
+  const [existingInvestments, setExistingInvestments] = useState<Investment[]>([]);
+  const [investorId, setInvestorId] = useState("");
+  const [investAmount, setInvestAmount] = useState("");
+  const [investUnits, setInvestUnits] = useState("");
+  const [investPayout, setInvestPayout] = useState("75");
+
+  useEffect(() => {
+    if (!isInvestable || investors.length > 0) return;
+    listInvestors().then((list) => setInvestors(list.filter((i) => i.is_active))).catch(() => {});
+  }, [isInvestable, investors.length]);
+
+  useEffect(() => {
+    if (!product?.id) return;
+    listInvestmentsForProduct(product.id).then(setExistingInvestments).catch(() => {});
+  }, [product?.id]);
   const [uploadingPreview, setUploadingPreview] = useState(false);
   const previewInputRef = useRef<HTMLInputElement>(null);
 
@@ -415,7 +434,16 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         }))
       );
 
-      await onSubmit({ ...baseData, colors: colorsData, variants: variantsData });
+      const assignInvestor = isInvestable && investorId
+        ? {
+            investor_id: investorId,
+            amount_invested: parseFloat(investAmount) || 0,
+            units_allocated: parseInt(investUnits, 10) || 0,
+            per_unit_payout: parseFloat(investPayout) || 0,
+          }
+        : undefined;
+
+      await onSubmit({ ...baseData, colors: colorsData, variants: variantsData, assignInvestor });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save product");
       setSubmitting(false);
@@ -597,6 +625,83 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
                       )}
                       <input ref={previewInputRef} type="file" accept="image/*" onChange={handlePreviewUpload} className="hidden" />
                     </div>
+                  </div>
+
+                  {/* Investor assignment */}
+                  <div className="pt-3 border-t border-amber-200 dark:border-amber-800 space-y-3">
+                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 block">Investor</span>
+
+                    {existingInvestments.length > 0 && (
+                      <div className="space-y-1.5">
+                        {existingInvestments.map((inv) => (
+                          <div key={inv.id} className="flex items-center justify-between bg-white/70 dark:bg-gray-800/70 rounded-lg px-3 py-2 text-xs">
+                            <span className="font-medium text-gray-700 dark:text-gray-200">
+                              {inv.investor?.full_name || "Investor"} ({inv.investor?.investor_code})
+                            </span>
+                            <span className="text-gray-500 dark:text-gray-400">
+                              ₹{Number(inv.amount_invested).toLocaleString()} &middot; {inv.units_allocated} units &middot; ₹{inv.per_unit_payout}/unit
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="col-span-2">
+                        <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
+                          {existingInvestments.length > 0 ? "Assign another investor (optional)" : "Choose Investor"}
+                        </label>
+                        <select
+                          value={investorId}
+                          onChange={(e) => setInvestorId(e.target.value)}
+                          className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm"
+                        >
+                          <option value="">{investors.length === 0 ? "No investors available" : "Select investor..."}</option>
+                          {investors
+                            .filter((i) => !existingInvestments.some((e) => e.investor_id === i.id))
+                            .map((i) => (
+                              <option key={i.id} value={i.id}>{i.full_name} ({i.investor_code})</option>
+                            ))}
+                        </select>
+                        {investors.length === 0 && (
+                          <p className="text-xs text-amber-700 dark:text-amber-500 mt-1">
+                            No investors added yet — create one under Admin &rarr; Investors first.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    {investorId && (
+                      <div className="grid grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Amount Invested</label>
+                          <input
+                            type="number" min="0" step="0.01" value={investAmount}
+                            onChange={(e) => setInvestAmount(e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Units Allocated</label>
+                          <input
+                            type="number" min="0" value={investUnits}
+                            onChange={(e) => setInvestUnits(e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Payout/Unit</label>
+                          <input
+                            type="number" min="0" step="0.01" value={investPayout}
+                            onChange={(e) => setInvestPayout(e.target.value)}
+                            className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm"
+                          />
+                        </div>
+                      </div>
+                    )}
+                    <p className="text-xs text-gray-400">
+                      Investors see their allocated units, sales and earnings from their own dashboard once assigned here.
+                    </p>
                   </div>
                 </div>
               )}

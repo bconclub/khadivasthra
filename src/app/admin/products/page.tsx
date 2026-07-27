@@ -7,6 +7,7 @@ import { ProductInvestorModal } from "@/components/admin/ProductInvestorModal";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getAllProducts, updateProduct, createProduct, deleteProduct, updateProductOrder, triggerSiteDeploy } from "@/lib/services/admin";
 import { getCategories } from "@/lib/services/categories";
+import { createInvestment, type InvestmentInput } from "@/lib/services/investors";
 import type { ProductWithCategory } from "@/types";
 import { Plus, Search, Pencil, Trash2, Loader2, Eye, EyeOff, Star, RefreshCw, ArrowUp, ArrowDown, CheckSquare, Package, X, AlertTriangle, PackageX, Check, TrendingUp } from "lucide-react";
 
@@ -241,8 +242,25 @@ export default function AdminProductsPage() {
 
   const selectedCount = selectedProducts.size;
 
+  const assignInvestorToProduct = async (productId: string, assignInvestor: unknown) => {
+    if (!assignInvestor) return;
+    const input = assignInvestor as Omit<InvestmentInput, "product_id" | "start_date">;
+    try {
+      await createInvestment({
+        ...input,
+        product_id: productId,
+        start_date: new Date().toISOString().slice(0, 10),
+      });
+      toast.success("Investor assigned to this design");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Product saved, but investor assignment failed");
+    }
+  };
+
   const handleCreate = async (data: Record<string, unknown>) => {
-    await createProduct(data as Parameters<typeof createProduct>[0]);
+    const { assignInvestor, ...productData } = data;
+    const product = await createProduct(productData as Parameters<typeof createProduct>[0]);
+    await assignInvestorToProduct(product.id, assignInvestor);
     toast.success("Product created");
     setShowForm(false);
     refetch();
@@ -250,7 +268,9 @@ export default function AdminProductsPage() {
 
   const handleUpdate = async (data: Record<string, unknown>) => {
     if (!editingProduct) return;
-    await updateProduct(editingProduct.id, data as Parameters<typeof updateProduct>[1]);
+    const { assignInvestor, ...productData } = data;
+    await updateProduct(editingProduct.id, productData as Parameters<typeof updateProduct>[1]);
+    await assignInvestorToProduct(editingProduct.id, assignInvestor);
     toast.success("Product updated");
     setEditingProduct(undefined);
     setShowForm(false);

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface AuthPortalHeaderProps {
   active: "admin" | "investor";
@@ -12,7 +13,14 @@ export function AuthPortalHeader({ active, subtitle }: AuthPortalHeaderProps) {
 
   return (
     <div className="text-center mb-8">
-      <h1 className="text-3xl font-bold text-coral font-serif">Khadi Vasthra</h1>
+      <Image
+        src="/KV Logo Colour.webp"
+        alt="Khadi Vasthra"
+        width={180}
+        height={60}
+        className="h-14 w-auto object-contain mx-auto mb-2"
+        priority
+      />
       <p className="text-gray-500 mt-2 mb-5">{subtitle}</p>
 
       <div className="inline-flex bg-gray-100 rounded-full p-1">

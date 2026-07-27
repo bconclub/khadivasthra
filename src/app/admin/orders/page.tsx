@@ -1741,6 +1741,9 @@ export default function AdminOrdersPage() {
                   {/* Amount + badges (right side — guaranteed slot via grid auto column) */}
                   <div className="flex items-center gap-1.5">
                     <span className="text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">₹{Number(order.total).toLocaleString()}</span>
+                    <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" title="Shipping charges">
+                      Ship ₹{Number(order.shipping || 0).toLocaleString()}
+                    </span>
                     <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap ${STATUS_STYLES[order.status] || "bg-gray-100 text-gray-700"}`}>
                       {order.status}
                     </span>
@@ -1898,6 +1901,23 @@ export default function AdminOrdersPage() {
                                 />
                               </div>
                             </div>
+                          </div>
+
+                          <div>
+                            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Invoice Number</label>
+                            <input
+                              defaultValue={order.invoice_number || ""}
+                              placeholder="Enter invoice number"
+                              onBlur={async (e) => {
+                                const val = e.target.value.trim() || null;
+                                if (val !== (order.invoice_number || null)) {
+                                  await updateOrder(order.id, { invoice_number: val });
+                                  toast.success("Invoice number saved");
+                                  refetch();
+                                }
+                              }}
+                              className="w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-coral focus:border-transparent"
+                            />
                           </div>
                         </div>
                       </div>

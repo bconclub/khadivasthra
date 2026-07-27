@@ -166,6 +166,7 @@ export interface Order {
   payment_status: PaymentStatus;
   payment_method: PaymentMethod;
   article_number: string | null;
+  invoice_number: string | null;
   cod_charges: number;
   settlement_status: 'pending' | 'received' | 'settled';
   amount_received: number | null;
