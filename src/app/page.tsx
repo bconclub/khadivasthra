@@ -387,19 +387,25 @@ function DynamicBannerCard({ banner }: { banner: Banner }) {
 
   const content = (
     <div className={`banner-card relative ${aspectClass} rounded-2xl overflow-hidden shadow-lg group cursor-pointer ${spanClass}`}>
-      <Image src={banner.image_url} alt={banner.title} fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-      <div className="absolute bottom-0 left-0 right-0 p-5">
-        <h3 className="banner-card__title text-xl md:text-2xl font-bold text-white drop-shadow-md">{banner.title}</h3>
-        {banner.subtitle && (
-          <p className="text-white/80 text-sm mt-1 drop-shadow-sm">{banner.subtitle}</p>
-        )}
-        {href && (
-          <span className="inline-flex items-center gap-1 mt-2 text-white text-sm font-medium bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
-            Shop Now <ArrowRight className="w-3 h-3" />
-          </span>
-        )}
-      </div>
+      <Image src={banner.image_url} alt={banner.title || "Banner"} fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized />
+      {(banner.title || banner.subtitle || href) && (
+        <>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 p-5">
+            {banner.title && (
+              <h3 className="banner-card__title text-xl md:text-2xl font-bold text-white drop-shadow-md">{banner.title}</h3>
+            )}
+            {banner.subtitle && (
+              <p className="text-white/80 text-sm mt-1 drop-shadow-sm">{banner.subtitle}</p>
+            )}
+            {href && (
+              <span className="inline-flex items-center gap-1 mt-2 text-white text-sm font-medium bg-white/20 backdrop-blur-sm px-3 py-1 rounded-full">
+                Shop Now <ArrowRight className="w-3 h-3" />
+              </span>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 

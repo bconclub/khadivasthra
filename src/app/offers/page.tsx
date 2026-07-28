@@ -38,22 +38,28 @@ function BannerCard({ banner }: { banner: Banner }) {
         className="object-cover group-hover:scale-105 transition-transform duration-500"
         unoptimized
       />
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-      {/* Text content */}
-      <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6">
-        <h3 className="text-white font-bold text-lg md:text-xl leading-tight drop-shadow-md">
-          {banner.title}
-        </h3>
-        {banner.subtitle && (
-          <p className="text-white/80 text-sm mt-1 drop-shadow-sm">{banner.subtitle}</p>
-        )}
-        {link && (
-          <span className="inline-flex items-center gap-1 mt-3 text-white text-sm font-medium bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full group-hover:bg-white/30 transition-colors">
-            Shop Now <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-          </span>
-        )}
-      </div>
+      {(banner.title || banner.subtitle || link) && (
+        <>
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+          {/* Text content */}
+          <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6">
+            {banner.title && (
+              <h3 className="text-white font-bold text-lg md:text-xl leading-tight drop-shadow-md">
+                {banner.title}
+              </h3>
+            )}
+            {banner.subtitle && (
+              <p className="text-white/80 text-sm mt-1 drop-shadow-sm">{banner.subtitle}</p>
+            )}
+            {link && (
+              <span className="inline-flex items-center gap-1 mt-3 text-white text-sm font-medium bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full group-hover:bg-white/30 transition-colors">
+                Shop Now <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+              </span>
+            )}
+          </div>
+        </>
+      )}
     </div>
   );
 

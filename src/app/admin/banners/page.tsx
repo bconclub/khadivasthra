@@ -7,29 +7,15 @@ import { BannerForm } from "@/components/admin/BannerForm";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getBanners, createBanner, updateBanner, deleteBanner } from "@/lib/services/admin";
 import type { Banner } from "@/types";
-import { Plus, Pencil, Trash2, Loader2, Eye, EyeOff, ExternalLink } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
-
-const SIZE_LABELS: Record<string, string> = {
-  hero: "Hero (16:9)",
-  wide: "Wide (3:1)",
-  square: "Square (1:1)",
-  tall: "Tall (2:3)",
-};
 
 const PLACEMENT_LABELS: Record<string, string> = {
   homepage_hero: "Homepage Hero",
   shop: "Shop Page",
   offers: "Offers Page",
   general: "Homepage Cards",
-};
-
-const LINK_LABELS: Record<string, string> = {
-  none: "No Link",
-  product: "Product",
-  category: "Collection",
-  url: "External URL",
 };
 
 export default function AdminBannersPage() {
@@ -56,7 +42,7 @@ export default function AdminBannersPage() {
   };
 
   const handleDelete = async (banner: Banner) => {
-    if (!confirm(`Delete banner "${banner.title}"?`)) return;
+    if (!confirm("Delete this banner?")) return;
     try {
       await deleteBanner(banner.id);
       toast.success("Banner deleted");
@@ -89,13 +75,6 @@ export default function AdminBannersPage() {
   const closeForm = () => {
     setShowForm(false);
     setEditingBanner(undefined);
-  };
-
-  const getLinkDisplay = (banner: Banner) => {
-    if (banner.link_type === "none" || !banner.link_value) return null;
-    if (banner.link_type === "product") return `/product/${banner.link_value}`;
-    if (banner.link_type === "category") return `/shop/${banner.link_value}`;
-    return banner.link_value;
   };
 
   return (
@@ -158,51 +137,35 @@ export default function AdminBannersPage() {
               >
                 <div className="flex flex-col sm:flex-row">
                   {/* Banner Image Preview */}
-                  <div className="sm:w-48 h-32 sm:h-auto flex-shrink-0 relative bg-gray-100 dark:bg-gray-700">
+                  <div className="sm:w-64 h-32 sm:h-auto flex-shrink-0 relative bg-gray-100 dark:bg-gray-700">
                     <Image
                       src={banner.image_url}
-                      alt={banner.title}
+                      alt="Banner"
                       fill
                       className="object-cover"
                       unoptimized
                     />
-                    <span className="absolute top-2 left-2 bg-black/60 text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
-                      {SIZE_LABELS[banner.size] || banner.size}
-                    </span>
+                    {banner.mobile_image_url && (
+                      <span className="absolute bottom-2 left-2 bg-black/60 text-white text-[10px] font-medium px-2 py-0.5 rounded-full">
+                        + mobile
+                      </span>
+                    )}
                   </div>
 
                   {/* Banner Info */}
                   <div className="flex-1 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-semibold text-gray-900 dark:text-white truncate">{banner.title}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-gray-900 dark:text-white">
+                          {PLACEMENT_LABELS[banner.placement] || banner.placement}
+                        </h3>
                         <span className={`inline-flex px-2 py-0.5 rounded-full text-[10px] font-medium flex-shrink-0 ${
                           banner.is_active
                             ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
                             : "bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
                         }`}>
-                          {banner.is_active ? "Active" : "Hidden"}
+                          {banner.is_active ? "Live" : "Hidden"}
                         </span>
-                      </div>
-                      {banner.subtitle && (
-                        <p className="text-sm text-gray-500 dark:text-gray-400 truncate mb-1">{banner.subtitle}</p>
-                      )}
-                      <div className="flex items-center gap-3 text-xs text-gray-400 dark:text-gray-500">
-                        <span className="text-coral font-medium">{PLACEMENT_LABELS[banner.placement] || banner.placement}</span>
-                        <span>{LINK_LABELS[banner.link_type]}</span>
-                        {getLinkDisplay(banner) && (
-                          <span className="flex items-center gap-1 text-coral">
-                            <ExternalLink className="w-3 h-3" />
-                            {getLinkDisplay(banner)}
-                          </span>
-                        )}
-                        <span>Order: {banner.display_order}</span>
-                        {banner.starts_at && (
-                          <span>From: {new Date(banner.starts_at).toLocaleDateString()}</span>
-                        )}
-                        {banner.ends_at && (
-                          <span>Until: {new Date(banner.ends_at).toLocaleDateString()}</span>
-                        )}
                       </div>
                     </div>
 
