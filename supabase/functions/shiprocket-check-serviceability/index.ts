@@ -39,7 +39,7 @@ serve(async (req) => {
   }
 
   try {
-    const { delivery_pincode, total_items = 1 } = await req.json();
+    const { delivery_pincode, total_items = 1, total_weight } = await req.json();
 
     if (!delivery_pincode || delivery_pincode.length !== 6) {
       return new Response(
@@ -53,8 +53,10 @@ serve(async (req) => {
 
     const token = await getShiprocketToken();
 
-    // Weight: 0.5kg per item
-    const weight = Math.max(0.5, total_items * 0.5);
+    // Weight: use real cart weight when provided (kg); fall back to 0.2kg per
+    // item (all products weigh 200g) — matches shiprocket-create-order so the
+    // customer quote equals what Shiprocket actually bills. 0.5kg minimum slab.
+    const weight = Math.max(0.5, Number(total_weight) || total_items * 0.2);
 
     // Check prepaid serviceability
     const prepaidParams = new URLSearchParams({
