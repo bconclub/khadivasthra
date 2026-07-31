@@ -150,6 +150,76 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       })),
   }));
   const [colors, setColors] = useState<ColorFormData[]>(existingColors);
+
+  // --- Draft autosave: everything typed persists across refresh/crash. -----
+  // New products share one draft slot; edits are keyed per product id.
+  const draftKey = product?.id ? `kv_product_draft_${product.id}` : "kv_product_draft_new";
+  const draftRestored = useRef(false);
+  const draftTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (draftRestored.current) return;
+    draftRestored.current = true;
+    try {
+      const raw = localStorage.getItem(draftKey);
+      if (!raw) return;
+      const d = JSON.parse(raw);
+      if (d.name !== undefined) setName(d.name);
+      if (d.slug !== undefined) setSlug(d.slug);
+      if (d.description !== undefined) setDescription(d.description);
+      if (d.longDescription !== undefined) setLongDescription(d.longDescription);
+      if (d.comparePrice !== undefined) setComparePrice(d.comparePrice);
+      if (d.discountPct !== undefined) setDiscountPct(d.discountPct);
+      if (d.categoryId !== undefined) setCategoryId(d.categoryId);
+      if (d.material !== undefined) setMaterial(d.material);
+      if (d.imageUrl !== undefined) setImageUrl(d.imageUrl);
+      if (d.galleryImages !== undefined) setGalleryImages(d.galleryImages);
+      if (d.isFeatured !== undefined) setIsFeatured(d.isFeatured);
+      if (d.isBestSeller !== undefined) setIsBestSeller(d.isBestSeller);
+      if (d.isActive !== undefined) setIsActive(d.isActive);
+      if (d.hasVariants !== undefined) setHasVariants(d.hasVariants);
+      if (d.careInstructions !== undefined) setCareInstructions(d.careInstructions);
+      if (d.weight !== undefined) setWeight(d.weight);
+      if (d.length !== undefined) setLength(d.length);
+      if (d.breadth !== undefined) setBreadth(d.breadth);
+      if (d.height !== undefined) setHeight(d.height);
+      if (d.stockQuantity !== undefined) setStockQuantity(d.stockQuantity);
+      if (d.isInvestable !== undefined) setIsInvestable(d.isInvestable);
+      if (d.designName !== undefined) setDesignName(d.designName);
+      if (d.designCode !== undefined) setDesignCode(d.designCode);
+      if (d.designPreviewUrl !== undefined) setDesignPreviewUrl(d.designPreviewUrl);
+      if (d.productType !== undefined) setProductType(d.productType);
+      if (d.manufacturedQuantity !== undefined) setManufacturedQuantity(d.manufacturedQuantity);
+      if (d.unitCost !== undefined) setUnitCost(d.unitCost);
+      if (d.colors !== undefined) setColors(d.colors);
+    } catch { /* corrupt draft — ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (draftTimer.current) clearTimeout(draftTimer.current);
+    draftTimer.current = setTimeout(() => {
+      try {
+        localStorage.setItem(draftKey, JSON.stringify({
+          name, slug, description, longDescription, comparePrice, discountPct,
+          categoryId, material, imageUrl, galleryImages, isFeatured, isBestSeller,
+          isActive, hasVariants, careInstructions, weight, length, breadth, height,
+          stockQuantity, isInvestable, designName, designCode, designPreviewUrl,
+          productType, manufacturedQuantity, unitCost, colors,
+        }));
+      } catch { /* storage full — skip */ }
+    }, 400);
+    return () => { if (draftTimer.current) clearTimeout(draftTimer.current); };
+  }, [draftKey, name, slug, description, longDescription, comparePrice, discountPct,
+      categoryId, material, imageUrl, galleryImages, isFeatured, isBestSeller,
+      isActive, hasVariants, careInstructions, weight, length, breadth, height,
+      stockQuantity, isInvestable, designName, designCode, designPreviewUrl,
+      productType, manufacturedQuantity, unitCost, colors]);
+
+  const clearDraft = () => {
+    try { localStorage.removeItem(draftKey); } catch { /* noop */ }
+  };
+  // -------------------------------------------------------------------------
   const [showColorModal, setShowColorModal] = useState(false);
   const [editingColorIndex, setEditingColorIndex] = useState<number | null>(null);
   const [colorForm, setColorForm] = useState({ name: "", hex_code: "#000000", images: [] as string[] });
@@ -301,29 +371,33 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
     setColorForm({ ...colorForm, images: colorForm.images.filter((_, i) => i !== index) });
   };
 
-  // Size variant management
+  // Size variant management. Comma-separated input ("M, L, XL") creates one
+  // variant per size — a single "M,L" variant renders as one unchoosable pill.
   const addSizeToColor = (colorIndex: number) => {
-    const size = prompt("Enter size (e.g., M, L, XL, Free Size):");
-    if (!size || !size.trim()) return;
-    
-    const trimmedSize = size.trim().toUpperCase();
+    const input = prompt("Enter size (e.g., M, L, XL, Free Size). Separate multiple sizes with commas:");
+    if (!input || !input.trim()) return;
+
     const color = colors[colorIndex];
-    
-    // Check for duplicate size
-    if (color.sizes.some(s => s.size === trimmedSize)) {
-      setError(`Size ${trimmedSize} already exists for ${color.name}`);
-      return;
+    const entries = input.split(",").map((s) => s.trim().toUpperCase()).filter(Boolean);
+    if (entries.length === 0) return;
+
+    const newSizes: SizeVariantFormData[] = [];
+    for (const entry of [...new Set(entries)]) {
+      if (color.sizes.some(s => s.size === entry)) {
+        setError(`Size ${entry} already exists for ${color.name}`);
+        continue;
+      }
+      newSizes.push({
+        size: entry,
+        sku: generateSKU(slug || slugify(name), color.name, entry),
+        stock_quantity: 10,
+        price_adjustment: 0,
+        is_active: true,
+      });
     }
+    if (newSizes.length === 0) return;
 
-    const newSize: SizeVariantFormData = {
-      size: trimmedSize,
-      sku: generateSKU(slug || slugify(name), color.name, trimmedSize),
-      stock_quantity: 10,
-      price_adjustment: 0,
-      is_active: true,
-    };
-
-    setColors(colors.map((c, idx) => idx === colorIndex ? { ...c, sizes: [...c.sizes, newSize] } : c));
+    setColors(colors.map((c, idx) => idx === colorIndex ? { ...c, sizes: [...c.sizes, ...newSizes] } : c));
     setError("");
   };
 
@@ -444,6 +518,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         : undefined;
 
       await onSubmit({ ...baseData, colors: colorsData, variants: variantsData, assignInvestor });
+      clearDraft();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save product");
       setSubmitting(false);

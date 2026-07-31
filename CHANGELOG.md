@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-07-31 · product form draft autosave + size entry fix + COD save ticks
+
+- Product form autosaves everything as the admin types (localStorage, per-product draft slots) — a refresh or crash no longer loses a half-entered product; draft clears on successful save.
+- "Add Size" now splits comma-separated input ("M, L, XL") into separate size variants — previously "M,L" became one unchoosable combined pill on the storefront.
+- Data repair: Black Linen Shirt's combined "M,L" variant split back into M and L (5 stock each).
+- Admin orders COD Details: each field (article number, settlement status/amount/date, invoice number) now has its own ✓ save button on the right and saves individually — no more full-list refresh jumping the page back to the top after every entry.
+- User-facing: shirt sizes are individually selectable again; admins can't lose form work to a refresh or scroll position to a save.
+
 ## 2026-06-18 17:27 IST · investor portal + stock/COD fixes
 
 - **Design Investor Portal** — new investor side of the platform:

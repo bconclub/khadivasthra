@@ -7,7 +7,7 @@ import { getOrders, updateOrderStatus, updateOrder, checkPaymentStatus } from "@
 import { deleteOrder } from "@/lib/services/admin";
 import { supabase } from "@/lib/supabase";
 import type { Order, OrderStatus, Product, PaymentMethod, PaymentStatus } from "@/types";
-import { Loader2, ChevronDown, ChevronUp, Trash2, CreditCard, Package, Plus, Search, X, Minus, Pencil, Printer, FileText, Tag, CheckSquare, Download } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp, Trash2, CreditCard, Package, Plus, Search, X, Minus, Pencil, Printer, FileText, Tag, CheckSquare, Download, Check } from "lucide-react";
 import { printOrder, printOrders } from "@/lib/print-order";
 import Image from "next/image";
 import toast from "react-hot-toast";
@@ -1329,6 +1329,76 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
 }
 
 // --- Main Orders Page ---
+// Inline save field for COD details: explicit ✓ button on the right, saves
+// just that field — no list refetch, so the page never jumps back to the top.
+function CodSaveField({
+  label, type = "text", initialValue, placeholder, options, onSave,
+}: {
+  label: string;
+  type?: "text" | "number" | "date" | "select";
+  initialValue: string;
+  placeholder?: string;
+  options?: { value: string; label: string }[];
+  onSave: (value: string) => Promise<void>;
+}) {
+  const [value, setValue] = useState(initialValue);
+  const [savedValue, setSavedValue] = useState(initialValue);
+  const [saving, setSaving] = useState(false);
+  const dirty = value !== savedValue;
+
+  const save = async () => {
+    if (!dirty || saving) return;
+    setSaving(true);
+    try {
+      await onSave(value);
+      setSavedValue(value);
+      toast.success(`${label} saved`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : `Failed to save ${label.toLowerCase()}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const inputCls = "w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-coral focus:border-transparent";
+
+  return (
+    <div>
+      <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">{label}</label>
+      <div className="flex items-center gap-1.5">
+        {type === "select" ? (
+          <select value={value} onChange={(e) => setValue(e.target.value)} className={inputCls}>
+            {options?.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+        ) : (
+          <input
+            type={type}
+            value={value}
+            placeholder={placeholder}
+            onChange={(e) => setValue(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); save(); } }}
+            className={inputCls}
+            min={type === "number" ? 0 : undefined}
+          />
+        )}
+        <button
+          type="button"
+          onClick={save}
+          disabled={!dirty || saving}
+          title={dirty ? `Save ${label.toLowerCase()}` : "Saved"}
+          className={`p-1.5 rounded-lg flex-shrink-0 transition-colors ${
+            dirty
+              ? "bg-coral text-white hover:bg-coral/90"
+              : "bg-gray-100 dark:bg-gray-700 text-gray-300 dark:text-gray-500"
+          }`}
+        >
+          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Check className="w-4 h-4" />}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function AdminOrdersPage() {
   const { data: orders, loading, refetch } = useSupabaseQuery(getOrders);
   const [statusFilter, setStatusFilter] = useState<string>("");
@@ -1835,90 +1905,49 @@ export default function AdminOrdersPage() {
                       <div>
                         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">COD Details</h3>
                         <div className="space-y-3">
-                          <div>
-                            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Article Number (India Post)</label>
-                            <input
-                              defaultValue={order.article_number || ""}
-                              placeholder="Enter India Post article number"
-                              onBlur={async (e) => {
-                                const val = e.target.value.trim() || null;
-                                if (val !== (order.article_number || null)) {
-                                  await updateOrder(order.id, { article_number: val });
-                                  toast.success("Article number saved");
-                                  refetch();
-                                }
-                              }}
-                              className="w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-coral focus:border-transparent"
-                            />
-                          </div>
+                          <CodSaveField
+                            label="Article Number (India Post)"
+                            initialValue={order.article_number || ""}
+                            placeholder="Enter India Post article number"
+                            onSave={(v) => updateOrder(order.id, { article_number: v.trim() || null })}
+                          />
 
                           <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                             <h4 className="text-xs font-semibold text-blue-700 dark:text-blue-400 mb-2 uppercase tracking-wide">COD Settlement</h4>
                             <div className="grid grid-cols-3 gap-2">
-                              <div>
-                                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Status</label>
-                                <select
-                                  defaultValue={order.settlement_status || "pending"}
-                                  onChange={async (e) => {
-                                    await updateOrder(order.id, { settlement_status: e.target.value });
-                                    toast.success("Settlement status updated");
-                                    refetch();
-                                  }}
-                                  className="w-full px-2 py-1.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                                >
-                                  <option value="pending">Pending</option>
-                                  <option value="received">Received</option>
-                                  <option value="settled">Settled</option>
-                                </select>
-                              </div>
-                              <div>
-                                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Amount Received</label>
-                                <input
-                                  type="number"
-                                  defaultValue={order.amount_received != null ? Number(order.amount_received) : ""}
-                                  placeholder="₹"
-                                  onBlur={async (e) => {
-                                    const val = e.target.value ? Number(e.target.value) : null;
-                                    await updateOrder(order.id, { amount_received: val });
-                                    toast.success("Amount saved");
-                                    refetch();
-                                  }}
-                                  className="w-full px-2 py-1.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                                  min={0}
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Settlement Date</label>
-                                <input
-                                  type="date"
-                                  defaultValue={order.settlement_date || ""}
-                                  onChange={async (e) => {
-                                    await updateOrder(order.id, { settlement_date: e.target.value || null });
-                                    toast.success("Settlement date saved");
-                                    refetch();
-                                  }}
-                                  className="w-full px-2 py-1.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-xs"
-                                />
-                              </div>
+                              <CodSaveField
+                                label="Status"
+                                type="select"
+                                initialValue={order.settlement_status || "pending"}
+                                options={[
+                                  { value: "pending", label: "Pending" },
+                                  { value: "received", label: "Received" },
+                                  { value: "settled", label: "Settled" },
+                                ]}
+                                onSave={(v) => updateOrder(order.id, { settlement_status: v })}
+                              />
+                              <CodSaveField
+                                label="Amount Received"
+                                type="number"
+                                initialValue={order.amount_received != null ? String(Number(order.amount_received)) : ""}
+                                placeholder="₹"
+                                onSave={(v) => updateOrder(order.id, { amount_received: v ? Number(v) : null })}
+                              />
+                              <CodSaveField
+                                label="Settlement Date"
+                                type="date"
+                                initialValue={order.settlement_date || ""}
+                                onSave={(v) => updateOrder(order.id, { settlement_date: v || null })}
+                              />
                             </div>
                           </div>
 
-                          <div>
-                            <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Invoice Number</label>
-                            <input
-                              defaultValue={order.invoice_number || ""}
-                              placeholder="Enter invoice number"
-                              onBlur={async (e) => {
-                                const val = e.target.value.trim() || null;
-                                if (val !== (order.invoice_number || null)) {
-                                  await updateOrder(order.id, { invoice_number: val });
-                                  toast.success("Invoice number saved");
-                                  refetch();
-                                }
-                              }}
-                              className="w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white text-sm focus:ring-2 focus:ring-coral focus:border-transparent"
-                            />
-                          </div>
+                          <CodSaveField
+                            label="Invoice Number"
+                            initialValue={order.invoice_number || ""}
+                            placeholder="Enter invoice number"
+                            onSave={(v) => updateOrder(order.id, { invoice_number: v.trim() || null })}
+                          />
                         </div>
                       </div>
                       )}
