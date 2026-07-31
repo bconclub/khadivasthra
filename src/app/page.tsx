@@ -210,7 +210,7 @@ export default function Home() {
           </div>
         </section>
       ) : (
-        <section className="banners-section bg-white py-12">
+        <section className="banners-section bg-white py-12 md:hidden">
           <div className="container mx-auto px-4 max-w-7xl">
             <div className="banners-section__grid grid md:grid-cols-3 gap-6">
               <StaticBannerCard title="Festival Collection" overlay="coral" image="/images/card covers/festival collection.webp" />

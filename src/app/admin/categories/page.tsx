@@ -5,9 +5,9 @@ import { AdminShell } from "@/components/admin/AdminShell";
 import { CategoryForm } from "@/components/admin/CategoryForm";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getCategories } from "@/lib/services/categories";
-import { createCategory, updateCategory, deleteCategory } from "@/lib/services/admin";
+import { createCategory, updateCategory, deleteCategory, applyCategoryOffer } from "@/lib/services/admin";
 import type { Category } from "@/types";
-import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, BadgePercent, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 
@@ -60,6 +60,35 @@ export default function AdminCategoriesPage() {
     setEditingCategory(undefined);
   };
 
+  const [offerCategory, setOfferCategory] = useState<Category | undefined>();
+  const [offerPct, setOfferPct] = useState("");
+  const [applyingOffer, setApplyingOffer] = useState(false);
+
+  const handleApplyOffer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!offerCategory) return;
+    const pct = parseFloat(offerPct) || 0;
+    if (pct < 0 || pct > 90) {
+      toast.error("Discount must be between 0 and 90%");
+      return;
+    }
+    setApplyingOffer(true);
+    try {
+      const count = await applyCategoryOffer(offerCategory.id, pct);
+      toast.success(
+        pct > 0
+          ? `${pct}% offer applied to ${count} products in ${offerCategory.name}`
+          : `Offer cleared on ${count} products in ${offerCategory.name}`
+      );
+      setOfferCategory(undefined);
+      setOfferPct("");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to apply offer");
+    } finally {
+      setApplyingOffer(false);
+    }
+  };
+
   return (
     <AdminShell>
       <div className="space-y-6">
@@ -83,6 +112,45 @@ export default function AdminCategoriesPage() {
                 onCancel={closeForm}
               />
             </div>
+          </div>
+        )}
+
+        {/* Category Offer Modal */}
+        {offerCategory && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-start justify-center overflow-y-auto pt-24 px-4">
+            <form onSubmit={handleApplyOffer} className="bg-white dark:bg-gray-900 rounded-xl p-6 max-w-sm w-full shadow-xl space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <BadgePercent className="w-5 h-5 text-emerald-600" /> Category Offer
+                </h2>
+                <button type="button" onClick={() => setOfferCategory(undefined)} className="text-gray-400 hover:text-gray-600">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Applies to every product in <span className="font-semibold text-gray-700 dark:text-gray-200">{offerCategory.name}</span> in one go.
+                Discount is calculated from each product&apos;s MRP. Enter 0 to remove the offer.
+              </p>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Discount %</label>
+                <input
+                  type="number" min={0} max={90} step={1} autoFocus required
+                  value={offerPct}
+                  onChange={(e) => setOfferPct(e.target.value)}
+                  placeholder="e.g. 15"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent"
+                />
+              </div>
+              <div className="flex gap-3">
+                <Button type="button" variant="ghost" onClick={() => setOfferCategory(undefined)} className="flex-1">
+                  Cancel
+                </Button>
+                <Button type="submit" variant="primary" disabled={applyingOffer} className="flex-1">
+                  {applyingOffer ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                  Apply Offer
+                </Button>
+              </div>
+            </form>
           </div>
         )}
 
@@ -137,6 +205,13 @@ export default function AdminCategoriesPage() {
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => { setOfferCategory(category); setOfferPct(""); }}
+                              className="p-2 text-gray-400 hover:text-emerald-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                              title="Set offer for all products in this category"
+                            >
+                              <BadgePercent className="w-4 h-4" />
+                            </button>
                             <button
                               onClick={() => openEdit(category)}
                               className="p-2 text-gray-400 hover:text-coral rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"

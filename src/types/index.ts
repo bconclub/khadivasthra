@@ -208,6 +208,11 @@ export interface TrackingResult {
   scans: TrackingScan[];
 }
 
+export interface ShippingTier {
+  max_items: number;
+  rate: number;
+}
+
 export interface SiteSettings {
   id: string;
   whatsapp_number: string;
@@ -220,6 +225,7 @@ export interface SiteSettings {
   announcement_text: string | null;
   cod_enabled: boolean;
   is_store_open: boolean;
+  shipping_tiers: ShippingTier[] | null;
   created_at: string;
   updated_at: string;
 }

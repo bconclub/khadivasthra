@@ -108,7 +108,7 @@ export async function createProduct(
           colorId = colorMap.get(vWithName.color_name) || '';
         }
         
-        const { id, color, ...variantWithoutId } = v as Record<string, unknown>;
+        const { id, color, color_name, ...variantWithoutId } = v as Record<string, unknown>;
         return {
           ...variantWithoutId,
           product_id: product.id,
@@ -282,6 +282,35 @@ export async function updateCategory(id: string, data: Partial<CategoryFormData>
 export async function deleteCategory(id: string): Promise<void> {
   const { error } = await supabase.from('categories').delete().eq('id', id);
   if (error) throw new Error(error.message || error.details || JSON.stringify(error));
+}
+
+// Category-wide offer: apply a discount % to every product in a category in
+// one stroke. Each product's MRP is compare_price (or current price if no MRP
+// yet); price becomes MRP*(1-pct/100). pct=0 restores price to MRP and clears
+// the discount.
+export async function applyCategoryOffer(categoryId: string, pct: number): Promise<number> {
+  const { data: products, error } = await supabase
+    .from('products')
+    .select('id, price, compare_price')
+    .eq('category_id', categoryId);
+  if (error) throw new Error(error.message);
+  if (!products || products.length === 0) return 0;
+
+  const updates = products.map((p) => {
+    const mrp = Number(p.compare_price) > 0 ? Number(p.compare_price) : Number(p.price);
+    return pct > 0
+      ? { id: p.id, price: Math.round(mrp * (1 - pct / 100)), compare_price: mrp }
+      : { id: p.id, price: mrp, compare_price: null };
+  });
+
+  const results = await Promise.all(
+    updates.map(({ id, ...fields }) =>
+      supabase.from('products').update(fields).eq('id', id)
+    )
+  );
+  const failed = results.find((r) => r.error);
+  if (failed?.error) throw new Error(failed.error.message);
+  return updates.length;
 }
 
 // Banners CRUD

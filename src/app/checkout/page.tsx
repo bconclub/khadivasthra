@@ -9,7 +9,7 @@ import { createOrder, createRazorpayOrder, verifyRazorpayPayment, checkShippingS
 import { getSettings } from "@/lib/services/settings";
 import Link from "next/link";
 import { ChevronLeft, Loader2, ShoppingBag, CheckCircle2, XCircle, Truck, CreditCard, Banknote } from "lucide-react";
-import type { CheckoutFormData, Order, ServiceabilityResult, PaymentMethod } from "@/types";
+import type { CheckoutFormData, Order, ServiceabilityResult, PaymentMethod, ShippingTier } from "@/types";
 import { trackInitiateCheckout } from "@/lib/fbq";
 
 type PaymentStep = "form" | "creating" | "paying";
@@ -77,18 +77,31 @@ export default function CheckoutPage() {
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pincodeDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [codEnabledGlobal, setCodEnabledGlobal] = useState(true);
+  const [shippingTiers, setShippingTiers] = useState<ShippingTier[] | null>(null);
 
-  // Fetch COD setting
+  // Fetch COD setting + shipping tiers
   useEffect(() => {
     getSettings().then((s) => {
-      if (s) setCodEnabledGlobal(s.cod_enabled ?? true);
+      if (s) {
+        setCodEnabledGlobal(s.cod_enabled ?? true);
+        setShippingTiers(s.shipping_tiers || null);
+      }
     });
   }, []);
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const isCod = paymentMethod === "cod";
+  // Customer pays a flat tier rate by item count (brand absorbs the
+  // difference vs the real courier bill). The Shiprocket quote is only used
+  // for availability/ETA/COD — and as a fallback if tiers aren't configured.
+  const tierRate = (() => {
+    if (!shippingTiers || shippingTiers.length === 0) return null;
+    const sorted = [...shippingTiers].sort((a, b) => a.max_items - b.max_items);
+    const tier = sorted.find((t) => totalItems <= t.max_items) || sorted[sorted.length - 1];
+    return tier.rate;
+  })();
   const shippingCost = shippingInfo?.available
-    ? (isCod ? shippingInfo.cod_cheapest_rate : shippingInfo.cheapest_rate)
+    ? (tierRate ?? (isCod ? shippingInfo.cod_cheapest_rate : shippingInfo.cheapest_rate))
     : 0;
   const codCharges = isCod ? Math.round((cartTotal + shippingCost) * 0.016) : 0;
   const orderTotal = cartTotal + shippingCost + codCharges;

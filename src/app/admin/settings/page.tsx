@@ -7,7 +7,13 @@ import { getSettings, updateSettings } from "@/lib/services/settings";
 import { Button } from "@/components/ui/button";
 import { Loader2, Save } from "lucide-react";
 import toast from "react-hot-toast";
-import type { SiteSettings } from "@/types";
+import type { SiteSettings, ShippingTier } from "@/types";
+
+const DEFAULT_TIERS: ShippingTier[] = [
+  { max_items: 1, rate: 89 },
+  { max_items: 3, rate: 119 },
+  { max_items: 99, rate: 189 },
+];
 
 const inputClass = "w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent";
 const labelClass = "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1";
@@ -27,6 +33,7 @@ export default function AdminSettingsPage() {
   const [returnPolicy, setReturnPolicy] = useState("");
   const [announcement, setAnnouncement] = useState("");
   const [codEnabled, setCodEnabled] = useState(true);
+  const [tiers, setTiers] = useState<ShippingTier[]>(DEFAULT_TIERS);
 
   useEffect(() => {
     if (settings) {
@@ -39,6 +46,9 @@ export default function AdminSettingsPage() {
       setReturnPolicy(settings.return_policy || "");
       setAnnouncement(settings.announcement_text || "");
       setCodEnabled(settings.cod_enabled ?? true);
+      if (settings.shipping_tiers && settings.shipping_tiers.length > 0) {
+        setTiers(settings.shipping_tiers);
+      }
     }
   }, [settings]);
 
@@ -56,6 +66,7 @@ export default function AdminSettingsPage() {
         return_policy: returnPolicy,
         announcement_text: announcement,
         cod_enabled: codEnabled,
+        shipping_tiers: tiers,
       } as Partial<SiteSettings>);
       toast.success("Settings saved");
     } catch (err) {
@@ -108,6 +119,51 @@ export default function AdminSettingsPage() {
                 />
               </button>
             </div>
+          </div>
+
+          {/* Shipping Tiers */}
+          <div className={cardClass}>
+            <h2 className={cardTitleClass}>Shipping Charges (flat tiers)</h2>
+            <p className="text-xs text-gray-400 dark:text-gray-500 -mt-2">
+              Customer pays a flat rate by cart size — the difference vs the real courier bill is absorbed by the brand.
+            </p>
+            <div className="space-y-2">
+              {tiers.map((tier, i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <span className="text-sm text-gray-500 dark:text-gray-400 w-24 flex-shrink-0">
+                    {i === 0 ? `Up to ${tier.max_items}` : `${(tiers[i - 1]?.max_items ?? 0) + 1}–${tier.max_items >= 99 ? "+" : tier.max_items}`} item{tier.max_items === 1 ? "" : "s"}
+                  </span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-xs text-gray-400">up to</span>
+                    <input
+                      type="number" min={1} value={tier.max_items}
+                      onChange={(e) => setTiers(tiers.map((t, j) => j === i ? { ...t, max_items: parseInt(e.target.value) || 1 } : t))}
+                      className={`${inputClass} w-20 text-center`}
+                    />
+                    <span className="text-xs text-gray-400">items →</span>
+                    <span className="text-sm text-gray-500">₹</span>
+                    <input
+                      type="number" min={0} value={tier.rate}
+                      onChange={(e) => setTiers(tiers.map((t, j) => j === i ? { ...t, rate: parseFloat(e.target.value) || 0 } : t))}
+                      className={`${inputClass} w-24 text-center`}
+                    />
+                  </div>
+                  {tiers.length > 1 && (
+                    <button type="button" onClick={() => setTiers(tiers.filter((_, j) => j !== i))}
+                      className="text-xs text-gray-400 hover:text-red-500">
+                      Remove
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setTiers([...tiers, { max_items: (tiers[tiers.length - 1]?.max_items ?? 0) + 2, rate: 0 }])}
+              className="text-sm text-coral hover:underline"
+            >
+              + Add tier
+            </button>
           </div>
 
           {/* Store Information */}
