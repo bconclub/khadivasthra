@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-08-03 · unified shop browsing + hero background banner
+
+- **Unified category browsing** — `/shop` and `/shop/[category]` now render one shared `ShopBrowser` component, so the pills, sidebar, sort and grid are identical everywhere instead of three different setups.
+- **Category survives back-navigation** — the active category lives in the URL rather than local state, so opening a product and pressing back returns to that category instead of dumping you into "All".
+- **Category page header restored** — category name, description and thumbnail render above the grid (the old separate hero header is gone).
+- **Hero background is admin-managed** — new `hero_background` banner placement drives the big cover image behind the logo, with separate mobile and desktop images; falls back to the packaged cover when unset.
+- Homepage category carousel: 3 smaller portrait cards per row on mobile (was 1 full-width), horizontally scrollable.
+- Static "Festival Collection / 25% Off / New Arrivals" fallback cards removed entirely; nothing renders when no admin banners are set.
+- User-facing: shoppers stay in their category when browsing back from a product, category pages show a proper header, and the homepage hero can be changed without a deploy.
+
 ## 2026-07-31 · product form draft autosave + size entry fix + COD save ticks
 
 - Product form autosaves everything as the admin types (localStorage, per-product draft slots) — a refresh or crash no longer loses a half-entered product; draft clears on successful save.

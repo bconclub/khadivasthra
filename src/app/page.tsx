@@ -34,6 +34,12 @@ export default function Home() {
   const { data: allProducts, loading: isLoadingProducts } = useSupabaseQuery(getProducts);
   const { data: bestSellingData } = useSupabaseQuery(getBestSellingProducts);
   const { data: activeBanners } = useSupabaseQuery(() => getActiveBanners("general"), []);
+  const { data: heroBanners } = useSupabaseQuery(() => getActiveBanners("hero_background"), []);
+  // Admin-managed hero cover (separate mobile/desktop images); falls back to
+  // the packaged cover when no hero_background banner is set.
+  const heroBanner = heroBanners?.[0];
+  const heroDesktop = heroBanner?.image_url || "/Cover KV.webp";
+  const heroMobile = heroBanner?.mobile_image_url || heroDesktop;
 
   // Group products by category name
   const productsByCategory: Record<string, ProductWithCategory[]> = {};
@@ -117,13 +123,25 @@ export default function Home() {
     <>
       {/* 1. HERO SECTION */}
       <section className="hero-section relative -mt-20 pt-32 pb-20 min-h-[calc(100vh+5rem)] flex items-center justify-center overflow-hidden">
+        {/* Mobile cover */}
         <Image
-          src="/Cover KV.webp"
+          src={heroMobile}
           alt="Khadi Vasthra Cover"
           fill
-          className="hero-section__background-image object-cover z-0"
+          className="hero-section__background-image object-cover z-0 md:hidden"
           priority
           quality={90}
+          unoptimized={!!heroBanner}
+        />
+        {/* Desktop cover */}
+        <Image
+          src={heroDesktop}
+          alt="Khadi Vasthra Cover"
+          fill
+          className="hero-section__background-image object-cover z-0 hidden md:block"
+          priority
+          quality={90}
+          unoptimized={!!heroBanner}
         />
         <div className="hero-section__overlay absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/50 z-0"></div>
         <div className="hero-section__content container mx-auto px-4 max-w-7xl relative z-20 text-center max-w-4xl">
@@ -198,24 +216,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 3. DYNAMIC BANNERS */}
-      {activeBanners && activeBanners.length > 0 ? (
+      {/* 3. DYNAMIC BANNERS (admin-managed; nothing renders when none are set) */}
+      {activeBanners && activeBanners.length > 0 && (
         <section className="banners-section bg-white py-12">
           <div className="container mx-auto px-4 max-w-7xl">
             <div className="banners-section__grid grid md:grid-cols-3 gap-6">
               {activeBanners.slice(0, 6).map((banner) => (
                 <DynamicBannerCard key={banner.id} banner={banner} />
               ))}
-            </div>
-          </div>
-        </section>
-      ) : (
-        <section className="banners-section bg-white py-12 md:hidden">
-          <div className="container mx-auto px-4 max-w-7xl">
-            <div className="banners-section__grid grid md:grid-cols-3 gap-6">
-              <StaticBannerCard title="Festival Collection" overlay="coral" image="/images/card covers/festival collection.webp" />
-              <StaticBannerCard title="25% Off" overlay="orange" image="/images/card covers/offer.webp" />
-              <StaticBannerCard title="New Arrivals" overlay="cream" image="/images/card covers/new-arrivals.webp" />
             </div>
           </div>
         </section>
@@ -356,19 +364,6 @@ export default function Home() {
         </div>
       </section>
     </>
-  );
-}
-
-// Static Banner Card (fallback)
-function StaticBannerCard({ title, overlay, image }: { title: string; overlay: string; image: string }) {
-  const overlayClass = overlay === "coral" ? "bg-coral/40" : overlay === "orange" ? "bg-orange/40" : "bg-cream/40";
-  return (
-    <div className="banner-card relative aspect-[4/3] rounded-2xl overflow-hidden shadow-lg group cursor-pointer">
-      <Image src={image} alt={title} fill className="object-cover group-hover:scale-110 transition-transform duration-500" />
-      <div className={`absolute inset-0 ${overlayClass} flex items-center justify-center`}>
-        <h3 className="banner-card__title text-2xl md:text-3xl font-bold text-white text-center">{title}</h3>
-      </div>
-    </div>
   );
 }
 
@@ -569,22 +564,22 @@ function CategoriesCarousel({ categories }: { categories: Category[] }) {
   return (
     <div className="categories-carousel relative">
       <div className="overflow-hidden" ref={emblaRef}>
-        <div className="flex gap-6">
+        <div className="flex gap-3 md:gap-6">
           {categories.map((category) => (
-            <div key={category.id} className="flex-[0_0_100%] sm:flex-[0_0_calc(50%-12px)] md:flex-[0_0_calc(33.333%-16px)] lg:flex-[0_0_calc(25%-18px)] xl:flex-[0_0_calc(20%-19px)] min-w-0">
-              <Link href={`/shop/${category.slug}`} className="category-card group aspect-[3/5] flex flex-col bg-cream/30 rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
-                <div className="relative w-full flex-[1.5] min-h-[300px] overflow-hidden bg-white/50 flex-shrink-0">
+            <div key={category.id} className="flex-[0_0_calc(33.333%-8px)] sm:flex-[0_0_calc(25%-9px)] md:flex-[0_0_calc(33.333%-16px)] lg:flex-[0_0_calc(25%-18px)] xl:flex-[0_0_calc(20%-19px)] min-w-0">
+              <Link href={`/shop/${category.slug}`} className="category-card group flex flex-col bg-cream/30 rounded-xl md:rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+                <div className="relative w-full aspect-[3/4] overflow-hidden bg-white/50 flex-shrink-0">
                   {category.image_url ? (
-                    <Image src={category.image_url} alt={category.name} fill sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, (max-width: 1280px) 33vw, 20vw" className="object-cover group-hover:scale-110 transition-transform duration-500" unoptimized />
+                    <Image src={category.image_url} alt={category.name} fill sizes="(max-width: 640px) 33vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw" className="object-cover group-hover:scale-110 transition-transform duration-500" unoptimized />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center bg-gray-100/50">
-                      <ImageOff className="w-12 h-12 text-gray-400" />
+                      <ImageOff className="w-8 h-8 md:w-12 md:h-12 text-gray-400" />
                     </div>
                   )}
                 </div>
-                <div className="p-3 text-center flex-shrink-0 bg-cream/20 backdrop-blur-sm">
-                  <h3 className="text-base font-bold text-text font-serif mb-1 group-hover:text-coral transition-colors line-clamp-2 leading-tight">{category.name}</h3>
-                  {category.description && <p className="text-xs text-text-muted line-clamp-1 leading-relaxed mt-0.5">{category.description}</p>}
+                <div className="p-1.5 md:p-3 text-center flex-shrink-0 bg-cream/20 backdrop-blur-sm">
+                  <h3 className="text-[11px] md:text-base font-bold text-text font-serif group-hover:text-coral transition-colors line-clamp-2 leading-tight">{category.name}</h3>
+                  {category.description && <p className="hidden md:block text-xs text-text-muted line-clamp-1 leading-relaxed mt-0.5">{category.description}</p>}
                 </div>
               </Link>
             </div>

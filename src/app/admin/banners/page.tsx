@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import toast from "react-hot-toast";
 
 const PLACEMENT_LABELS: Record<string, string> = {
+  hero_background: "Hero Background",
   homepage_hero: "Homepage Hero",
   shop: "Shop Page",
   offers: "Offers Page",
