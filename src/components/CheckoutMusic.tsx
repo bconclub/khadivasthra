@@ -4,6 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { Music, Pause } from "lucide-react";
 
 const STORAGE_KEY = "kv_checkout_music_off";
+// Background ambience, not a performance — keep it well under the shopper's
+// system volume so it never startles anyone mid-checkout.
+const VOLUME = 0.18;
 
 /**
  * Easter egg: a little Onam tune while the shopper is on checkout.
@@ -25,7 +28,7 @@ export function CheckoutMusic() {
     try { off = localStorage.getItem(STORAGE_KEY) === "1"; } catch { /* ignore */ }
     if (off) return;
 
-    el.volume = 0.35;
+    el.volume = VOLUME;
     el.play()
       .then(() => setPlaying(true))
       .catch(() => setInvite(true)); // autoplay blocked — nudge them to tap
@@ -40,7 +43,7 @@ export function CheckoutMusic() {
       setInvite(false);
       try { localStorage.setItem(STORAGE_KEY, "1"); } catch { /* ignore */ }
     } else {
-      el.volume = 0.35;
+      el.volume = VOLUME;
       el.play().then(() => {
         setPlaying(true);
         setInvite(false);
