@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-08-03 (3) · menu, header overlap and bottom bar fixes
+
+- Side menu was rendered inside `<header>`, whose `overflow-hidden` (added with the rounded corners) clipped it to the header's box — moved outside so the drawer opens full-height.
+- Shop and product pages had no mobile top padding, so category headers and images slid under the fixed header; added `pt-16`.
+- Bottom bar items are all equal width again, with the WhatsApp label wrapped to two lines instead of stretching its cell.
+- User-facing: the menu opens properly, page content no longer hides behind the header, and the bottom bar is evenly spaced.
+
+
 ## 2026-08-03 (2) · shop UX pass, side menu, WhatsApp buy
 
 - **Faster category switching** — the catalogue fetch did 2 sequential DB round-trips *per variant product* (18 extra queries); those are now batched into 2, and products/categories are cached in memory for 5 minutes so switching categories no longer sits on a spinner.

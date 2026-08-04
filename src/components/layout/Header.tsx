@@ -70,6 +70,7 @@ export function Header() {
     }, [pathname]);
 
     return (
+        <>
         <header className={`header fixed top-0 z-50 w-full transition-all duration-400 ease-in-out ${
                 isShopPage
                 ? `md:opacity-100 md:translate-y-0 md:pointer-events-auto ${showHeader ? 'opacity-100 translate-y-0 pointer-events-auto' : 'opacity-0 -translate-y-full pointer-events-none'}`
@@ -178,7 +179,8 @@ export function Header() {
             </div>
 
             {/* Mobile Nav */}
-            <SideMenu open={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
         </header>
+        <SideMenu open={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+        </>
     );
 }
