@@ -38,7 +38,9 @@
 @layer base {
   html {
     scroll-behavior: smooth;
-    overflow-x: hidden;
+    /* `clip` (not `hidden`) prevents sideways overflow WITHOUT creating a
+       scroll container — `hidden` here breaks every position:sticky header. */
+    overflow-x: clip;
   }
 
   .scrollbar-hide {
@@ -52,7 +54,7 @@
   body {
     color: var(--color-text-DEFAULT);
     background: var(--color-white);
-    overflow-x: hidden;
+    overflow-x: clip;
     max-width: 100vw;
   }
 

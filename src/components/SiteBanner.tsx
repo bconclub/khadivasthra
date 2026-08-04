@@ -49,7 +49,7 @@ export function SiteBanner({ placement, className = "" }: SiteBannerProps) {
   const href = getBannerHref(banner);
 
   const content = (
-    <div className={`site-banner relative w-full aspect-[1448/1086] md:aspect-[2172/724] overflow-hidden rounded-none md:rounded-2xl group ${className}`}>
+    <div className={`site-banner relative w-full aspect-[1448/1086] md:aspect-[2172/724] overflow-hidden rounded-2xl group ${className}`}>
       {/* Mobile image */}
       <Image
         src={banner.mobile_image_url || banner.image_url}

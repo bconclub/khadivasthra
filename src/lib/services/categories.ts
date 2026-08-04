@@ -1,14 +1,34 @@
 import { supabase } from '@/lib/supabase';
 import type { Category } from '@/types';
 
+// Cached like the catalogue — categories are re-read on every shop navigation.
+const CATEGORIES_TTL_MS = 5 * 60 * 1000;
+let categoriesCache: { data: Category[]; at: number } | null = null;
+let categoriesInFlight: Promise<Category[]> | null = null;
+
+export function invalidateCategoriesCache(): void {
+  categoriesCache = null;
+  categoriesInFlight = null;
+}
+
 export async function getCategories(): Promise<Category[]> {
-  const { data, error } = await supabase
-    .from('categories')
-    .select('*')
-    .eq('is_active', true)
-    .order('display_order', { ascending: true });
-  if (error) throw error;
-  return data || [];
+  if (categoriesCache && Date.now() - categoriesCache.at < CATEGORIES_TTL_MS) {
+    return categoriesCache.data;
+  }
+  if (!categoriesInFlight) {
+    categoriesInFlight = (async () => {
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .eq('is_active', true)
+        .order('display_order', { ascending: true });
+      if (error) throw error;
+      const rows = (data || []) as Category[];
+      categoriesCache = { data: rows, at: Date.now() };
+      return rows;
+    })().finally(() => { categoriesInFlight = null; });
+  }
+  return categoriesInFlight;
 }
 
 export async function getAllCategories(): Promise<Category[]> {

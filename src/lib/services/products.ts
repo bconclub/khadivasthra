@@ -1,7 +1,19 @@
 import { supabase } from '@/lib/supabase';
 import type { ProductWithCategory, ProductColor, ProductVariant } from '@/types';
 
-export async function getProducts(): Promise<ProductWithCategory[]> {
+// The full catalogue is re-read on every shop/category navigation, so keep a
+// short-lived in-memory copy. Without it each category switch re-runs the
+// whole fetch and the page sits on a spinner.
+const CATALOGUE_TTL_MS = 5 * 60 * 1000;
+let catalogueCache: { data: ProductWithCategory[]; at: number } | null = null;
+let catalogueInFlight: Promise<ProductWithCategory[]> | null = null;
+
+export function invalidateProductsCache(): void {
+  catalogueCache = null;
+  catalogueInFlight = null;
+}
+
+async function fetchProducts(): Promise<ProductWithCategory[]> {
   const { data, error } = await supabase
     .from('products')
     .select('*, category:categories(*)')
@@ -9,16 +21,65 @@ export async function getProducts(): Promise<ProductWithCategory[]> {
     .order('display_order', { ascending: true })
     .order('created_at', { ascending: false });
   if (error) throw error;
-  
-  // Fetch colors and variants separately for each product
+
   const products = (data || []) as ProductWithCategory[];
-  for (const product of products) {
-    if (product.has_variants) {
-      product.colors = await getProductColors(product.id);
-      product.variants = await getProductVariants(product.id);
+
+  // Batch colors/variants for every variant product into two queries rather
+  // than two sequential round-trips per product.
+  const variantProductIds = products.filter((p) => p.has_variants).map((p) => p.id);
+  if (variantProductIds.length > 0) {
+    const [colorsRes, variantsRes] = await Promise.all([
+      supabase
+        .from('product_colors')
+        .select('*')
+        .in('product_id', variantProductIds)
+        .order('sort_order', { ascending: true })
+        .order('created_at', { ascending: true }),
+      supabase
+        .from('product_variants')
+        .select('*, color:product_colors(*)')
+        .in('product_id', variantProductIds)
+        .eq('is_active', true)
+        .order('created_at', { ascending: true }),
+    ]);
+    if (colorsRes.error) throw colorsRes.error;
+    if (variantsRes.error) throw variantsRes.error;
+
+    const colorsByProduct = new Map<string, ProductColor[]>();
+    for (const c of (colorsRes.data || []) as ProductColor[]) {
+      const list = colorsByProduct.get(c.product_id) || [];
+      list.push(c);
+      colorsByProduct.set(c.product_id, list);
+    }
+    const variantsByProduct = new Map<string, ProductVariant[]>();
+    for (const v of (variantsRes.data || []) as ProductVariant[]) {
+      const list = variantsByProduct.get(v.product_id) || [];
+      list.push(v);
+      variantsByProduct.set(v.product_id, list);
+    }
+    for (const product of products) {
+      if (!product.has_variants) continue;
+      product.colors = colorsByProduct.get(product.id) || [];
+      product.variants = variantsByProduct.get(product.id) || [];
     }
   }
   return products;
+}
+
+export async function getProducts(): Promise<ProductWithCategory[]> {
+  if (catalogueCache && Date.now() - catalogueCache.at < CATALOGUE_TTL_MS) {
+    return catalogueCache.data;
+  }
+  // De-dupe concurrent callers onto one request
+  if (!catalogueInFlight) {
+    catalogueInFlight = fetchProducts()
+      .then((data) => {
+        catalogueCache = { data, at: Date.now() };
+        return data;
+      })
+      .finally(() => { catalogueInFlight = null; });
+  }
+  return catalogueInFlight;
 }
 
 export async function getProductBySlug(slug: string): Promise<ProductWithCategory | null> {

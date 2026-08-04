@@ -51,7 +51,10 @@ export default function Home() {
     });
   }
 
-  const bestSelling = bestSellingData || [];
+  // Best Selling excludes anything already shown in Trending above, so the two
+  // carousels never surface the same product twice.
+  const trendingIds = new Set((trendingProducts || []).map((p) => p.id));
+  const bestSelling = (bestSellingData || []).filter((p) => !trendingIds.has(p.id));
 
   const [logoScale, setLogoScale] = useState(1);
   const [logoOpacity, setLogoOpacity] = useState(1);
@@ -442,9 +445,9 @@ function TrendingCarousel({ products }: { products: CardProduct[] }) {
   return (
     <div className="trending-carousel relative">
       <div className="overflow-hidden" ref={emblaRef}>
-        <div className="flex gap-6 items-stretch">
+        <div className="flex gap-3 md:gap-6 items-stretch">
           {products.map((product) => (
-            <div key={product.id} className="flex-[0_0_100%] sm:flex-[0_0_calc(50%-12px)] md:flex-[0_0_calc(50%-12px)] lg:flex-[0_0_calc(33.333%-16px)] xl:flex-[0_0_calc(25%-18px)] min-w-0 h-auto">
+            <div key={product.id} className="flex-[0_0_calc(50%-6px)] sm:flex-[0_0_calc(50%-12px)] md:flex-[0_0_calc(50%-12px)] lg:flex-[0_0_calc(33.333%-16px)] xl:flex-[0_0_calc(25%-18px)] min-w-0 h-auto">
               <ProductCard product={product} showHeart={true} />
             </div>
           ))}
@@ -482,9 +485,9 @@ function BestSellingCarousel({ products }: { products: CardProduct[] }) {
   return (
     <div className="bestselling-carousel relative">
       <div className="overflow-hidden" ref={emblaRef}>
-        <div className="flex gap-6">
+        <div className="flex gap-3 md:gap-6">
           {products.map((product) => (
-            <div key={product.id} className="flex-[0_0_100%] sm:flex-[0_0_calc(50%-12px)] md:flex-[0_0_calc(50%-12px)] lg:flex-[0_0_calc(33.333%-16px)] xl:flex-[0_0_calc(25%-18px)] min-w-0">
+            <div key={product.id} className="flex-[0_0_calc(50%-6px)] sm:flex-[0_0_calc(50%-12px)] md:flex-[0_0_calc(50%-12px)] lg:flex-[0_0_calc(33.333%-16px)] xl:flex-[0_0_calc(25%-18px)] min-w-0">
               <ProductCard product={product} variant="white" />
             </div>
           ))}
@@ -524,9 +527,9 @@ function CategoryProductsCarousel({ products }: { products: CardProduct[] }) {
   return (
     <div className="category-products-carousel relative">
       <div className="overflow-hidden" ref={emblaRef}>
-        <div className="flex gap-6 items-stretch">
+        <div className="flex gap-3 md:gap-6 items-stretch">
           {products.map((product) => (
-            <div key={product.id} className="flex-[0_0_100%] sm:flex-[0_0_calc(50%-12px)] md:flex-[0_0_calc(33.333%-16px)] lg:flex-[0_0_calc(25%-18px)] xl:flex-[0_0_calc(20%-19px)] min-w-0 h-auto">
+            <div key={product.id} className="flex-[0_0_calc(50%-6px)] sm:flex-[0_0_calc(50%-12px)] md:flex-[0_0_calc(33.333%-16px)] lg:flex-[0_0_calc(25%-18px)] xl:flex-[0_0_calc(20%-19px)] min-w-0 h-auto">
               <ProductCard product={product} variant="white" />
             </div>
           ))}

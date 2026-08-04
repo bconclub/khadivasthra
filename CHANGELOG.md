@@ -1,5 +1,18 @@
 # Changelog
 
+## 2026-08-03 (2) · shop UX pass, side menu, WhatsApp buy
+
+- **Faster category switching** — the catalogue fetch did 2 sequential DB round-trips *per variant product* (18 extra queries); those are now batched into 2, and products/categories are cached in memory for 5 minutes so switching categories no longer sits on a spinner.
+- **Sticky filters actually stick** — `overflow-x: hidden` on `html`/`body` was silently breaking every `position: sticky` header; switched to `overflow-x: clip`.
+- **Header behaviour fixed** — visible at the top of the page, hides on scroll down, returns on scroll up; the logo now shows on non-homepage pages instead of only after scrolling.
+- **New side menu** — full-height drawer with logo, collection chips, category tiles with images, page links, and Instagram/Facebook/phone.
+- **Buy on WhatsApp** replaces Search in the bottom bar; the message is built from context — product name + price + its own link, the category, the collection, or a plain hello.
+- **Per-product Open Graph tags** so a shared product link previews that product's image and name instead of the homepage card.
+- Group/collection pages now use the same shared `ShopBrowser` as `/shop` and `/shop/[category]` — all three category surfaces are finally one component.
+- Product carousels show 2 cards per row on mobile; Best Selling no longer repeats products already shown in Trending.
+- Footer recoloured to brand coral with the transparent logo; header and banners given rounded corners.
+- User-facing: shoppers can order any product over WhatsApp in one tap, browse via a proper menu, and category pages load noticeably faster.
+
 ## 2026-08-03 · unified shop browsing + hero background banner
 
 - **Unified category browsing** — `/shop` and `/shop/[category]` now render one shared `ShopBrowser` component, so the pills, sidebar, sort and grid are identical everywhere instead of three different setups.

@@ -104,11 +104,11 @@ export function ProductCarousel({ products }: ProductCarouselProps) {
         }}
         style={{ touchAction: "pan-x pinch-zoom" }}
       >
-        <div className="product-carousel__container flex gap-6">
+        <div className="product-carousel__container flex gap-3 md:gap-6">
           {products.map((product) => (
             <div
               key={product.id}
-              className="product-carousel__slide flex-[0_0_100%] sm:flex-[0_0_calc(50%-12px)] md:flex-[0_0_calc(50%-12px)] lg:flex-[0_0_calc(33.333%-16px)] xl:flex-[0_0_calc(25%-18px)] min-w-0"
+              className="product-carousel__slide flex-[0_0_calc(50%-6px)] sm:flex-[0_0_calc(50%-12px)] md:flex-[0_0_calc(50%-12px)] lg:flex-[0_0_calc(33.333%-16px)] xl:flex-[0_0_calc(25%-18px)] min-w-0"
             >
               <ProductCard product={product} />
             </div>

@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import Image from "next/image";
 import { ProductCard } from "@/components/product/ProductCard";
 import { SiteBanner } from "@/components/SiteBanner";
@@ -10,7 +9,8 @@ import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getProducts } from "@/lib/services/products";
 import { getCategories } from "@/lib/services/categories";
 import type { ProductWithCategory } from "@/types";
-import { ArrowUpDown, Loader2, Check, ChevronLeft } from "lucide-react";
+import { categoryBelongsToGroup, type GroupSlug } from "@/lib/category-groups";
+import { ArrowUpDown, Loader2, Check } from "lucide-react";
 
 type SortKey = "price-asc" | "price-desc" | "newest" | null;
 
@@ -39,15 +39,22 @@ function toCardProduct(product: ProductWithCategory) {
  * The active category lives in the URL (not local state), so browsing into a
  * product and pressing back returns to the same category.
  */
-export function ShopBrowser({ categorySlug = null }: { categorySlug?: string | null }) {
+export function ShopBrowser({
+  categorySlug = null,
+  groupSlug = null,
+}: {
+  categorySlug?: string | null;
+  groupSlug?: GroupSlug | null;
+}) {
   const router = useRouter();
   const { data: products, loading: loadingProducts } = useSupabaseQuery(getProducts);
   const { data: categories } = useSupabaseQuery(getCategories);
   const [sortBy, setSortBy] = useState<SortKey>(null);
   const [showSortMenu, setShowSortMenu] = useState(false);
-  const [headerVisible, setHeaderVisible] = useState(false);
+  const [headerVisible, setHeaderVisible] = useState(true);
   const lastScrollY = useRef(0);
   const scrollDelta = useRef(0);
+  const activePillRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -58,8 +65,10 @@ export function ShopBrowser({ categorySlug = null }: { categorySlug?: string | n
       } else {
         scrollDelta.current = delta;
       }
-      if (scrollDelta.current < -15 && y > 80) setHeaderVisible(true);
-      else if (scrollDelta.current > 15 || y <= 80) setHeaderVisible(false);
+      // Mirrors <Header>: visible at the top, hides on scroll down, returns up
+      if (y <= 80) setHeaderVisible(true);
+      else if (scrollDelta.current < -15) setHeaderVisible(true);
+      else if (scrollDelta.current > 15) setHeaderVisible(false);
       lastScrollY.current = y;
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -68,9 +77,11 @@ export function ShopBrowser({ categorySlug = null }: { categorySlug?: string | n
 
   const allProducts = products || [];
 
-  // Categories that actually have products, most-stocked first
+  // Categories that actually have products, most-stocked first. On a group
+  // route only that group's categories are offered.
   const categoriesWithProducts = (categories || [])
     .filter(c => allProducts.some(p => p.category?.slug === c.slug))
+    .filter(c => !groupSlug || categoryBelongsToGroup(c.slug, groupSlug))
     .sort((a, b) => {
       const countA = allProducts.filter(p => p.category?.slug === a.slug).length;
       const countB = allProducts.filter(p => p.category?.slug === b.slug).length;
@@ -81,13 +92,28 @@ export function ShopBrowser({ categorySlug = null }: { categorySlug?: string | n
     ? (categories || []).find(c => c.slug === categorySlug) || null
     : null;
 
+  // "All" returns to the group root when browsing a group, else to /shop
+  const rootHref = groupSlug ? `/shop/group/${groupSlug}` : "/shop";
   const goToCategory = (slug: string | null) => {
-    router.push(slug ? `/shop/${slug}` : "/shop");
+    router.push(slug ? `/shop/${slug}` : rootHref);
   };
 
+  // Bring the selected category pill into view (centred) so it's never cut off
+  // at the edge of the strip. Runs once the pills have actually rendered.
+  const pillCount = categoriesWithProducts.length;
+  useEffect(() => {
+    activePillRef.current?.scrollIntoView({ inline: "center", block: "nearest" });
+  }, [categorySlug, pillCount]);
+
+  const groupCategorySlugs = new Set(categoriesWithProducts.map(c => c.slug));
+  // Everything in scope for this route — the whole catalogue, or just the
+  // group's categories. Drives the "All" pill count.
+  const scopeProducts = groupSlug
+    ? allProducts.filter((p) => p.category?.slug && groupCategorySlugs.has(p.category.slug))
+    : allProducts;
   const filteredProducts = categorySlug
     ? allProducts.filter((p) => p.category?.slug === categorySlug)
-    : allProducts;
+    : scopeProducts;
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sortBy === "price-asc") return Number(a.price) - Number(b.price);
@@ -108,22 +134,26 @@ export function ShopBrowser({ categorySlug = null }: { categorySlug?: string | n
 
   return (
     <div className="shop-page min-h-screen bg-cream pt-4">
-      {/* Category header — only on a category route */}
+      {/* Header only for a specific category — "All" views show just the pills */}
       {activeCategory && (
         <div className="container mx-auto px-4 max-w-7xl pt-2">
-          <Link href="/shop" className="inline-flex items-center gap-1 text-coral hover:underline text-sm mb-2">
-            <ChevronLeft className="w-4 h-4" /> Back to Shop
-          </Link>
-          <div className="flex items-center gap-4">
+          <div className="flex items-stretch gap-4">
             {activeCategory.image_url && (
-              <div className="relative w-16 h-16 md:w-20 md:h-20 rounded-xl overflow-hidden flex-shrink-0 bg-white/60">
-                <Image src={activeCategory.image_url} alt={activeCategory.name} fill className="object-cover" unoptimized />
+              <div className="relative w-24 h-28 md:w-36 md:h-40 rounded-xl overflow-hidden flex-shrink-0 bg-white/60">
+                <Image
+                  src={activeCategory.image_url}
+                  alt={activeCategory.name}
+                  fill
+                  sizes="(max-width: 768px) 96px, 144px"
+                  className="object-cover object-top"
+                  unoptimized
+                />
               </div>
             )}
-            <div className="min-w-0">
+            <div className="min-w-0 flex flex-col justify-center py-1">
               <h1 className="text-2xl md:text-4xl font-bold text-text font-serif">{activeCategory.name}</h1>
               {activeCategory.description && (
-                <p className="text-text-muted text-sm md:text-base line-clamp-2 mt-0.5">{activeCategory.description}</p>
+                <p className="text-text-muted text-sm md:text-base line-clamp-3 mt-1">{activeCategory.description}</p>
               )}
             </div>
           </div>
@@ -192,7 +222,7 @@ export function ShopBrowser({ categorySlug = null }: { categorySlug?: string | n
                         !categorySlug ? "bg-coral text-white shadow-sm" : "bg-white/80 text-text"
                       }`}
                     >
-                      All <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold ml-1 ${!categorySlug ? 'bg-white text-coral' : 'bg-gray-200 text-text-muted'}`}>{allProducts.length}</span>
+                      All <span className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] font-bold ml-1 ${!categorySlug ? 'bg-white text-coral' : 'bg-gray-200 text-text-muted'}`}>{scopeProducts.length}</span>
                     </button>
                     {categoriesWithProducts.map((cat) => {
                       const count = allProducts.filter(p => p.category?.slug === cat.slug).length;
@@ -200,6 +230,7 @@ export function ShopBrowser({ categorySlug = null }: { categorySlug?: string | n
                       return (
                         <button
                           key={cat.id}
+                          ref={isActive ? activePillRef : undefined}
                           onClick={() => goToCategory(cat.slug)}
                           className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors flex items-center gap-1 ${
                             isActive ? "bg-coral text-white shadow-sm" : "bg-white/80 text-text"
@@ -263,8 +294,10 @@ export function ShopBrowser({ categorySlug = null }: { categorySlug?: string | n
               </div>
             </div>
 
-            {/* Shop Banner (admin managed) */}
-            <div className="mb-6">
+            {/* Shop Banner (admin managed). On mobile it only shows on the
+                "All" view — once a category is picked its header takes that
+                space and the products pull up instead. */}
+            <div className={`mb-6 ${categorySlug ? "hidden md:block" : ""}`}>
               <SiteBanner placement="shop" />
             </div>
 
