@@ -37,10 +37,11 @@ export function Header() {
                 scrollDeltaRef.current = delta;
             }
 
-            // Visible at the top of the page; hides on scroll down, returns on
-            // scroll up (after 15px of consistent movement in one direction).
+            // At the top of the page the header is visible everywhere except the
+            // homepage, where the hero logo is the branding. Below that it hides
+            // on scroll down and returns on scroll up (15px of movement).
             if (currentScrollY <= 80) {
-                setShowHeader(true);
+                setShowHeader(pathname !== '/');
             } else if (scrollDeltaRef.current < -15) {
                 setShowHeader(true);
             } else if (scrollDeltaRef.current > 15) {

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-03 (4) · homepage header + bottom bar polish
+
+- Homepage hero shows no header bar again — the hero logo is the branding there; the header still slides in on scroll up. Every other page keeps its header visible at the top.
+- Bottom bar: "Buy on WhatsApp" label back to 10px to match the other items, and the filled WhatsApp glyph nudged to 18px so it reads the same size as the outline icons.
+
+
 ## 2026-08-03 (3) · menu, header overlap and bottom bar fixes
 
 - Side menu was rendered inside `<header>`, whose `overflow-hidden` (added with the rounded corners) clipped it to the header's box — moved outside so the drawer opens full-height.
