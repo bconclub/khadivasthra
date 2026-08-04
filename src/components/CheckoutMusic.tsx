@@ -10,7 +10,8 @@ const STORAGE_KEY = "kv_checkout_music_off";
  *
  * Browsers block audio autoplay until the user has interacted with the page,
  * so we *try* to start and fall back to an inviting "tap to play" pill when
- * that's refused. Switching it off is remembered so it never nags again.
+ * that's refused. Plays through once (no loop); switching it off is remembered
+ * so it never nags again.
  */
 export function CheckoutMusic() {
   const audioRef = useRef<HTMLAudioElement>(null);
@@ -50,7 +51,12 @@ export function CheckoutMusic() {
 
   return (
     <>
-      <audio ref={audioRef} src="/onam-mood.mp3" loop preload="none" />
+      <audio
+        ref={audioRef}
+        src="/onam-mood.mp3"
+        preload="none"
+        onEnded={() => setPlaying(false)}
+      />
       <button
         type="button"
         onClick={toggle}
