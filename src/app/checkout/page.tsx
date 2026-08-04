@@ -381,13 +381,15 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-cream">
-      <CheckoutMusic />
       <div className="container mx-auto px-4 max-w-5xl py-8">
         <Link href="/cart" className="inline-flex items-center gap-2 text-coral hover:underline mb-6">
           <ChevronLeft className="w-4 h-4" /> Back to Cart
         </Link>
 
-        <h1 className="text-3xl md:text-4xl font-bold text-text font-serif mb-8">Checkout</h1>
+        <div className="flex items-center justify-between gap-3 mb-8">
+          <h1 className="text-3xl md:text-4xl font-bold text-text font-serif">Checkout</h1>
+          <CheckoutMusic />
+        </div>
 
         <form onSubmit={handleSubmit}>
           <div className="grid lg:grid-cols-3 gap-8">

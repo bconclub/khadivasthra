@@ -2,7 +2,7 @@
 
 ## 2026-08-03 (5) · checkout music easter egg + scroll and touch fixes
 
-- **Onam tune on checkout** — a floating pill plays a looping Onam track while the shopper is on the checkout page. It tries to autoplay, falls back to a "Play Onam tune" prompt when the browser blocks audio, and switching it off is remembered so it never nags again. Audio is `preload="none"` so the 524KB file is only fetched if actually played.
+- **Onam tune on checkout** — a pill beside the Checkout heading plays a looping Onam track. It tries to autoplay, falls back to a "Play Onam tune" prompt when the browser blocks audio, and switching it off is remembered so it never nags again. Audio is `preload="none"` so the 524KB file is only fetched if actually played.
 - **Every page now opens at the top** — navigating from a scrolled homepage into a category kept the old scroll offset and dumped the shopper at the footer.
 - **No more zoom-and-clip while scrolling on touch** — card hover zoom/lift stuck on after a tap on touch devices; those effects are now gated to hover-capable pointers.
 - Best Selling no longer lists sold-out products.
