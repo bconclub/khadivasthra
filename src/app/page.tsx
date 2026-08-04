@@ -54,7 +54,9 @@ export default function Home() {
   // Best Selling excludes anything already shown in Trending above, so the two
   // carousels never surface the same product twice.
   const trendingIds = new Set((trendingProducts || []).map((p) => p.id));
-  const bestSelling = (bestSellingData || []).filter((p) => !trendingIds.has(p.id));
+  const bestSelling = (bestSellingData || [])
+    .filter((p) => !trendingIds.has(p.id))
+    .filter((p) => p.in_stock && (p.stock_quantity ?? 0) > 0);
 
   const [logoScale, setLogoScale] = useState(1);
   const [logoOpacity, setLogoOpacity] = useState(1);
@@ -385,7 +387,7 @@ function DynamicBannerCard({ banner }: { banner: Banner }) {
 
   const content = (
     <div className={`banner-card relative ${aspectClass} rounded-2xl overflow-hidden shadow-lg group cursor-pointer ${spanClass}`}>
-      <Image src={banner.image_url} alt={banner.title || "Banner"} fill className="object-cover group-hover:scale-105 transition-transform duration-500" unoptimized />
+      <Image src={banner.image_url} alt={banner.title || "Banner"} fill className="object-cover [@media(hover:hover)]:group-hover:scale-105 transition-transform duration-500" unoptimized />
       {(banner.title || banner.subtitle || href) && (
         <>
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
@@ -570,10 +572,10 @@ function CategoriesCarousel({ categories }: { categories: Category[] }) {
         <div className="flex gap-3 md:gap-6">
           {categories.map((category) => (
             <div key={category.id} className="flex-[0_0_calc(33.333%-8px)] sm:flex-[0_0_calc(25%-9px)] md:flex-[0_0_calc(33.333%-16px)] lg:flex-[0_0_calc(25%-18px)] xl:flex-[0_0_calc(20%-19px)] min-w-0">
-              <Link href={`/shop/${category.slug}`} className="category-card group flex flex-col bg-cream/30 rounded-xl md:rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
+              <Link href={`/shop/${category.slug}`} className="category-card group flex flex-col bg-cream/30 rounded-xl md:rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 [@media(hover:hover)]:hover:-translate-y-2">
                 <div className="relative w-full aspect-[3/4] overflow-hidden bg-white/50 flex-shrink-0">
                   {category.image_url ? (
-                    <Image src={category.image_url} alt={category.name} fill sizes="(max-width: 640px) 33vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw" className="object-cover group-hover:scale-110 transition-transform duration-500" unoptimized />
+                    <Image src={category.image_url} alt={category.name} fill sizes="(max-width: 640px) 33vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw" className="object-cover [@media(hover:hover)]:group-hover:scale-110 transition-transform duration-500" unoptimized />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center bg-gray-100/50">
                       <ImageOff className="w-8 h-8 md:w-12 md:h-12 text-gray-400" />

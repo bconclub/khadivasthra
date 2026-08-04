@@ -7,6 +7,7 @@ import { useRazorpay } from "@/hooks/useRazorpay";
 import { Button } from "@/components/ui/button";
 import { createOrder, createRazorpayOrder, verifyRazorpayPayment, checkShippingServiceability } from "@/lib/services/orders";
 import { getSettings } from "@/lib/services/settings";
+import { CheckoutMusic } from "@/components/CheckoutMusic";
 import Link from "next/link";
 import { ChevronLeft, Loader2, ShoppingBag, CheckCircle2, XCircle, Truck, CreditCard, Banknote } from "lucide-react";
 import type { CheckoutFormData, Order, ServiceabilityResult, PaymentMethod, ShippingTier } from "@/types";
@@ -380,6 +381,7 @@ export default function CheckoutPage() {
 
   return (
     <div className="min-h-screen bg-cream">
+      <CheckoutMusic />
       <div className="container mx-auto px-4 max-w-5xl py-8">
         <Link href="/cart" className="inline-flex items-center gap-2 text-coral hover:underline mb-6">
           <ChevronLeft className="w-4 h-4" /> Back to Cart
