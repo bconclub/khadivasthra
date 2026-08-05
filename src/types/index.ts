@@ -240,7 +240,7 @@ export interface ProductView {
 // Banner types
 export type BannerSize = 'hero' | 'wide' | 'square' | 'tall';
 export type BannerLinkType = 'product' | 'category' | 'url' | 'none';
-export type BannerPlacement = 'hero_background' | 'homepage_hero' | 'shop' | 'offers' | 'general';
+export type BannerPlacement = 'hero_background' | 'homepage_hero' | 'heritage' | 'shop' | 'offers' | 'general';
 
 export interface Banner {
   id: string;

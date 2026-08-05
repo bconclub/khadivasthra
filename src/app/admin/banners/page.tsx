@@ -14,6 +14,7 @@ import toast from "react-hot-toast";
 const PLACEMENT_LABELS: Record<string, string> = {
   hero_background: "Hero Background",
   homepage_hero: "Homepage Hero",
+  heritage: "Heritage Photo",
   shop: "Shop Page",
   offers: "Offers Page",
   general: "Homepage Cards",

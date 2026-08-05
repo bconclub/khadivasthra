@@ -16,6 +16,7 @@ interface BannerFormProps {
 const PLACEMENTS: { value: BannerPlacement; label: string; desc: string }[] = [
   { value: "hero_background", label: "Hero Background", desc: "The big cover image behind the logo at the top" },
   { value: "homepage_hero", label: "Homepage Hero Strip", desc: "Full-width, right below the main hero" },
+  { value: "heritage", label: "Heritage Photo", desc: "Image beside the \"Since 2007\" story section" },
   { value: "shop", label: "Shop Page", desc: "Between products on the shop page" },
   { value: "offers", label: "Offers Page", desc: "Featured on the offers page" },
   { value: "general", label: "Homepage Cards", desc: "3-up promo grid on the homepage" },

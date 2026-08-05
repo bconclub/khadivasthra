@@ -35,11 +35,16 @@ export default function Home() {
   const { data: bestSellingData } = useSupabaseQuery(getBestSellingProducts);
   const { data: activeBanners } = useSupabaseQuery(() => getActiveBanners("general"), []);
   const { data: heroBanners } = useSupabaseQuery(() => getActiveBanners("hero_background"), []);
+  const { data: heritageBanners } = useSupabaseQuery(() => getActiveBanners("heritage"), []);
   // Admin-managed hero cover (separate mobile/desktop images); falls back to
   // the packaged cover when no hero_background banner is set.
   const heroBanner = heroBanners?.[0];
   const heroDesktop = heroBanner?.image_url || "/Cover KV.webp";
   const heroMobile = heroBanner?.mobile_image_url || heroDesktop;
+  // Heritage story photo, admin-managed; falls back to the placeholder art.
+  const heritageImage =
+    heritageBanners?.[0]?.image_url ||
+    "https://placehold.co/600x750/F5E6D3/1A1A1A?text=Our+Heritage";
 
   // Group products by category name
   const productsByCategory: Record<string, ProductWithCategory[]> = {};
@@ -338,10 +343,12 @@ export default function Home() {
           <div className="about-section__content grid md:grid-cols-2 gap-10 items-center">
             <div className="about-section__image-wrapper relative aspect-[4/5] rounded-2xl overflow-hidden shadow-lg">
               <Image
-                src="https://placehold.co/600x750/F5E6D3/1A1A1A?text=Our+Heritage"
+                src={heritageImage}
                 alt="Khadi Vasthra Heritage"
                 fill
+                sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-cover"
+                unoptimized
               />
             </div>
             <div className="about-section__text space-y-4">

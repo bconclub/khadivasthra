@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-08-04 · COD save fix, settlement toggle, heritage banner
+
+- **COD fields silently failed to save.** A row-level-security policy that blocks an update makes Postgres report success with zero rows changed, so the admin saw "saved" while nothing persisted. `updateOrder` now verifies a row actually changed and raises a clear permissions error instead.
+- **Settlement status is now three tap-to-set buttons** (Pending / Received / Settled) inside the COD box instead of a dropdown; it saves on tap and visibly reverts if the write is rejected.
+- **Heritage photo is admin-managed** — new `heritage` banner placement drives the image beside the "Since 2007" story section, which was still a grey `placehold.co` placeholder on the live site.
+- **WhatsApp button only appears on product pages.** Home, shop and category pages get Search back in that bottom-bar slot, since ordering over WhatsApp only makes sense once you're looking at a specific product.
+
+
 ## 2026-08-03 (5) · checkout music easter egg + scroll and touch fixes
 
 - **Onam tune on checkout** — a pill beside the Checkout heading plays a short Onam track once (no loop). It tries to autoplay, falls back to a "Play Onam tune" prompt when the browser blocks audio, and switching it off is remembered so it never nags again. Audio is `preload="none"` so the 524KB file is only fetched if actually played.

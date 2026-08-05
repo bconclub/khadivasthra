@@ -1329,6 +1329,55 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
 }
 
 // --- Main Orders Page ---
+// One-tap settlement status: Pending / Received / Settled. Saves immediately
+// and reverts visibly if the write is rejected (e.g. missing permissions).
+function SettlementStatusToggle({ orderId, initialStatus }: { orderId: string; initialStatus: string }) {
+  const [status, setStatus] = useState(initialStatus);
+  const [saving, setSaving] = useState<string | null>(null);
+
+  const OPTIONS: { value: string; label: string; active: string }[] = [
+    { value: "pending", label: "Pending", active: "bg-amber-500 text-white border-amber-500" },
+    { value: "received", label: "Received", active: "bg-blue-600 text-white border-blue-600" },
+    { value: "settled", label: "Settled", active: "bg-green-600 text-white border-green-600" },
+  ];
+
+  const pick = async (value: string) => {
+    if (value === status || saving) return;
+    const previous = status;
+    setStatus(value);
+    setSaving(value);
+    try {
+      await updateOrder(orderId, { settlement_status: value });
+      toast.success(`Marked ${value}`);
+    } catch (err) {
+      setStatus(previous);
+      toast.error(err instanceof Error ? err.message : "Failed to update settlement status");
+    } finally {
+      setSaving(null);
+    }
+  };
+
+  return (
+    <div className="flex gap-1.5">
+      {OPTIONS.map((o) => (
+        <button
+          key={o.value}
+          type="button"
+          onClick={() => pick(o.value)}
+          disabled={!!saving}
+          className={`flex-1 px-2 py-1.5 rounded-lg border text-xs font-semibold transition-colors disabled:opacity-60 ${
+            status === o.value
+              ? o.active
+              : "bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:border-gray-300"
+          }`}
+        >
+          {saving === o.value ? <Loader2 className="w-3 h-3 animate-spin mx-auto" /> : o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 // Inline save field for COD details: explicit ✓ button on the right, saves
 // just that field — no list refetch, so the page never jumps back to the top.
 function CodSaveField({
@@ -1914,18 +1963,14 @@ export default function AdminOrdersPage() {
 
                           <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                             <h4 className="text-xs font-semibold text-blue-700 dark:text-blue-400 mb-2 uppercase tracking-wide">COD Settlement</h4>
-                            <div className="grid grid-cols-3 gap-2">
-                              <CodSaveField
-                                label="Status"
-                                type="select"
-                                initialValue={order.settlement_status || "pending"}
-                                options={[
-                                  { value: "pending", label: "Pending" },
-                                  { value: "received", label: "Received" },
-                                  { value: "settled", label: "Settled" },
-                                ]}
-                                onSave={(v) => updateOrder(order.id, { settlement_status: v })}
+                            <div className="mb-3">
+                              <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1.5">Settlement Status</label>
+                              <SettlementStatusToggle
+                                orderId={order.id}
+                                initialStatus={order.settlement_status || "pending"}
                               />
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
                               <CodSaveField
                                 label="Amount Received"
                                 type="number"

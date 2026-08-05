@@ -156,11 +156,20 @@ export async function updateOrderStatus(id: string, status: string): Promise<voi
 }
 
 export async function updateOrder(id: string, data: Record<string, unknown>): Promise<void> {
-  const { error } = await supabase
+  // `.select()` matters: when a row-level-security policy blocks the update,
+  // Postgres reports success with zero rows changed. Without checking the
+  // returned rows the UI would claim "saved" while nothing persisted.
+  const { data: rows, error } = await supabase
     .from('orders')
     .update(data)
-    .eq('id', id);
+    .eq('id', id)
+    .select('id');
   if (error) throw error;
+  if (!rows || rows.length === 0) {
+    throw new Error(
+      "Order was not saved — your admin account doesn't have permission to edit orders. Ask a super admin to grant you the 'orders' section."
+    );
+  }
 }
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
