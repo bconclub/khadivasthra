@@ -155,7 +155,7 @@ export default function Home() {
       <section
         className={`hero-section relative -mt-20 flex items-center justify-center overflow-hidden ${
           heroBanner
-            ? "pt-20 aspect-[1448/1086] md:aspect-[2172/724] min-h-[26rem]"
+            ? "pt-8 md:pt-10 w-full max-w-full aspect-[1448/1086] md:aspect-[2172/724]"
             : "pt-32 pb-20 min-h-[calc(100vh+5rem)]"
         }`}
       >
@@ -185,7 +185,7 @@ export default function Home() {
         )}
         <div className="hero-section__overlay absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/50 z-0"></div>
         <div className="hero-section__content container mx-auto px-4 max-w-7xl relative z-20 text-center max-w-4xl">
-          <div id="hero-logo" className="hero-section__logo-wrapper relative flex justify-center items-center mb-3 w-full max-w-[65vw] md:max-w-lg lg:max-w-xl mx-auto aspect-[5/2]"
+          <div id="hero-logo" className="hero-section__logo-wrapper relative flex justify-center items-center mb-1 md:mb-2 w-full max-w-[55vw] md:max-w-sm lg:max-w-md mx-auto aspect-[5/2]"
             style={{ transform: `scale(${logoScale})`, opacity: logoOpacity, transition: "transform 100ms ease-out, opacity 100ms ease-out" }}
           >
             {heroLogos.map((src, i) => (
@@ -201,10 +201,10 @@ export default function Home() {
               />
             ))}
           </div>
-          <p className="hero-section__description text-base md:text-lg text-white/80 max-w-lg mx-auto font-light tracking-wide drop-shadow-md mb-7">
+          <p className="hero-section__description text-sm md:text-lg text-white/80 max-w-lg mx-auto font-light tracking-wide drop-shadow-md mb-4">
             Pure comfort. Timeless style. Crafted in cotton, inspired by kerala heritage.
           </p>
-          <div className="hero-section__actions flex flex-col items-center justify-center gap-5">
+          <div className="hero-section__actions flex flex-col items-center justify-center gap-3 md:gap-4">
             <Link href="/shop" className="hero-section__cta-primary">
               <Button size="lg" className="bg-orange hover:bg-orange/90 text-white font-bold px-10 h-12 text-base rounded-full shadow-lg shadow-orange/30 hover:shadow-orange/50 hover:-translate-y-1 transition-all duration-300">
                 Shop Now

@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-12 (2) · fix mobile layout broken by the hero
+
+- **The homepage overflowed sideways on phones.** Yesterday's hero change paired `aspect-ratio` with a `min-height`; when the minimum height won, the ratio forced the *width* to match — 416px tall x 4:3 made the hero 555px wide inside a 375px screen, shoving the whole page off-centre. The minimum height is gone and the hero is pinned to full width.
+- Hero copy, logo and CTAs tightened so they sit inside the banner at both sizes instead of spilling past its bottom edge.
+
+
 ## 2026-08-12 · checkout music, hero sizing, image quality
 
 - New checkout track (`Khadivasthra Checkout Music.m4a`), replacing the mp3.
