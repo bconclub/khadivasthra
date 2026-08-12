@@ -1,5 +1,13 @@
 # Changelog
 
+## 2026-08-04 (3) · payment recording fixed at the source
+
+- **Root cause of unpaid-looking orders.** `payment_status` was only ever set by a callback running in the shopper's *browser* after Razorpay succeeded. Close the tab or lose signal at that moment and Razorpay keeps the money while this database never hears about it. There was no server-side backstop.
+- **New `razorpay-webhook` function** — Razorpay now notifies us directly on `payment.captured`, so payment is recorded no matter what the browser does. Signature-verified; needs `RAZORPAY_WEBHOOK_SECRET` set and the endpoint registered in the Razorpay dashboard.
+- **Retries are now traceable.** A shopper who retries gets a brand-new Razorpay order, but we only ever stored the first id — so lookups against that id found nothing even when the retry was paid. Our internal order id is now stamped into Razorpay `notes`, and reconciliation also searches by `receipt`.
+- **New `reconcile-payments` function** — read-only by default, checks every pending online order against Razorpay and only marks the genuinely captured ones paid. Unlike `check-payment-status` it never creates shipments, so it is safe to run over already-delivered orders.
+
+
 ## 2026-08-04 (2) · product gallery fix + COD settled/pending tabs
 
 - **Product photos were being dropped.** The main image and the gallery are stored in separate columns, and the page returned the gallery *instead of* the main photo whenever one existed — so a product with a main shot plus one gallery shot showed a single picture. They're merged and de-duplicated now; 90 products were affected.

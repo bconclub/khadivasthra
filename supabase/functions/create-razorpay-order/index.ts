@@ -44,6 +44,7 @@ serve(async (req) => {
         amount: amountInPaise,
         currency,
         receipt: order_id,
+        notes: { order_id },
       }),
     });
 
