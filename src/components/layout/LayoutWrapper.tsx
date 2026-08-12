@@ -19,7 +19,9 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
   }
 
-  const isShopPage = pathname?.startsWith('/shop') || pathname?.startsWith('/product') || pathname?.startsWith('/collections') || pathname?.startsWith('/offers');
+  // Only the homepage tucks its hero under the fixed header; every other
+  // route needs clearance or the header sits on top of the page heading.
+  const isHome = pathname === '/';
 
   return (
     <>
@@ -27,7 +29,7 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
       <Header />
       {/* Shop/product pages sit under a fixed header (h-16 mobile, h-20 desktop),
           so they need matching top padding or the content slides underneath. */}
-      <main className={`flex-grow pb-16 md:pb-0 ${isShopPage ? 'pt-16 md:pt-20' : ''}`}>{children}</main>
+      <main className={`flex-grow pb-16 md:pb-0 ${isHome ? '' : 'pt-16 md:pt-20'}`}>{children}</main>
       <Footer />
       <CartDrawer />
       <BottomBar />

@@ -155,7 +155,7 @@ export default function Home() {
       <section
         className={`hero-section relative -mt-20 flex items-center justify-center overflow-hidden ${
           heroBanner
-            ? "pt-8 md:pt-10 w-full max-w-full aspect-[1448/1086] md:aspect-[2172/724]"
+            ? "pt-8 md:pt-10 w-full max-w-full min-h-[62vh] md:min-h-0 md:aspect-[3/2]"
             : "pt-32 pb-20 min-h-[calc(100vh+5rem)]"
         }`}
       >

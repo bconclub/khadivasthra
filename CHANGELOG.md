@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-08-12 (3) · hero at full size, header no longer overlaps pages
+
+- **Hero was squeezed.** It was locked to 3:1 desktop / 4:3 mobile, but the uploaded banner is actually 1536x1022 (3:2) — so `object-cover` cropped it into a thin strip. Desktop now uses the image's own 3:2 ratio (the whole banner, ~843px tall at 1280) and mobile gets a generous 62vh instead of 281px.
+- Hero images are requested at full-HD width (1920, capped to the source) rather than 1100.
+- **The fixed header was sitting on top of page headings.** Top clearance only applied to shop and product routes, so checkout, cart and the rest were overlapped; every route except the homepage now gets it.
+
+Note: the hero banner is a 4 MB PNG served for both desktop and mobile. It reaches browsers as ~215 KB WebP, but re-exporting it as a JPEG, and uploading a genuinely portrait crop for mobile, would improve both quality and load further.
+
+
 ## 2026-08-12 (2) · fix mobile layout broken by the hero
 
 - **The homepage overflowed sideways on phones.** Yesterday's hero change paired `aspect-ratio` with a `min-height`; when the minimum height won, the ratio forced the *width* to match — 416px tall x 4:3 made the hero 555px wide inside a 375px screen, shoving the whole page off-centre. The minimum height is gone and the hero is pinned to full width.

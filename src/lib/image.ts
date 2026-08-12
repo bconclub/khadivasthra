@@ -27,6 +27,6 @@ export const IMG = {
   thumb: 400,      // colour swatches, tiny previews
   card: 700,       // product + category cards in grids and carousels
   hero: 1400,      // product page main image
-  banner: 2000,    // full-width banners
-  bannerMobile: 1100,
+  banner: 1920,    // full-HD full-width banners
+  bannerMobile: 1080,
 } as const;
