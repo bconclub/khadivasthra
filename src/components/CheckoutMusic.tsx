@@ -56,10 +56,11 @@ export function CheckoutMusic() {
     <>
       <audio
         ref={audioRef}
-        src="/onam-mood.mp3"
         preload="none"
         onEnded={() => setPlaying(false)}
-      />
+      >
+        <source src="/onam-mood.m4a" type="audio/mp4" />
+      </audio>
       <button
         type="button"
         onClick={toggle}

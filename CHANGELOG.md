@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-08-12 · checkout music, hero sizing, image quality
+
+- New checkout track (`Khadivasthra Checkout Music.m4a`), replacing the mp3.
+- **Hero sizes itself to the banner.** With an admin hero banner set the section now uses that image's own aspect ratio (2172×724 desktop, 1448×1086 mobile) instead of a full-viewport height that cropped the creative.
+- **Category cards no longer cut faces** — images anchor to the top of the frame rather than centre.
+- **Image quality restored.** The first optimisation pass went too far (500px @ q70); widths are now ~2x their display size at quality 82 — a product photo is 79 KB instead of 471 KB and still looks sharp.
+- **No more slow first load.** Supabase generates each transform on first request, so the first visitor waited. All 492 variants were pre-generated, and cards now fade in once decoded instead of showing an empty frame.
+
+
 ## 2026-08-04 (5) · image weight cut ~90%, hero flash fixed
 
 - **Product photos were being served at full size.** Uploads are 1–2.5 MB PNGs and the site is a static export, so Next.js image optimisation never applied — 246 images totalling **300 MB**, averaging 1.25 MB each, with 162 over 1 MB. Images now go through Supabase's transform endpoint at sensible widths; a real browser gets WebP at ~36 KB instead of 471 KB (**~92% smaller**). No re-uploading needed — originals are untouched.

@@ -148,7 +148,17 @@ export default function Home() {
   return (
     <>
       {/* 1. HERO SECTION */}
-      <section className="hero-section relative -mt-20 pt-32 pb-20 min-h-[calc(100vh+5rem)] flex items-center justify-center overflow-hidden">
+      {/* With an admin hero banner set, size the section to that image's own
+          aspect ratio (mobile 1448x1086, desktop 2172x724) so the whole
+          creative is visible instead of being cropped by a full-height hero.
+          The packaged cover keeps the original full-bleed treatment. */}
+      <section
+        className={`hero-section relative -mt-20 flex items-center justify-center overflow-hidden ${
+          heroBanner
+            ? "pt-20 aspect-[1448/1086] md:aspect-[2172/724] min-h-[26rem]"
+            : "pt-32 pb-20 min-h-[calc(100vh+5rem)]"
+        }`}
+      >
         {/* Mobile cover */}
         {heroMobile && (
         <Image
@@ -602,7 +612,7 @@ function CategoriesCarousel({ categories }: { categories: Category[] }) {
               <Link href={`/shop/${category.slug}`} className="category-card group flex flex-col bg-cream/30 rounded-xl md:rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 [@media(hover:hover)]:hover:-translate-y-2">
                 <div className="relative w-full aspect-[3/4] overflow-hidden bg-white/50 flex-shrink-0">
                   {category.image_url ? (
-                    <Image src={storageImage(category.image_url, IMG.card)} alt={category.name} fill sizes="(max-width: 640px) 33vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw" className="object-cover [@media(hover:hover)]:group-hover:scale-110 transition-transform duration-500" unoptimized />
+                    <Image src={storageImage(category.image_url, IMG.card)} alt={category.name} fill sizes="(max-width: 640px) 33vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw" className="object-cover object-top [@media(hover:hover)]:group-hover:scale-110 transition-transform duration-500" unoptimized />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center bg-gray-100/50">
                       <ImageOff className="w-8 h-8 md:w-12 md:h-12 text-gray-400" />

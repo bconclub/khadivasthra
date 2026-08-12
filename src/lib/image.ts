@@ -11,7 +11,7 @@
 export function storageImage(
   url: string | null | undefined,
   width: number,
-  quality = 70
+  quality = 82
 ): string {
   if (!url) return "";
   if (!url.includes("/storage/v1/object/public/")) return url;
@@ -21,10 +21,12 @@ export function storageImage(
 }
 
 /** Widths used across the site, so call sites stay consistent. */
+// Widths are ~2x their largest CSS size so the images stay sharp on retina
+// screens — dropping below this is where the compression starts to show.
 export const IMG = {
-  thumb: 200,      // colour swatches, tiny previews
-  card: 500,       // product + category cards in grids and carousels
-  hero: 1200,      // product page main image
-  banner: 1600,    // full-width banners
-  bannerMobile: 800,
+  thumb: 400,      // colour swatches, tiny previews
+  card: 700,       // product + category cards in grids and carousels
+  hero: 1400,      // product page main image
+  banner: 2000,    // full-width banners
+  bannerMobile: 1100,
 } as const;

@@ -25,6 +25,7 @@ interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
     const { addToCart } = useCart();
     const [imageError, setImageError] = useState(false);
+    const [imageLoaded, setImageLoaded] = useState(false);
 
     let imagePath = product.image || '';
     if (imagePath.startsWith('blob:') || imagePath.startsWith('data:')) {
@@ -47,15 +48,20 @@ export function ProductCard({ product }: ProductCardProps) {
     return (
         <div className="product-card group relative bg-white rounded-xl md:rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col h-full">
             {/* Image Section */}
-            <Link href={`/product/${product.slug || product.id}`} className="product-card__image-link block relative aspect-[4/5] overflow-hidden">
+            <Link href={`/product/${product.slug || product.id}`} className="product-card__image-link block relative aspect-[4/5] overflow-hidden bg-cream/40">
                 {hasValidImage ? (
                     <Image
                         src={storageImage(imageUrl, IMG.card)}
                         alt={product.name}
                         fill
-                        className="product-card__image object-cover scale-105 transition-transform duration-700 group-hover:scale-110"
+                        // Fade in once decoded so a slow first load reads as the
+                        // photo arriving, not as a broken/empty card.
+                        className={`product-card__image object-cover scale-105 transition-all duration-700 group-hover:scale-110 ${
+                            imageLoaded ? "opacity-100" : "opacity-0"
+                        }`}
                         sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                         onError={() => setImageError(true)}
+                        onLoad={() => setImageLoaded(true)}
                         unoptimized
                     />
                 ) : (
