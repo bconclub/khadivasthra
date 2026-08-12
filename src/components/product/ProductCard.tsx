@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useCart } from "@/context/CartContext";
 import { Plus, ImageOff } from "lucide-react";
 import { useState } from "react";
+import { storageImage, IMG } from "@/lib/image";
 
 interface ProductCardProps {
     product: {
@@ -49,7 +50,7 @@ export function ProductCard({ product }: ProductCardProps) {
             <Link href={`/product/${product.slug || product.id}`} className="product-card__image-link block relative aspect-[4/5] overflow-hidden">
                 {hasValidImage ? (
                     <Image
-                        src={imageUrl}
+                        src={storageImage(imageUrl, IMG.card)}
                         alt={product.name}
                         fill
                         className="product-card__image object-cover scale-105 transition-transform duration-700 group-hover:scale-110"

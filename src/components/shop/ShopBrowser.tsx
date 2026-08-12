@@ -11,6 +11,7 @@ import { getCategories } from "@/lib/services/categories";
 import type { ProductWithCategory } from "@/types";
 import { categoryBelongsToGroup, type GroupSlug } from "@/lib/category-groups";
 import { ArrowUpDown, Loader2, Check } from "lucide-react";
+import { storageImage, IMG } from "@/lib/image";
 
 type SortKey = "price-asc" | "price-desc" | "newest" | null;
 
@@ -141,7 +142,7 @@ export function ShopBrowser({
             {activeCategory.image_url && (
               <div className="relative w-24 h-28 md:w-36 md:h-40 rounded-xl overflow-hidden flex-shrink-0 bg-white/60">
                 <Image
-                  src={activeCategory.image_url}
+                  src={storageImage(activeCategory.image_url, IMG.card)}
                   alt={activeCategory.name}
                   fill
                   sizes="(max-width: 768px) 96px, 144px"

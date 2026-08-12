@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getActiveBanners } from "@/lib/services/admin";
 import type { Banner, BannerPlacement } from "@/types";
+import { storageImage, IMG } from "@/lib/image";
 
 function getBannerHref(banner: Banner): string | null {
   if (banner.link_type === "none" || !banner.link_value) return null;
@@ -52,7 +53,7 @@ export function SiteBanner({ placement, className = "" }: SiteBannerProps) {
     <div className={`site-banner relative w-full aspect-[1448/1086] md:aspect-[2172/724] overflow-hidden rounded-2xl group ${className}`}>
       {/* Mobile image */}
       <Image
-        src={banner.mobile_image_url || banner.image_url}
+        src={storageImage(banner.mobile_image_url || banner.image_url, IMG.bannerMobile)}
         alt={banner.title}
         fill
         className="object-cover md:hidden group-hover:scale-105 transition-transform duration-500"
@@ -61,7 +62,7 @@ export function SiteBanner({ placement, className = "" }: SiteBannerProps) {
       />
       {/* Desktop image */}
       <Image
-        src={banner.image_url}
+        src={storageImage(banner.image_url, IMG.banner)}
         alt={banner.title}
         fill
         className="object-cover hidden md:block group-hover:scale-105 transition-transform duration-500"

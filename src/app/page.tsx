@@ -9,6 +9,7 @@ import { getFeaturedProducts, getBestSellingProducts, getProducts } from "@/lib/
 import { getCategories } from "@/lib/services/categories";
 import { getActiveBanners } from "@/lib/services/admin";
 import { SiteBanner } from "@/components/SiteBanner";
+import { storageImage, IMG } from "@/lib/image";
 import type { Banner, Category, ProductWithCategory } from "@/types";
 import { ArrowRight, ChevronLeft, ChevronRight, Loader2, ImageOff } from "lucide-react";
 import { useState, useCallback, useEffect } from "react";
@@ -34,12 +35,14 @@ export default function Home() {
   const { data: allProducts, loading: isLoadingProducts } = useSupabaseQuery(getProducts);
   const { data: bestSellingData } = useSupabaseQuery(getBestSellingProducts);
   const { data: activeBanners } = useSupabaseQuery(() => getActiveBanners("general"), []);
-  const { data: heroBanners } = useSupabaseQuery(() => getActiveBanners("hero_background"), []);
+  const { data: heroBanners, loading: loadingHeroBanner } = useSupabaseQuery(() => getActiveBanners("hero_background"), []);
   const { data: heritageBanners } = useSupabaseQuery(() => getActiveBanners("heritage"), []);
   // Admin-managed hero cover (separate mobile/desktop images); falls back to
   // the packaged cover when no hero_background banner is set.
+  // Hold the packaged cover back until the banner query settles — rendering it
+  // immediately made the fallback flash and then swap to the admin image.
   const heroBanner = heroBanners?.[0];
-  const heroDesktop = heroBanner?.image_url || "/Cover KV.webp";
+  const heroDesktop = heroBanner?.image_url || (loadingHeroBanner ? null : "/Cover KV.webp");
   const heroMobile = heroBanner?.mobile_image_url || heroDesktop;
   // Heritage story photo, admin-managed; falls back to the placeholder art.
   const heritageImage =
@@ -147,8 +150,9 @@ export default function Home() {
       {/* 1. HERO SECTION */}
       <section className="hero-section relative -mt-20 pt-32 pb-20 min-h-[calc(100vh+5rem)] flex items-center justify-center overflow-hidden">
         {/* Mobile cover */}
+        {heroMobile && (
         <Image
-          src={heroMobile}
+          src={storageImage(heroMobile, IMG.bannerMobile)}
           alt="Khadi Vasthra Cover"
           fill
           className="hero-section__background-image object-cover z-0 md:hidden"
@@ -156,9 +160,11 @@ export default function Home() {
           quality={90}
           unoptimized={!!heroBanner}
         />
+        )}
         {/* Desktop cover */}
+        {heroDesktop && (
         <Image
-          src={heroDesktop}
+          src={storageImage(heroDesktop, IMG.banner)}
           alt="Khadi Vasthra Cover"
           fill
           className="hero-section__background-image object-cover z-0 hidden md:block"
@@ -166,6 +172,7 @@ export default function Home() {
           quality={90}
           unoptimized={!!heroBanner}
         />
+        )}
         <div className="hero-section__overlay absolute inset-0 bg-gradient-to-b from-black/40 via-black/20 to-black/50 z-0"></div>
         <div className="hero-section__content container mx-auto px-4 max-w-7xl relative z-20 text-center max-w-4xl">
           <div id="hero-logo" className="hero-section__logo-wrapper relative flex justify-center items-center mb-3 w-full max-w-[65vw] md:max-w-lg lg:max-w-xl mx-auto aspect-[5/2]"
@@ -356,7 +363,7 @@ export default function Home() {
           <div className="about-section__content grid md:grid-cols-2 gap-10 items-center">
             <div className="about-section__image-wrapper relative aspect-[4/5] rounded-2xl overflow-hidden shadow-lg">
               <Image
-                src={heritageImage}
+                src={storageImage(heritageImage, IMG.hero)}
                 alt="Khadi Vasthra Heritage"
                 fill
                 sizes="(max-width: 768px) 100vw, 50vw"
@@ -407,7 +414,7 @@ function DynamicBannerCard({ banner }: { banner: Banner }) {
 
   const content = (
     <div className={`banner-card relative ${aspectClass} rounded-2xl overflow-hidden shadow-lg group cursor-pointer ${spanClass}`}>
-      <Image src={banner.image_url} alt={banner.title || "Banner"} fill className="object-cover [@media(hover:hover)]:group-hover:scale-105 transition-transform duration-500" unoptimized />
+      <Image src={storageImage(banner.image_url, IMG.banner)} alt={banner.title || "Banner"} fill className="object-cover [@media(hover:hover)]:group-hover:scale-105 transition-transform duration-500" unoptimized />
       {(banner.title || banner.subtitle || href) && (
         <>
           <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
@@ -595,7 +602,7 @@ function CategoriesCarousel({ categories }: { categories: Category[] }) {
               <Link href={`/shop/${category.slug}`} className="category-card group flex flex-col bg-cream/30 rounded-xl md:rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 [@media(hover:hover)]:hover:-translate-y-2">
                 <div className="relative w-full aspect-[3/4] overflow-hidden bg-white/50 flex-shrink-0">
                   {category.image_url ? (
-                    <Image src={category.image_url} alt={category.name} fill sizes="(max-width: 640px) 33vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw" className="object-cover [@media(hover:hover)]:group-hover:scale-110 transition-transform duration-500" unoptimized />
+                    <Image src={storageImage(category.image_url, IMG.card)} alt={category.name} fill sizes="(max-width: 640px) 33vw, (max-width: 1024px) 33vw, (max-width: 1280px) 25vw, 20vw" className="object-cover [@media(hover:hover)]:group-hover:scale-110 transition-transform duration-500" unoptimized />
                   ) : (
                     <div className="absolute inset-0 flex items-center justify-center bg-gray-100/50">
                       <ImageOff className="w-8 h-8 md:w-12 md:h-12 text-gray-400" />

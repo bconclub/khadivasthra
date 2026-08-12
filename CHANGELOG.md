@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-04 (5) · image weight cut ~90%, hero flash fixed
+
+- **Product photos were being served at full size.** Uploads are 1–2.5 MB PNGs and the site is a static export, so Next.js image optimisation never applied — 246 images totalling **300 MB**, averaging 1.25 MB each, with 162 over 1 MB. Images now go through Supabase's transform endpoint at sensible widths; a real browser gets WebP at ~36 KB instead of 471 KB (**~92% smaller**). No re-uploading needed — originals are untouched.
+- **Hero no longer flashes the wrong image.** The packaged cover rendered immediately and then swapped once the admin banner query resolved; it's now held back until that query settles.
+
+
 ## 2026-08-04 (4) · card/page photo mismatch, fuller Best Selling
 
 - **A product looked like two different products.** The listing card shows the product's main photo, but the product page showed *only* the selected colour's images — so the shirt was a flat-lay outside and a model shot inside. The main photo now leads the gallery, followed by colour and gallery images.

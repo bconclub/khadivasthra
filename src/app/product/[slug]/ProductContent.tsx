@@ -14,6 +14,7 @@ import type { ProductWithCategory, ProductColor, ProductVariant } from "@/types"
 import { Minus, Plus, ShoppingBag, Truck, ShieldCheck, Ruler, Droplets, Info, ImageOff, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { trackViewContent } from "@/lib/fbq";
+import { storageImage, IMG } from "@/lib/image";
 
 function toCardProduct(product: ProductWithCategory) {
   return {
@@ -233,7 +234,7 @@ function ProductContentInner() {
               <div className="relative aspect-[4/5] rounded-xl overflow-hidden bg-secondary/30">
                 {images.length > 0 && !imageError ? (
                   <Image
-                    src={images[selectedImageIndex]}
+                    src={storageImage(images[selectedImageIndex], IMG.hero)}
                     alt={product.name}
                     fill
                     className="object-cover"

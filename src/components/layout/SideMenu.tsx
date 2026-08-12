@@ -7,6 +7,7 @@ import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getCategories } from "@/lib/services/categories";
 import { CATEGORY_GROUPS } from "@/lib/category-groups";
 import { X, Instagram, Facebook, Phone, ChevronRight, ImageOff } from "lucide-react";
+import { storageImage, IMG } from "@/lib/image";
 
 interface SideMenuProps {
   open: boolean;
@@ -114,7 +115,7 @@ export function SideMenu({ open, onClose }: SideMenuProps) {
                 <div className="relative aspect-[4/3] bg-cream/60">
                   {cat.image_url ? (
                     <Image
-                      src={cat.image_url}
+                      src={storageImage(cat.image_url, IMG.thumb)}
                       alt={cat.name}
                       fill
                       sizes="160px"
