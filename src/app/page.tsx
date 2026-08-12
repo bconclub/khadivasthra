@@ -58,10 +58,23 @@ export default function Home() {
 
   // Best Selling excludes anything already shown in Trending above, so the two
   // carousels never surface the same product twice.
+  const BEST_SELLING_TARGET = 8;
   const trendingIds = new Set((trendingProducts || []).map((p) => p.id));
-  const bestSelling = (bestSellingData || [])
+  const inStock = (p: ProductWithCategory) => p.in_stock && (p.stock_quantity ?? 0) > 0;
+  const flaggedBestSellers = (bestSellingData || [])
     .filter((p) => !trendingIds.has(p.id))
-    .filter((p) => p.in_stock && (p.stock_quantity ?? 0) > 0);
+    .filter(inStock);
+  // Removing trending duplicates and sold-out items can leave the carousel
+  // almost empty, so top it up with other in-stock products rather than
+  // showing a stranded row of two.
+  const bestSelling = (() => {
+    if (flaggedBestSellers.length >= BEST_SELLING_TARGET) return flaggedBestSellers;
+    const chosen = new Set(flaggedBestSellers.map((p) => p.id));
+    const fillers = (allProducts || []).filter(
+      (p) => inStock(p) && !trendingIds.has(p.id) && !chosen.has(p.id)
+    );
+    return [...flaggedBestSellers, ...fillers.slice(0, BEST_SELLING_TARGET - flaggedBestSellers.length)];
+  })();
 
   const [logoScale, setLogoScale] = useState(1);
   const [logoOpacity, setLogoOpacity] = useState(1);

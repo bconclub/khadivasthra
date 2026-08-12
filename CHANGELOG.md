@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-04 (4) · card/page photo mismatch, fuller Best Selling
+
+- **A product looked like two different products.** The listing card shows the product's main photo, but the product page showed *only* the selected colour's images — so the shirt was a flat-lay outside and a model shot inside. The main photo now leads the gallery, followed by colour and gallery images.
+- **Best Selling was down to two items.** Excluding trending duplicates and sold-out stock left almost nothing, so the row now tops up with other in-stock products to a full eight, and reads up to 24 flagged best sellers instead of 8.
+
+
 ## 2026-08-04 (3) · payment recording fixed at the source
 
 - **Root cause of unpaid-looking orders.** `payment_status` was only ever set by a callback running in the shopper's *browser* after Razorpay succeeded. Close the tab or lose signal at that moment and Razorpay keeps the money while this database never hears about it. There was no server-side backstop.

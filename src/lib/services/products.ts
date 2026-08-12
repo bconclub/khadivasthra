@@ -148,7 +148,7 @@ export async function getBestSellingProducts(): Promise<ProductWithCategory[]> {
     .select('*, category:categories(name, slug)')
     .eq('is_best_seller', true)
     .eq('is_active', true)
-    .limit(8);
+    .limit(24);
   if (error) throw error;
   return (data || []) as ProductWithCategory[];
 }

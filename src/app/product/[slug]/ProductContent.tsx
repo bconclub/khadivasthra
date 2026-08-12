@@ -105,10 +105,14 @@ function ProductContentInner() {
     // merged — returning `images` alone silently dropped the main photo and
     // showed a single picture for products that actually have several.
     const images = useMemo(() => {
-      if (selectedColor?.images?.length) return selectedColor.images;
-      const combined = [product?.image_url, ...(product?.images || [])].filter(
-        (src): src is string => Boolean(src)
-      );
+      // Main image first so the product page opens on the same photo the
+      // listing card shows — returning only the colour's images made the
+      // card and the page look like two different products.
+      const combined = [
+        product?.image_url,
+        ...(selectedColor?.images || []),
+        ...(product?.images || []),
+      ].filter((src): src is string => Boolean(src));
       return Array.from(new Set(combined));
     }, [selectedColor, product]);
 
