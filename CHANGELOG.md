@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-04 (2) · product gallery fix + COD settled/pending tabs
+
+- **Product photos were being dropped.** The main image and the gallery are stored in separate columns, and the page returned the gallery *instead of* the main photo whenever one existed — so a product with a main shot plus one gallery shot showed a single picture. They're merged and de-duplicated now; 90 products were affected.
+- **COD orders split into Pending and Settled tabs** alongside the existing COD tab, so unsettled cash-on-delivery money is visible at a glance.
+
+
 ## 2026-08-04 · COD save fix, settlement toggle, heritage banner
 
 - **COD fields silently failed to save.** A row-level-security policy that blocks an update makes Postgres report success with zero rows changed, so the admin saw "saved" while nothing persisted. `updateOrder` now verifies a row actually changed and raises a clear permissions error instead.

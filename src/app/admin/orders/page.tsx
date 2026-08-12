@@ -1495,11 +1495,19 @@ export default function AdminOrdersPage() {
       order.customer_name.toLowerCase().includes(query) ||
       order.customer_phone.includes(query);
 
+    const isCodOrder = order.payment_method === "cod";
+    // "Settled" means the money has actually been collected and reconciled;
+    // anything else (pending / received) still needs chasing.
+    const isSettled = order.settlement_status === "settled";
     const matchesStatus = !statusFilter
       ? true
       : statusFilter === "cod"
-        ? order.payment_method === "cod"
-        : order.status === statusFilter;
+        ? isCodOrder
+        : statusFilter === "cod-pending"
+          ? isCodOrder && !isSettled
+          : statusFilter === "cod-settled"
+            ? isCodOrder && isSettled
+            : order.status === statusFilter;
 
     if (monthBounds) {
       const d = new Date(order.created_at);
@@ -1760,22 +1768,36 @@ export default function AdminOrdersPage() {
               </button>
             );
           })}
-          <button
-            onClick={() => setStatusFilter("cod")}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-              statusFilter === "cod"
-                ? "bg-blue-600 text-white"
-                : "bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
-            }`}
-          >
-            COD ({allOrders.filter((o) => o.payment_method === "cod").filter((o) => {
+          {(() => {
+            const matchesSearch = (o: Order) => {
               const query = searchQuery.toLowerCase().trim();
               return !query ||
                 o.order_number.toLowerCase().includes(query) ||
                 o.customer_name.toLowerCase().includes(query) ||
                 o.customer_phone.includes(query);
-            }).length})
-          </button>
+            };
+            const codOrders = allOrders.filter((o) => o.payment_method === "cod").filter(matchesSearch);
+            const settled = codOrders.filter((o) => o.settlement_status === "settled");
+            const pending = codOrders.filter((o) => o.settlement_status !== "settled");
+            const TABS = [
+              { key: "cod", label: "COD", count: codOrders.length, active: "bg-blue-600 text-white", idle: "text-blue-600 dark:text-blue-400" },
+              { key: "cod-pending", label: "COD Pending", count: pending.length, active: "bg-amber-500 text-white", idle: "text-amber-600 dark:text-amber-400" },
+              { key: "cod-settled", label: "COD Settled", count: settled.length, active: "bg-green-600 text-white", idle: "text-green-600 dark:text-green-400" },
+            ];
+            return TABS.map((t) => (
+              <button
+                key={t.key}
+                onClick={() => setStatusFilter(t.key)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  statusFilter === t.key
+                    ? t.active
+                    : `bg-white dark:bg-gray-800 ${t.idle} border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700`
+                }`}
+              >
+                {t.label} ({t.count})
+              </button>
+            ));
+          })()}
         </div>
 
         {/* Orders List */}

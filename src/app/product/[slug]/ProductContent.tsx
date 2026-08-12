@@ -100,10 +100,16 @@ function ProductContentInner() {
       return product.colors.find(c => c.id === effectiveColorId) || null;
     }, [product, effectiveColorId]);
 
-    // Get images for selected color or product images
+    // Gallery for the selected colour, otherwise the product's own photos.
+    // The main image and the gallery are separate columns, so they must be
+    // merged — returning `images` alone silently dropped the main photo and
+    // showed a single picture for products that actually have several.
     const images = useMemo(() => {
       if (selectedColor?.images?.length) return selectedColor.images;
-      return product?.images?.length ? product.images : (product?.image_url ? [product.image_url] : []);
+      const combined = [product?.image_url, ...(product?.images || [])].filter(
+        (src): src is string => Boolean(src)
+      );
+      return Array.from(new Set(combined));
     }, [selectedColor, product]);
 
     // Get variant for selected color+size
