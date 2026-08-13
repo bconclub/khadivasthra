@@ -248,7 +248,20 @@ export default function HomeClient({
         </div>
       </section>
 
-      {/* 2. SHOP THE LOOK — curated outfits */}
+      {/* 2. DYNAMIC BANNERS (admin-managed; nothing renders when none are set) */}
+      {activeBanners && activeBanners.length > 0 && (
+        <section className="banners-section bg-white py-12">
+          <div className="container mx-auto px-4 max-w-7xl">
+            <div className="banners-section__grid grid md:grid-cols-3 gap-6">
+              {activeBanners.slice(0, 6).map((banner) => (
+                <DynamicBannerCard key={banner.id} banner={banner} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* 3. SHOP THE LOOK — curated outfits */}
       {initialFeaturedLooks.length > 0 && (
         <section className="looks-section bg-cream pt-10 md:pt-12">
           <div className="container mx-auto px-4 max-w-7xl">
@@ -268,19 +281,6 @@ export default function HomeClient({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
               {initialFeaturedLooks.slice(0, 4).map((look) => (
                 <LookCard key={look.id} look={look} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* 3. DYNAMIC BANNERS (admin-managed; nothing renders when none are set) */}
-      {activeBanners && activeBanners.length > 0 && (
-        <section className="banners-section bg-white py-12">
-          <div className="container mx-auto px-4 max-w-7xl">
-            <div className="banners-section__grid grid md:grid-cols-3 gap-6">
-              {activeBanners.slice(0, 6).map((banner) => (
-                <DynamicBannerCard key={banner.id} banner={banner} />
               ))}
             </div>
           </div>
