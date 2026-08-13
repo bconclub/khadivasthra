@@ -266,21 +266,23 @@ export default function HomeClient({
         <section className="looks-section bg-cream pt-10 md:pt-12">
           <div className="container mx-auto px-4 max-w-7xl">
             <div className="flex items-end justify-between mb-6">
-              <div>
-                <span className="inline-block px-3 py-1 rounded-full bg-coral/10 text-coral text-[11px] font-semibold uppercase tracking-wider mb-2">
-                  Shop the Look
-                </span>
-                <h2 className="text-2xl md:text-3xl font-bold text-text font-serif">
-                  Styled by Khadi Vasthra
-                </h2>
-              </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-text font-serif">
+                Shop the Look
+              </h2>
               <Link href="/looks" className="text-sm font-medium text-coral hover:underline whitespace-nowrap">
                 View All
               </Link>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-              {initialFeaturedLooks.slice(0, 4).map((look) => (
-                <LookCard key={look.id} look={look} />
+            {/* Swipeable on phones (the next look peeks in to invite the
+                swipe), a plain grid once there is room for four across. */}
+            <div className="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-4 md:gap-6">
+              {initialFeaturedLooks.slice(0, 8).map((look) => (
+                <div
+                  key={look.id}
+                  className="flex-[0_0_62%] sm:flex-[0_0_42%] md:flex-none snap-start"
+                >
+                  <LookCard look={look} />
+                </div>
               ))}
             </div>
           </div>

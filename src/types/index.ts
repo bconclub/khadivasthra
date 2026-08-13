@@ -227,6 +227,8 @@ export interface SiteSettings {
   cod_enabled: boolean;
   is_store_open: boolean;
   shipping_tiers: ShippingTier[] | null;
+  /** Master switch for the Shop the Look section and its pages. */
+  looks_enabled: boolean;
   created_at: string;
   updated_at: string;
 }

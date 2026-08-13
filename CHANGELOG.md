@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-13 (6) · master switch for Shop the Look
+
+- New **Shop the Look** toggle in Admin → Settings. Off by default: the homepage section and every look page stay hidden until it is switched on, so looks can be built up privately and released in one go.
+- Fails safe — if the setting cannot be read the feature stays hidden rather than leaking half-built looks.
+
+
 ## 2026-08-13 (5) · Shop the Look is live
 
 - The `looks` / `look_products` tables are in place and the three ST KV26 looks are published and featured on the homepage, sitting directly above Shop by Category.

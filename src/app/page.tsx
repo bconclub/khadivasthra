@@ -20,7 +20,7 @@ async function getHomeData(): Promise<{
 
   const supabase = createClient(url, key);
   try {
-  const [heroRes, heritageRes, looksRes] = await Promise.all([
+  const [heroRes, heritageRes, looksRes, settingsRes] = await Promise.all([
     supabase
       .from("banners")
       .select("*")
@@ -41,12 +41,16 @@ async function getHomeData(): Promise<{
       .eq("is_active", true)
       .eq("is_featured", true)
       .order("display_order", { ascending: true }),
+    supabase.from("settings").select("looks_enabled").limit(1),
   ]);
+
+  // Master switch: with Shop the Look off, the homepage gets no looks at all.
+  const looksEnabled = settingsRes.data?.[0]?.looks_enabled === true;
 
   return {
     heroBanner: (heroRes.data?.[0] as Banner) ?? null,
     heritageUrl: (heritageRes.data?.[0]?.image_url as string) ?? null,
-    featuredLooks: (looksRes.data as Look[]) ?? [],
+    featuredLooks: looksEnabled ? ((looksRes.data as Look[]) ?? []) : [],
   };
   } catch {
     // Never let a build fail because a table is missing or Supabase is down.

@@ -33,6 +33,7 @@ export default function AdminSettingsPage() {
   const [returnPolicy, setReturnPolicy] = useState("");
   const [announcement, setAnnouncement] = useState("");
   const [codEnabled, setCodEnabled] = useState(true);
+  const [looksEnabled, setLooksEnabled] = useState(false);
   const [tiers, setTiers] = useState<ShippingTier[]>(DEFAULT_TIERS);
 
   useEffect(() => {
@@ -46,6 +47,7 @@ export default function AdminSettingsPage() {
       setReturnPolicy(settings.return_policy || "");
       setAnnouncement(settings.announcement_text || "");
       setCodEnabled(settings.cod_enabled ?? true);
+      setLooksEnabled(settings.looks_enabled ?? false);
       if (settings.shipping_tiers && settings.shipping_tiers.length > 0) {
         setTiers(settings.shipping_tiers);
       }
@@ -66,6 +68,7 @@ export default function AdminSettingsPage() {
         return_policy: returnPolicy,
         announcement_text: announcement,
         cod_enabled: codEnabled,
+        looks_enabled: looksEnabled,
         shipping_tiers: tiers,
       } as Partial<SiteSettings>);
       toast.success("Settings saved");
@@ -115,6 +118,37 @@ export default function AdminSettingsPage() {
                 <span
                   className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
                     codEnabled ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+
+          {/* Shop the Look */}
+          <div className={cardClass}>
+            <h2 className={cardTitleClass}>Shop the Look</h2>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Show Shop the Look on the site
+                </p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                  Hides the homepage section and every look page until you switch it on. Build your
+                  looks first, then flip this when they are ready to go live.
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={looksEnabled}
+                onClick={() => setLooksEnabled(!looksEnabled)}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-coral focus:ring-offset-2 ${
+                  looksEnabled ? "bg-coral" : "bg-gray-200 dark:bg-gray-600"
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    looksEnabled ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>

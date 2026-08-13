@@ -1,8 +1,15 @@
 import { supabase } from '@/lib/supabase';
 import type { Look, LookFormData, ProductWithCategory } from '@/types';
 
+/** Master switch from site settings; the storefront hides looks when off. */
+export async function looksEnabled(): Promise<boolean> {
+  const { data } = await supabase.from('settings').select('looks_enabled').limit(1).single();
+  return data?.looks_enabled === true;
+}
+
 /** Active looks, curated order. Used for listings and "other looks". */
 export async function getLooks(): Promise<Look[]> {
+  if (!(await looksEnabled())) return [];
   const { data, error } = await supabase
     .from('looks')
     .select('*, look_products(count)')
@@ -44,6 +51,7 @@ export async function getAllLooks(): Promise<Look[]> {
 
 /** A single look with its products, in the order the admin arranged them. */
 export async function getLookBySlug(slug: string): Promise<Look | null> {
+  if (!(await looksEnabled())) return null;
   const { data, error } = await supabase
     .from('looks')
     .select('*')
