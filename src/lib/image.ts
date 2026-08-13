@@ -17,7 +17,10 @@ export function storageImage(
   if (!url.includes("/storage/v1/object/public/")) return url;
   const base = url.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/");
   const sep = base.includes("?") ? "&" : "?";
-  return `${base}${sep}width=${width}&quality=${quality}`;
+  // `resize=contain` is required. Passing `width` on its own resizes the width
+  // but leaves the original height, which squashes the picture horizontally
+  // and keeps the file ~3x larger than it needs to be.
+  return `${base}${sep}width=${width}&resize=contain&quality=${quality}`;
 }
 
 /** Widths used across the site, so call sites stay consistent. */

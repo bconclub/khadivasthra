@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-13 · every image was distorted and 3x too heavy
+
+- **Root cause of the "zoomed in / wider / broken" images.** Supabase's transform endpoint does not preserve aspect ratio when given `width` alone — it resizes the width but keeps the *original* height. A 1122x1402 category photo came back as 400x1402, squashed horizontally, which is why models looked stretched and heads were cut off by the crop. Adding `resize=contain` returns a correct 400x500.
+- **This was also the slow loading.** Keeping full height made each file ~741 KB instead of ~236 KB; the average transformed image is now 65 KB. All 984 variants were re-generated and cached.
+
+
 ## 2026-08-12 (4) · side menu category tiles no longer crop to heads
 
 - Category art is portrait (~1122x1402, 3:4) but the side-menu tiles were a landscape 4:3 box anchored to the top, so each tile showed only the model's head. Tiles are portrait now and crop from the centre, matching the source.
