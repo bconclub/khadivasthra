@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-13 (5) · Shop the Look is live
+
+- The `looks` / `look_products` tables are in place and the three ST KV26 looks are published and featured on the homepage, sitting directly above Shop by Category.
+- Fixed the migration that had been silently rolling itself back: `permissions` is a `TEXT[]`, but the script appended to it with a jsonb operator, and because the SQL editor runs a script as one transaction that single type error discarded the tables too.
+
+
 ## 2026-08-13 (4) · real photo in the heritage section
 
 - The "Our Heritage" block fell back to a grey `placehold.co` graphic whenever no heritage banner was set, which is what shows on the live site today. It now falls back to packaged brand photography, so the section always shows something real. Uploading a Heritage Photo banner in the admin still overrides it.
