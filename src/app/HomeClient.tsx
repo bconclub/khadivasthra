@@ -56,10 +56,13 @@ export default function HomeClient({
   const heroDesktop = heroBanner?.image_url || "/Cover KV.webp";
   const heroMobile = heroBanner?.mobile_image_url || heroDesktop;
   // Heritage story photo, admin-managed; falls back to the placeholder art.
+  // Falls back to packaged brand photography rather than a grey placeholder,
+  // so the section always shows something real even before a heritage banner
+  // is uploaded in the admin.
   const heritageImage =
     initialHeritageUrl ||
     heritageBanners?.[0]?.image_url ||
-    "https://placehold.co/600x750/F5E6D3/1A1A1A?text=Our+Heritage";
+    "/heritage.jpg";
 
   // Group products by category name
   const productsByCategory: Record<string, ProductWithCategory[]> = {};

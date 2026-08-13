@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-08-13 (4) · real photo in the heritage section
+
+- The "Our Heritage" block fell back to a grey `placehold.co` graphic whenever no heritage banner was set, which is what shows on the live site today. It now falls back to packaged brand photography, so the section always shows something real. Uploading a Heritage Photo banner in the admin still overrides it.
+
+
 ## 2026-08-13 (3) · Shop the Look moved up the homepage
 
 - Shop the Look now sits where Trending Products used to be, directly under the hero; Trending Products moves down to sit immediately above Best Selling.
