@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-08-13 (3) · Shop the Look moved up the homepage
+
+- Shop the Look now sits where Trending Products used to be, directly under the hero; Trending Products moves down to sit immediately above Best Selling.
+- The three ST KV26 look photos (1080x1350) are uploaded to storage and ready to attach to looks in the admin.
+
+
 ## 2026-08-13 (2) · Shop the Look + hero renders instantly
 
 - **New "Shop the Look" model.** A look is a styled photo plus a hand-picked set of products — the mundu, the shirt, the pair together, accessories. It browses like the shop but the set is curated, not derived from a category.

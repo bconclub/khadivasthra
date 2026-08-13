@@ -238,7 +238,14 @@ export default function HomeClient({
         </div>
       </section>
 
-      {/* 1.4. SHOP THE LOOK — curated outfits */}
+      {/* 1.5. HOMEPAGE HERO BANNER STRIP (admin managed) */}
+      <section className="site-banner-section bg-cream pt-8 md:pt-10">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <SiteBanner placement="homepage_hero" />
+        </div>
+      </section>
+
+      {/* 2. SHOP THE LOOK — curated outfits */}
       {initialFeaturedLooks.length > 0 && (
         <section className="looks-section bg-cream pt-10 md:pt-12">
           <div className="container mx-auto px-4 max-w-7xl">
@@ -263,36 +270,6 @@ export default function HomeClient({
           </div>
         </section>
       )}
-
-      {/* 1.5. HOMEPAGE HERO BANNER STRIP (admin managed) */}
-      <section className="site-banner-section bg-cream pt-8 md:pt-10">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <SiteBanner placement="homepage_hero" />
-        </div>
-      </section>
-
-      {/* 2. TRENDING PRODUCTS */}
-      <section className="trending-section bg-cream py-12">
-        <div className="container mx-auto px-4 max-w-7xl">
-          <h2 className="trending-section__title text-3xl font-bold text-text font-serif text-center mb-8">
-            Trending Products
-          </h2>
-          {isLoadingTrending ? (
-            <div className="flex items-center justify-center py-20">
-              <Loader2 className="w-8 h-8 animate-spin text-coral" />
-            </div>
-          ) : trendingProducts && trendingProducts.length > 0 ? (
-            <div className="trending-section__carousel">
-              <TrendingCarousel products={trendingProducts.map(toCardProduct)} />
-            </div>
-          ) : (
-            <div className="text-center py-20 text-text-muted">
-              <p>No featured products available at the moment.</p>
-              <p className="text-sm mt-2">Mark products as featured in the admin dashboard to display them here.</p>
-            </div>
-          )}
-        </div>
-      </section>
 
       {/* 3. DYNAMIC BANNERS (admin-managed; nothing renders when none are set) */}
       {activeBanners && activeBanners.length > 0 && (
@@ -327,7 +304,30 @@ export default function HomeClient({
         </div>
       </section>
 
-      {/* 5. BEST SELLING */}
+      {/* 5. TRENDING PRODUCTS */}
+      <section className="trending-section bg-cream py-12">
+        <div className="container mx-auto px-4 max-w-7xl">
+          <h2 className="trending-section__title text-3xl font-bold text-text font-serif text-center mb-8">
+            Trending Products
+          </h2>
+          {isLoadingTrending ? (
+            <div className="flex items-center justify-center py-20">
+              <Loader2 className="w-8 h-8 animate-spin text-coral" />
+            </div>
+          ) : trendingProducts && trendingProducts.length > 0 ? (
+            <div className="trending-section__carousel">
+              <TrendingCarousel products={trendingProducts.map(toCardProduct)} />
+            </div>
+          ) : (
+            <div className="text-center py-20 text-text-muted">
+              <p>No featured products available at the moment.</p>
+              <p className="text-sm mt-2">Mark products as featured in the admin dashboard to display them here.</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* 6. BEST SELLING */}
       <section className="bestselling-section bg-cream py-12">
         <div className="container mx-auto px-4 max-w-7xl">
           <h2 className="bestselling-section__title text-3xl font-bold text-text font-serif text-center mb-8">
@@ -343,7 +343,7 @@ export default function HomeClient({
         </div>
       </section>
 
-      {/* 5.5. PRODUCTS BY CATEGORY */}
+      {/* 7. PRODUCTS BY CATEGORY */}
       {isLoadingProducts ? (
         <section className="products-by-category-section bg-white py-20">
           <div className="container mx-auto px-4 max-w-7xl">
@@ -394,7 +394,7 @@ export default function HomeClient({
         )
       )}
 
-      {/* 6. MARQUEE */}
+      {/* 8. MARQUEE */}
       <section className="marquee-section bg-coral py-6 overflow-hidden">
         <div className="marquee-section__content flex animate-scroll whitespace-nowrap">
           {[1, 2, 3, 4].map((i) => (
@@ -405,7 +405,7 @@ export default function HomeClient({
         </div>
       </section>
 
-      {/* 7. ABOUT SECTION */}
+      {/* 9. ABOUT SECTION */}
       <section className="about-section bg-white py-12">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="about-section__content grid md:grid-cols-2 gap-10 items-center">
