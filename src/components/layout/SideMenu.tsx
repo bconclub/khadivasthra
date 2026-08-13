@@ -112,14 +112,14 @@ export function SideMenu({ open, onClose }: SideMenuProps) {
                 onClick={onClose}
                 className="group rounded-2xl overflow-hidden bg-white shadow-sm hover:shadow-md transition-all"
               >
-                <div className="relative aspect-[4/3] bg-cream/60">
+                <div className="relative aspect-[3/4] bg-cream/60">
                   {cat.image_url ? (
                     <Image
                       src={storageImage(cat.image_url, IMG.thumb)}
                       alt={cat.name}
                       fill
                       sizes="160px"
-                      className="object-cover object-top group-hover:scale-105 transition-transform duration-300"
+                      className="object-cover group-hover:scale-105 transition-transform duration-300"
                       unoptimized
                     />
                   ) : (

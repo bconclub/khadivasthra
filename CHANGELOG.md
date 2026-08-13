@@ -1,5 +1,10 @@
 # Changelog
 
+## 2026-08-12 (4) · side menu category tiles no longer crop to heads
+
+- Category art is portrait (~1122x1402, 3:4) but the side-menu tiles were a landscape 4:3 box anchored to the top, so each tile showed only the model's head. Tiles are portrait now and crop from the centre, matching the source.
+
+
 ## 2026-08-12 (3) · hero at full size, header no longer overlaps pages
 
 - **Hero was squeezed.** It was locked to 3:1 desktop / 4:3 mobile, but the uploaded banner is actually 1536x1022 (3:2) — so `object-cover` cropped it into a thin strip. Desktop now uses the image's own 3:2 ratio (the whole banner, ~843px tall at 1280) and mobile gets a generous 62vh instead of 281px.
