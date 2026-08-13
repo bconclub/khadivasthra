@@ -72,10 +72,11 @@ BEGIN
 END $$;
 
 -- Existing admins should not lose access the moment this ships.
+-- permissions is TEXT[], not jsonb — appending with the jsonb operator throws
+-- a type error and rolls back the whole migration.
 UPDATE admin_profiles
-   SET permissions = permissions || '["looks"]'::jsonb
- WHERE role = 'super_admin'
-   AND NOT (permissions ? 'looks');
+   SET permissions = array_append(permissions, 'looks')
+ WHERE NOT ('looks' = ANY(permissions));
 
 -- Reuse the public banner bucket for look photography.
 INSERT INTO storage.buckets (id, name, public)
