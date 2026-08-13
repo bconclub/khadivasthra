@@ -11,6 +11,7 @@ export const ADMIN_SECTIONS = [
   'settings',
   'users',
   'investors',
+  'looks',
 ] as const;
 
 export type AdminSection = (typeof ADMIN_SECTIONS)[number];
@@ -259,6 +260,30 @@ export interface Banner {
   created_at: string;
   updated_at: string;
 }
+
+// Shop the Look ------------------------------------------------------------
+
+export interface Look {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  image_url: string;
+  mobile_image_url: string | null;
+  is_featured: boolean;
+  is_active: boolean;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+  /** Joined: the products styled in this look, in curated order. */
+  products?: ProductWithCategory[];
+  product_count?: number;
+}
+
+export type LookFormData = Omit<
+  Look,
+  'id' | 'created_at' | 'updated_at' | 'products' | 'product_count'
+>;
 
 // Form types for admin CRUD
 export type ProductFormData = Omit<Product, 'id' | 'created_at' | 'updated_at'>;

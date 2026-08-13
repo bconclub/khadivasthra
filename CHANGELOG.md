@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-08-13 (2) · Shop the Look + hero renders instantly
+
+- **New "Shop the Look" model.** A look is a styled photo plus a hand-picked set of products — the mundu, the shirt, the pair together, accessories. It browses like the shop but the set is curated, not derived from a category.
+  - Admin: a "Shop the Look" section to create looks, upload desktop/mobile photography, search products in, reorder them, and flag a look for the homepage.
+  - Storefront: `/looks` lists every look, `/looks/[slug]` shows the styled shot plus everything in it, with "Other looks you might like" underneath. Featured looks appear on the homepage under the hero.
+  - Looks carry their own Open Graph tags, so a shared look previews properly.
+- **The hero no longer flashes grey.** The banner was fetched in the browser, so the page painted an empty hero for a second or two before JavaScript had even learned the image URL. It is now resolved at build time: the `<img>` and a `<link rel="preload">` are in the first byte of HTML, so the download starts immediately.
+
+
 ## 2026-08-13 · every image was distorted and 3x too heavy
 
 - **Root cause of the "zoomed in / wider / broken" images.** Supabase's transform endpoint does not preserve aspect ratio when given `width` alone — it resizes the width but keeps the *original* height. A 1122x1402 category photo came back as 400x1402, squashed horizontally, which is why models looked stretched and heads were cut off by the crop. Adding `resize=contain` returns a correct 400x500.
