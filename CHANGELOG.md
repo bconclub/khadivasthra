@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-08-13 (7) · Shop the Look carousel
+
+- Shop the Look is a real carousel now — swipeable on phones with the next look peeking in, arrows on larger screens — matching the Trending and Category carousels instead of a grid that stranded a lone third card.
+- Section heading reads "Shop the Look" rather than "Styled by Khadi Vasthra".
+- The heritage photo falls back to the original hero cover instead of a look photo, so the same shot is not doing double duty.
+
+
 ## 2026-08-13 (6) · master switch for Shop the Look
 
 - New **Shop the Look** toggle in Admin → Settings. Off by default: the homepage section and every look page stay hidden until it is switched on, so looks can be built up privately and released in one go.

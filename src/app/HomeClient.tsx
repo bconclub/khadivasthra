@@ -62,7 +62,7 @@ export default function HomeClient({
   const heritageImage =
     initialHeritageUrl ||
     heritageBanners?.[0]?.image_url ||
-    "/heritage.jpg";
+    "/Cover KV.webp";
 
   // Group products by category name
   const productsByCategory: Record<string, ProductWithCategory[]> = {};
@@ -273,18 +273,7 @@ export default function HomeClient({
                 View All
               </Link>
             </div>
-            {/* Swipeable on phones (the next look peeks in to invite the
-                swipe), a plain grid once there is room for four across. */}
-            <div className="flex gap-3 overflow-x-auto scrollbar-hide snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0 md:overflow-visible md:grid md:grid-cols-4 md:gap-6">
-              {initialFeaturedLooks.slice(0, 8).map((look) => (
-                <div
-                  key={look.id}
-                  className="flex-[0_0_62%] sm:flex-[0_0_42%] md:flex-none snap-start"
-                >
-                  <LookCard look={look} />
-                </div>
-              ))}
-            </div>
+            <LooksCarousel looks={initialFeaturedLooks} />
           </div>
         </section>
       )}
@@ -628,6 +617,68 @@ function CategoryProductsCarousel({ products }: { products: CardProduct[] }) {
 }
 
 // Categories Carousel
+function LooksCarousel({ looks }: { looks: Look[] }) {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ align: "start", slidesToScroll: 1, loop: false });
+  const [prevBtnDisabled, setPrevBtnDisabled] = useState(true);
+  const [nextBtnDisabled, setNextBtnDisabled] = useState(true);
+  const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
+  const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setPrevBtnDisabled(!emblaApi.canScrollPrev());
+    setNextBtnDisabled(!emblaApi.canScrollNext());
+  }, [emblaApi]);
+  useEffect(() => {
+    if (!emblaApi) return;
+    onSelect();
+    emblaApi.on("reInit", onSelect);
+    emblaApi.on("select", onSelect);
+  }, [emblaApi, onSelect]);
+
+  return (
+    <div className="looks-carousel relative">
+      <div className="overflow-hidden" ref={emblaRef}>
+        <div className="flex gap-3 md:gap-6">
+          {looks.map((look) => (
+            <div
+              key={look.id}
+              // Just under two-thirds on phones so the next look peeks in and
+              // invites the swipe.
+              className="flex-[0_0_62%] sm:flex-[0_0_calc(45%-12px)] md:flex-[0_0_calc(33.333%-16px)] lg:flex-[0_0_calc(25%-18px)] min-w-0"
+            >
+              <LookCard look={look} />
+            </div>
+          ))}
+        </div>
+      </div>
+      {looks.length > 2 && (
+        <div className="flex items-center justify-center gap-4 mt-6">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={scrollPrev}
+            disabled={prevBtnDisabled}
+            className="rounded-full w-10 h-10 border-2 border-coral text-coral hover:bg-coral hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            aria-label="Previous looks"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={scrollNext}
+            disabled={nextBtnDisabled}
+            className="rounded-full w-10 h-10 border-2 border-coral text-coral hover:bg-coral hover:text-white disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            aria-label="Next looks"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function CategoriesCarousel({ categories }: { categories: Category[] }) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ align: "start", slidesToScroll: 1, loop: false });
   const [prevBtnDisabled, setPrevBtnDisabled] = useState(true);
