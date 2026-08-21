@@ -19,8 +19,14 @@ export async function updateSettings(settings: Partial<SiteSettings>): Promise<S
     .from('settings')
     .update(settings)
     .eq('id', existing.id)
-    .select()
-    .single();
+    .select();
   if (error) throw error;
-  return data;
+  // A row-level-security block reports success with zero rows changed, so
+  // without this the UI would claim "saved" while nothing persisted.
+  if (!data || data.length === 0) {
+    throw new Error(
+      "Settings were not saved — your admin account doesn't have permission to edit settings."
+    );
+  }
+  return data[0];
 }

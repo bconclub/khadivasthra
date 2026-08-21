@@ -34,6 +34,7 @@ export default function AdminSettingsPage() {
   const [announcement, setAnnouncement] = useState("");
   const [codEnabled, setCodEnabled] = useState(true);
   const [looksEnabled, setLooksEnabled] = useState(false);
+  const [savingLooks, setSavingLooks] = useState(false);
   const [tiers, setTiers] = useState<ShippingTier[]>(DEFAULT_TIERS);
 
   useEffect(() => {
@@ -53,6 +54,23 @@ export default function AdminSettingsPage() {
       }
     }
   }, [settings]);
+
+  // A switch should behave like a switch: persist the moment it is flipped,
+  // rather than silently waiting for the Save button further down the page.
+  const toggleLooks = async () => {
+    const next = !looksEnabled;
+    setLooksEnabled(next);
+    setSavingLooks(true);
+    try {
+      await updateSettings({ looks_enabled: next } as Partial<SiteSettings>);
+      toast.success(next ? "Shop the Look is on" : "Shop the Look is off");
+    } catch (err) {
+      setLooksEnabled(!next);
+      toast.error(err instanceof Error ? err.message : "Could not update Shop the Look");
+    } finally {
+      setSavingLooks(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -133,16 +151,17 @@ export default function AdminSettingsPage() {
                   Show Shop the Look on the site
                 </p>
                 <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
-                  Hides the homepage section and every look page until you switch it on. Build your
-                  looks first, then flip this when they are ready to go live.
+                  Hides the homepage section and every look page. Saves the moment you flip it —
+                  no need to press Save below.
                 </p>
               </div>
               <button
                 type="button"
                 role="switch"
                 aria-checked={looksEnabled}
-                onClick={() => setLooksEnabled(!looksEnabled)}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-coral focus:ring-offset-2 ${
+                onClick={toggleLooks}
+                disabled={savingLooks}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-coral focus:ring-offset-2 disabled:opacity-60 ${
                   looksEnabled ? "bg-coral" : "bg-gray-200 dark:bg-gray-600"
                 }`}
               >

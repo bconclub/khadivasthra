@@ -7,6 +7,7 @@ import { ProductCard } from "@/components/product/ProductCard";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getFeaturedProducts, getBestSellingProducts, getProducts } from "@/lib/services/products";
 import { getCategories } from "@/lib/services/categories";
+import { getSettings } from "@/lib/services/settings";
 import { getActiveBanners } from "@/lib/services/admin";
 import { SiteBanner } from "@/components/SiteBanner";
 import { storageImage, IMG } from "@/lib/image";
@@ -46,6 +47,12 @@ export default function HomeClient({
   const { data: activeBanners } = useSupabaseQuery(() => getActiveBanners("general"), []);
   const { data: heroBanners } = useSupabaseQuery(() => getActiveBanners("hero_background"), []);
   const { data: heritageBanners } = useSupabaseQuery(() => getActiveBanners("heritage"), []);
+  // The looks themselves come from the build, but the on/off switch is read
+  // live — otherwise turning Shop the Look off would keep showing on the site
+  // until someone remembered to publish a fresh build.
+  const { data: siteSettings } = useSupabaseQuery(getSettings);
+  const showLooks =
+    siteSettings != null ? siteSettings.looks_enabled === true : initialFeaturedLooks.length > 0;
   // Admin-managed hero cover (separate mobile/desktop images); falls back to
   // the packaged cover when no hero_background banner is set.
   // Hold the packaged cover back until the banner query settles — rendering it
@@ -262,7 +269,7 @@ export default function HomeClient({
       )}
 
       {/* 3. SHOP THE LOOK — curated outfits */}
-      {initialFeaturedLooks.length > 0 && (
+      {showLooks && initialFeaturedLooks.length > 0 && (
         <section className="looks-section bg-cream pt-10 md:pt-12">
           <div className="container mx-auto px-4 max-w-7xl">
             <div className="flex items-end justify-between mb-6">

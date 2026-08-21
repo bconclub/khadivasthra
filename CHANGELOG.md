@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-08-13 (8) · the Shop the Look switch actually switches
+
+- **Flipping the switch did nothing.** Two causes: the toggle only updated local state and needed the Save button further down the page (so it was never written), and even once saved the homepage read the flag at *build* time, so the section stayed up until someone published a fresh build.
+- The toggle now saves the moment it is flipped, and the homepage reads the flag live — switching off hides the section immediately, everywhere, with no rebuild.
+- `updateSettings` now verifies a row actually changed. As with orders, an RLS-blocked update returns success with zero rows, so the UI could report "saved" while nothing persisted.
+
+
 ## 2026-08-13 (7) · Shop the Look carousel
 
 - Shop the Look is a real carousel now — swipeable on phones with the next look peeking in, arrows on larger screens — matching the Trending and Category carousels instead of a grid that stranded a lone third card.
