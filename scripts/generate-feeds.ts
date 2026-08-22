@@ -17,7 +17,20 @@ const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  console.error("Missing NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  console.error("❌ Feed generation failed: Missing required environment variables");
+  console.error("");
+  console.error("Required variables:");
+  console.error("  - NEXT_PUBLIC_SUPABASE_URL");
+  console.error("  - NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  console.error("");
+  if (process.env.GITHUB_ACTIONS) {
+    console.error("Running in GitHub Actions - ensure these secrets are configured:");
+    console.error("  Repository Settings → Secrets and variables → Actions");
+    console.error("  Add: NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY");
+  } else {
+    console.error("For local development, add these to your .env.local file");
+  }
+  console.error("");
   process.exit(1);
 }
 
