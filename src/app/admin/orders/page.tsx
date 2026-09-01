@@ -7,6 +7,7 @@ import { getOrders, updateOrderStatus, updateOrder, checkPaymentStatus } from "@
 import { deleteOrder } from "@/lib/services/admin";
 import { supabase } from "@/lib/supabase";
 import type { Order, OrderStatus, Product, PaymentMethod, PaymentStatus } from "@/types";
+import { variantLabel, itemSummary } from "@/lib/order-item";
 import { Loader2, ChevronDown, ChevronUp, Trash2, CreditCard, Package, Plus, Search, X, Minus, Pencil, Printer, FileText, Tag, CheckSquare, Download, Check } from "lucide-react";
 import { printOrder, printOrders } from "@/lib/print-order";
 import Image from "next/image";
@@ -63,7 +64,7 @@ function ordersToCsvBlob(orders: Order[]): Blob {
     o.order_number, new Date(o.created_at).toLocaleString(),
     o.customer_name, o.customer_phone, o.customer_email || "",
     o.customer_address, o.customer_city, o.customer_state, o.customer_pincode,
-    (o.items || []).map((i) => `${i.product_name} x${i.quantity}`).join("; "),
+    (o.items || []).map(itemSummary).join("; "),
     Number(o.subtotal), Number(o.shipping), Number(o.cod_charges || 0), Number(o.total),
     o.status, o.payment_status, o.payment_method,
     o.article_number || "", o.settlement_status || "",
@@ -1876,7 +1877,7 @@ export default function AdminOrdersPage() {
                       <span className="text-sm text-gray-900 dark:text-white font-medium truncate min-w-0">{order.customer_name}</span>
                     </div>
                     <p className="text-xs text-gray-400 dark:text-gray-500 truncate">
-                      {order.items?.map((i) => `${i.product_name} x${i.quantity}`).join(", ")}
+                      {order.items?.map(itemSummary).join(", ")}
                     </p>
                   </div>
                   {/* Amount + badges (right side — guaranteed slot via grid auto column) */}
@@ -2043,6 +2044,9 @@ export default function AdminOrdersPage() {
                               </div>
                               <div className="flex-1 min-w-0">
                                 <p className="text-sm text-gray-900 dark:text-white font-medium truncate">{item.product_name}</p>
+                                {variantLabel(item) && (
+                                  <p className="text-xs font-semibold text-coral">{variantLabel(item)}</p>
+                                )}
                                 <p className="text-xs text-gray-400 dark:text-gray-500">Qty: {item.quantity} x ₹{Number(item.price).toLocaleString()}</p>
                               </div>
                               <span className="text-sm font-medium text-gray-900 dark:text-white whitespace-nowrap">

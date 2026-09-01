@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-09-01 · orders now show the size and colour bought
+
+- **Size was invisible on every order.** Orders have stored colour and size on each line all along — the shirt in KV-20260901-829 is recorded as "Off-White / S" — but nothing displayed it, so neither the packing team nor the customer could tell which size was ordered.
+- The variant now shows in the admin order list, the expanded order, the printed invoice, the shipping sticker and the CSV export.
+
+
 ## 2026-08-13 (8) · the Shop the Look switch actually switches
 
 - **Flipping the switch did nothing.** Two causes: the toggle only updated local state and needed the Save button further down the page (so it was never written), and even once saved the homepage read the flag at *build* time, so the section stayed up until someone published a fresh build.

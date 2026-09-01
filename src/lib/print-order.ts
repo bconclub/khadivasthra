@@ -1,4 +1,5 @@
 import type { Order } from '@/types';
+import { variantLabel } from "./order-item";
 
 const STORE = {
   name: 'KHADI VASTHRA',
@@ -35,7 +36,9 @@ function generateInvoiceHTML(order: Order): string {
   const itemRows = order.items.map((item, i) => `
     <tr>
       <td class="cell cell-num">${i + 1}</td>
-      <td class="cell cell-product">${esc(item.product_name)}</td>
+      <td class="cell cell-product">${esc(item.product_name)}${
+        variantLabel(item) ? `<br><span class="variant">${esc(variantLabel(item))}</span>` : ""
+      }</td>
       <td class="cell cell-center">${item.quantity}</td>
       <td class="cell cell-right">${inr(item.price)}</td>
       <td class="cell cell-right">${inr(item.subtotal)}</td>
@@ -82,6 +85,7 @@ function generateInvoiceHTML(order: Order): string {
   .cell { padding:10px; border-bottom:1px solid #ddd; vertical-align:top; }
   .cell-num { width:36px; text-align:center; }
   .cell-product { }
+    .variant{font-size:10px;font-weight:700;color:#E8657B;}
   .cell-center { text-align:center; width:50px; }
   .cell-right { text-align:right; width:90px; }
 
@@ -189,7 +193,9 @@ function generateStickerHTML(order: Order): string {
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const totalPcs = order.items.reduce((sum, item) => sum + item.quantity, 0);
   const itemLines = order.items.map((item) =>
-    `<div class="item-row"><span>${esc(item.product_name)} x${item.quantity}</span><span>${inr(item.subtotal)}</span></div>`
+    `<div class="item-row"><span>${esc(item.product_name)}${
+      variantLabel(item) ? ` <b>${esc(variantLabel(item))}</b>` : ""
+    } x${item.quantity}</span><span>${inr(item.subtotal)}</span></div>`
   ).join('');
 
   return `<!DOCTYPE html>
