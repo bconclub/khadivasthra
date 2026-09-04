@@ -13,9 +13,12 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAdminRoute = pathname?.startsWith("/admin");
   const isInvestorRoute = pathname?.startsWith("/investor");
+  // The wholesale portal carries its own header and sign-out, like the
+  // investor portal. Without this the site header stacks on top of it.
+  const isWholesaleRoute = pathname?.startsWith("/wholesale");
   const { isSearchOpen, closeSearch } = useSearch();
 
-  if (isAdminRoute || isInvestorRoute) {
+  if (isAdminRoute || isInvestorRoute || isWholesaleRoute) {
     return <>{children}</>;
   }
 

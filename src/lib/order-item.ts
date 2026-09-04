@@ -16,3 +16,20 @@ export function itemSummary(item: OrderItem): string {
   const variant = variantLabel(item);
   return `${item.product_name}${variant ? ` (${variant})` : ""} x${item.quantity}`;
 }
+
+/**
+ * "Any 3 Mundus" when the line was bought inside a combo, otherwise "".
+ *
+ * A combo is stored as one ordinary line per piece, so without this the packing
+ * team sees three unrelated products at odd prices and cannot tell they belong
+ * in one parcel as one offer.
+ */
+export function comboLabel(item: Pick<OrderItem, "combo">): string {
+  return item.combo?.combo_name ?? "";
+}
+
+/** "BEYE Cotton Shirt (Off-White / S) [Any 3 Mundus] x1" for one-line summaries. */
+export function itemSummaryWithCombo(item: OrderItem): string {
+  const combo = comboLabel(item);
+  return `${itemSummary(item)}${combo ? ` [${combo}]` : ""}`;
+}

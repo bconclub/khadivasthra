@@ -20,6 +20,8 @@ import {
   Users,
   Briefcase,
   Shirt,
+  Store,
+  Gift,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { AdminSection } from "@/types";
@@ -31,6 +33,8 @@ const NAV_ITEMS: { href: string; label: string; icon: typeof LayoutDashboard; se
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart, section: "orders" },
   { href: "/admin/banners", label: "Banners", icon: ImageIcon, section: "banners" },
   { href: "/admin/looks", label: "Shop the Look", icon: Shirt, section: "looks" },
+  { href: "/admin/combos", label: "Combos", icon: Gift, section: "combos" },
+  { href: "/admin/wholesale", label: "Wholesale", icon: Store, section: "wholesale" },
   { href: "/admin/settings", label: "Settings", icon: Settings, section: "settings" },
   { href: "/admin/investors", label: "Investors", icon: Briefcase, section: "investors" },
   { href: "/admin/users", label: "Users", icon: Users, section: "users" },

@@ -1,5 +1,5 @@
 import type { Order } from '@/types';
-import { variantLabel } from "./order-item";
+import { variantLabel, comboLabel } from "./order-item";
 
 const STORE = {
   name: 'KHADI VASTHRA',
@@ -38,6 +38,8 @@ function generateInvoiceHTML(order: Order): string {
       <td class="cell cell-num">${i + 1}</td>
       <td class="cell cell-product">${esc(item.product_name)}${
         variantLabel(item) ? `<br><span class="variant">${esc(variantLabel(item))}</span>` : ""
+      }${
+        comboLabel(item) ? `<br><span class="variant">Combo: ${esc(comboLabel(item))}</span>` : ""
       }</td>
       <td class="cell cell-center">${item.quantity}</td>
       <td class="cell cell-right">${inr(item.price)}</td>
@@ -195,6 +197,8 @@ function generateStickerHTML(order: Order): string {
   const itemLines = order.items.map((item) =>
     `<div class="item-row"><span>${esc(item.product_name)}${
       variantLabel(item) ? ` <b>${esc(variantLabel(item))}</b>` : ""
+    }${
+      comboLabel(item) ? ` [${esc(comboLabel(item))}]` : ""
     } x${item.quantity}</span><span>${inr(item.subtotal)}</span></div>`
   ).join('');
 

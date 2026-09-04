@@ -35,6 +35,10 @@ export default function AdminSettingsPage() {
   const [codEnabled, setCodEnabled] = useState(true);
   const [looksEnabled, setLooksEnabled] = useState(false);
   const [savingLooks, setSavingLooks] = useState(false);
+  const [wholesaleEnabled, setWholesaleEnabled] = useState(false);
+  const [savingWholesale, setSavingWholesale] = useState(false);
+  const [combosEnabled, setCombosEnabled] = useState(false);
+  const [savingCombos, setSavingCombos] = useState(false);
   const [tiers, setTiers] = useState<ShippingTier[]>(DEFAULT_TIERS);
 
   useEffect(() => {
@@ -49,6 +53,8 @@ export default function AdminSettingsPage() {
       setAnnouncement(settings.announcement_text || "");
       setCodEnabled(settings.cod_enabled ?? true);
       setLooksEnabled(settings.looks_enabled ?? false);
+      setWholesaleEnabled(settings.wholesale_enabled ?? false);
+      setCombosEnabled(settings.combos_enabled ?? false);
       if (settings.shipping_tiers && settings.shipping_tiers.length > 0) {
         setTiers(settings.shipping_tiers);
       }
@@ -72,6 +78,36 @@ export default function AdminSettingsPage() {
     }
   };
 
+  const toggleWholesale = async () => {
+    const next = !wholesaleEnabled;
+    setWholesaleEnabled(next);
+    setSavingWholesale(true);
+    try {
+      await updateSettings({ wholesale_enabled: next } as Partial<SiteSettings>);
+      toast.success(next ? "Wholesale is on" : "Wholesale is off");
+    } catch (err) {
+      setWholesaleEnabled(!next);
+      toast.error(err instanceof Error ? err.message : "Could not update Wholesale");
+    } finally {
+      setSavingWholesale(false);
+    }
+  };
+
+  const toggleCombos = async () => {
+    const next = !combosEnabled;
+    setCombosEnabled(next);
+    setSavingCombos(true);
+    try {
+      await updateSettings({ combos_enabled: next } as Partial<SiteSettings>);
+      toast.success(next ? "Combos are on" : "Combos are off");
+    } catch (err) {
+      setCombosEnabled(!next);
+      toast.error(err instanceof Error ? err.message : "Could not update Combos");
+    } finally {
+      setSavingCombos(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -87,6 +123,8 @@ export default function AdminSettingsPage() {
         announcement_text: announcement,
         cod_enabled: codEnabled,
         looks_enabled: looksEnabled,
+        wholesale_enabled: wholesaleEnabled,
+        combos_enabled: combosEnabled,
         shipping_tiers: tiers,
       } as Partial<SiteSettings>);
       toast.success("Settings saved");
@@ -168,6 +206,70 @@ export default function AdminSettingsPage() {
                 <span
                   className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
                     looksEnabled ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+
+          {/* Combos */}
+          <div className={cardClass}>
+            <h2 className={cardTitleClass}>Combos</h2>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Show combo offers on the site
+                </p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                  Hides every combo page and the homepage section while off. Saves the moment you
+                  flip it.
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={combosEnabled}
+                onClick={toggleCombos}
+                disabled={savingCombos}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-coral focus:ring-offset-2 disabled:opacity-60 ${
+                  combosEnabled ? "bg-coral" : "bg-gray-200 dark:bg-gray-600"
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    combosEnabled ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+
+          {/* Wholesale */}
+          <div className={cardClass}>
+            <h2 className={cardTitleClass}>Wholesale</h2>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Open the trade channel
+                </p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                  Hides the wholesale catalogue, login and registration while off. Saves the moment
+                  you flip it.
+                </p>
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={wholesaleEnabled}
+                onClick={toggleWholesale}
+                disabled={savingWholesale}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-coral focus:ring-offset-2 disabled:opacity-60 ${
+                  wholesaleEnabled ? "bg-coral" : "bg-gray-200 dark:bg-gray-600"
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    wholesaleEnabled ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>

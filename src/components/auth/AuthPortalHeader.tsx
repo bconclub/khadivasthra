@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 
 interface AuthPortalHeaderProps {
-  active: "admin" | "investor";
+  active: "admin" | "investor" | "wholesale";
   subtitle: string;
 }
 
@@ -23,7 +23,9 @@ export function AuthPortalHeader({ active, subtitle }: AuthPortalHeaderProps) {
       />
       <p className="text-gray-500 mt-2 mb-5">{subtitle}</p>
 
-      <div className="inline-flex bg-gray-100 rounded-full p-1">
+      {/* Trade buyers are customers, not staff — the wholesale portal does not
+          advertise the admin and investor logins. */}
+      <div className={`inline-flex bg-gray-100 rounded-full p-1 ${active === "wholesale" ? "hidden" : ""}`}>
         <button
           type="button"
           onClick={() => active !== "admin" && router.push("/admin/login")}

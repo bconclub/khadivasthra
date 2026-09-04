@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import HomeClient from "./HomeClient";
-import type { Banner, Look } from "@/types";
+import type { Banner, Combo, Look } from "@/types";
 
 /**
  * The homepage is a static export, so the hero banner is resolved here at build
@@ -13,14 +13,15 @@ async function getHomeData(): Promise<{
   heroBanner: Banner | null;
   heritageUrl: string | null;
   featuredLooks: Look[];
+  featuredCombos: Combo[];
 }> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  if (!url || !key) return { heroBanner: null, heritageUrl: null, featuredLooks: [] };
+  if (!url || !key) return { heroBanner: null, heritageUrl: null, featuredLooks: [], featuredCombos: [] };
 
   const supabase = createClient(url, key);
   try {
-  const [heroRes, heritageRes, looksRes, settingsRes] = await Promise.all([
+  const [heroRes, heritageRes, looksRes, combosRes, settingsRes] = await Promise.all([
     supabase
       .from("banners")
       .select("*")
@@ -41,30 +42,39 @@ async function getHomeData(): Promise<{
       .eq("is_active", true)
       .eq("is_featured", true)
       .order("display_order", { ascending: true }),
-    supabase.from("settings").select("looks_enabled").limit(1),
+    supabase
+      .from("combos")
+      .select("*")
+      .eq("is_active", true)
+      .eq("is_featured", true)
+      .order("display_order", { ascending: true }),
+    supabase.from("settings").select("looks_enabled, combos_enabled").limit(1),
   ]);
 
   // Master switch: with Shop the Look off, the homepage gets no looks at all.
   const looksEnabled = settingsRes.data?.[0]?.looks_enabled === true;
+  const combosEnabled = settingsRes.data?.[0]?.combos_enabled === true;
 
   return {
     heroBanner: (heroRes.data?.[0] as Banner) ?? null,
     heritageUrl: (heritageRes.data?.[0]?.image_url as string) ?? null,
     featuredLooks: looksEnabled ? ((looksRes.data as Look[]) ?? []) : [],
+    featuredCombos: combosEnabled ? ((combosRes.data as Combo[]) ?? []) : [],
   };
   } catch {
     // Never let a build fail because a table is missing or Supabase is down.
-    return { heroBanner: null, heritageUrl: null, featuredLooks: [] };
+    return { heroBanner: null, heritageUrl: null, featuredLooks: [], featuredCombos: [] };
   }
 }
 
 export default async function Home() {
-  const { heroBanner, heritageUrl, featuredLooks } = await getHomeData();
+  const { heroBanner, heritageUrl, featuredLooks, featuredCombos } = await getHomeData();
   return (
     <HomeClient
       initialHeroBanner={heroBanner}
       initialHeritageUrl={heritageUrl}
       initialFeaturedLooks={featuredLooks}
+      initialFeaturedCombos={featuredCombos}
     />
   );
 }

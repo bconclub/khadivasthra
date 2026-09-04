@@ -42,6 +42,11 @@ export function Footer() {
                             <li className="footer__link-item">
                                 <Link href="/contact" className="footer__link hover:text-white transition-colors">Contact</Link>
                             </li>
+                            <li className="footer__link-item">
+                                <Link href="/combos" className="footer__link hover:text-white transition-colors">Combos</Link>
+                            </li>                            <li className="footer__link-item">
+                                <Link href="/wholesale" className="footer__link hover:text-white transition-colors">Wholesale</Link>
+                            </li>
                         </ul>
                     </div>
 

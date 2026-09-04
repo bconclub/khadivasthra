@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { X, Plus, Minus, Trash2, ShoppingBag, ImageOff } from "lucide-react";
 import { useState } from "react";
+import { groupCart } from "@/lib/combo";
 
 function DrawerItemImage({ src, alt }: { src: string; alt: string }) {
   const [imageError, setImageError] = useState(false);
@@ -46,6 +47,8 @@ export function CartDrawer() {
     items,
     updateQuantity,
     removeFromCart,
+    updateComboQuantity,
+    removeCombo,
     cartTotal,
     cartCount,
     isCartOpen,
@@ -131,34 +134,88 @@ export function CartDrawer() {
             </div>
           ) : (
             <div className="space-y-4">
-              {items.map((item) => (
+              {groupCart(items).map((group) =>
+                group.kind === "combo" ? (
+                  <div key={group.key} className="p-3 bg-cream/30 rounded-lg border border-coral/30">
+                    <div className="flex items-center justify-between mb-2">
+                      <div>
+                        <span className="inline-block px-2 py-0.5 rounded-full bg-coral/10 text-coral text-[10px] font-semibold uppercase tracking-wider">
+                          Combo
+                        </span>
+                        <p className="text-sm font-medium text-text mt-1">{group.combo.combo_name}</p>
+                      </div>
+                      <span className="text-sm font-bold text-text">
+                        ₹{group.combo.combo_price * group.quantity}
+                      </span>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {group.lines.map((line, i) => (
+                        <div
+                          key={`${line.id}-${line.variant_id ?? ""}-${i}`}
+                          className="relative w-10 h-12 rounded-md overflow-hidden bg-gray-100"
+                          title={[line.name, line.color_name, line.size].filter(Boolean).join(" / ")}
+                        >
+                          <DrawerItemImage src={line.image} alt={line.name} />
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center border border-gray-200 rounded-md bg-white">
+                        <button
+                          className="p-1.5 hover:bg-gray-50 transition-colors text-gray-500 disabled:opacity-30"
+                          onClick={() => updateComboQuantity(group.key, group.quantity - 1)}
+                          disabled={group.quantity <= 1}
+                        >
+                          <Minus className="h-3 w-3" />
+                        </button>
+                        <span className="w-7 text-center text-xs font-semibold text-text">
+                          {group.quantity}
+                        </span>
+                        <button
+                          className="p-1.5 hover:bg-gray-50 transition-colors text-gray-500"
+                          onClick={() => updateComboQuantity(group.key, group.quantity + 1)}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
+                      </div>
+                      <button
+                        onClick={() => removeCombo(group.key)}
+                        className="text-gray-400 hover:text-coral transition-colors"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ) : (
                 <div
-                  key={`${item.id}${item.variant_id ? `-${item.variant_id}` : ''}`}
+                  key={group.key}
                   className="flex gap-3 p-3 bg-cream/30 rounded-lg"
                 >
                   {/* Image */}
                   <div className="relative w-16 h-20 rounded-md overflow-hidden flex-shrink-0 bg-gray-100">
-                    <DrawerItemImage src={item.image} alt={item.name} />
+                    <DrawerItemImage src={group.item.image} alt={group.item.name} />
                   </div>
 
                   {/* Details */}
                   <div className="flex-1 min-w-0">
                     <Link
-                      href={`/product/${item.slug || item.id}`}
+                      href={`/product/${group.item.slug || group.item.id}`}
                       onClick={closeCart}
                       className="text-sm font-medium text-text hover:text-coral transition-colors line-clamp-2 leading-tight"
                     >
-                      {item.name}
+                      {group.item.name}
                     </Link>
-                    {(item.color_name || item.size) && (
+                    {(group.item.color_name || group.item.size) && (
                       <p className="text-xs text-text-muted mt-0.5">
-                        {item.color_name && `Color: ${item.color_name}`}
-                        {item.color_name && item.size && " / "}
-                        {item.size && `Size: ${item.size}`}
+                        {group.item.color_name && `Color: ${group.item.color_name}`}
+                        {group.item.color_name && group.item.size && " / "}
+                        {group.item.size && `Size: ${group.item.size}`}
                       </p>
                     )}
                     <p className="text-orange font-bold text-sm mt-1">
-                      ₹{item.price}
+                      ₹{group.item.price}
                     </p>
 
                     {/* Quantity controls */}
@@ -167,19 +224,19 @@ export function CartDrawer() {
                         <button
                           className="p-1.5 hover:bg-gray-50 transition-colors text-gray-500 disabled:opacity-30"
                           onClick={() =>
-                            updateQuantity(item.id, item.quantity - 1, item.variant_id)
+                            updateQuantity(group.item.id, group.item.quantity - 1, group.item.variant_id)
                           }
-                          disabled={item.quantity <= 1}
+                          disabled={group.item.quantity <= 1}
                         >
                           <Minus className="h-3 w-3" />
                         </button>
                         <span className="w-7 text-center text-xs font-semibold text-text">
-                          {item.quantity}
+                          {group.item.quantity}
                         </span>
                         <button
                           className="p-1.5 hover:bg-gray-50 transition-colors text-gray-500"
                           onClick={() =>
-                            updateQuantity(item.id, item.quantity + 1, item.variant_id)
+                            updateQuantity(group.item.id, group.item.quantity + 1, group.item.variant_id)
                           }
                         >
                           <Plus className="h-3 w-3" />
@@ -188,10 +245,10 @@ export function CartDrawer() {
 
                       <div className="flex items-center gap-3">
                         <span className="text-sm font-bold text-text">
-                          ₹{item.price * item.quantity}
+                          ₹{group.item.price * group.item.quantity}
                         </span>
                         <button
-                          onClick={() => removeFromCart(item.id, item.variant_id)}
+                          onClick={() => removeFromCart(group.item.id, group.item.variant_id)}
                           className="text-gray-400 hover:text-coral transition-colors"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -200,7 +257,8 @@ export function CartDrawer() {
                     </div>
                   </div>
                 </div>
-              ))}
+                )
+              )}
             </div>
           )}
         </div>

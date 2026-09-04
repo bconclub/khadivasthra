@@ -17,8 +17,9 @@ export function BottomBar() {
     // specific product; everywhere else that slot is more useful as search.
     const isProductPage = pathname?.startsWith("/product");
 
-    // On home page, hide unless cart has items
-    if (isHome && cartCount === 0) return null;
+    // The quick-action bar used to hide on the homepage until something was in
+    // the cart, which left the landing page with no way to reach search, offers
+    // or the cart. It now shows everywhere.
 
     return (
         <div className={`bottom-bar fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white/80 backdrop-blur-xl border-t border-gray-200/60 shadow-[0_-4px_20px_rgba(0,0,0,0.1)] transition-all duration-300 ${isHome ? 'animate-slide-up' : ''}`}>

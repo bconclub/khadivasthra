@@ -12,7 +12,8 @@ import { getActiveBanners } from "@/lib/services/admin";
 import { SiteBanner } from "@/components/SiteBanner";
 import { storageImage, IMG } from "@/lib/image";
 import { LookCard } from "@/components/shop/LookBrowser";
-import type { Banner, Category, Look, ProductWithCategory } from "@/types";
+import { ComboCard } from "@/app/combos/CombosIndexClient";
+import type { Banner, Category, Combo, Look, ProductWithCategory } from "@/types";
 import { ArrowRight, ChevronLeft, ChevronRight, Loader2, ImageOff } from "lucide-react";
 import { useState, useCallback, useEffect } from "react";
 import useEmblaCarousel from "embla-carousel-react";
@@ -35,10 +36,12 @@ export default function HomeClient({
   initialHeroBanner = null,
   initialHeritageUrl = null,
   initialFeaturedLooks = [],
+  initialFeaturedCombos = [],
 }: {
   initialHeroBanner?: Banner | null;
   initialHeritageUrl?: string | null;
   initialFeaturedLooks?: Look[];
+  initialFeaturedCombos?: Combo[];
 }) {
   const { data: trendingProducts, loading: isLoadingTrending } = useSupabaseQuery(getFeaturedProducts);
   const { data: categories, loading: isLoadingCategories } = useSupabaseQuery(getCategories);
@@ -53,6 +56,8 @@ export default function HomeClient({
   const { data: siteSettings } = useSupabaseQuery(getSettings);
   const showLooks =
     siteSettings != null ? siteSettings.looks_enabled === true : initialFeaturedLooks.length > 0;
+  const showCombos =
+    siteSettings != null ? siteSettings.combos_enabled === true : initialFeaturedCombos.length > 0;
   // Admin-managed hero cover (separate mobile/desktop images); falls back to
   // the packaged cover when no hero_background banner is set.
   // Hold the packaged cover back until the banner query settles — rendering it
@@ -281,6 +286,27 @@ export default function HomeClient({
               </Link>
             </div>
             <LooksCarousel looks={initialFeaturedLooks} />
+          </div>
+        </section>
+      )}
+
+      {/* 3b. COMBOS — build your own set for one price */}
+      {showCombos && initialFeaturedCombos.length > 0 && (
+        <section className="combos-section bg-cream pt-10 md:pt-12">
+          <div className="container mx-auto px-4 max-w-7xl">
+            <div className="flex items-end justify-between mb-6">
+              <h2 className="text-2xl md:text-3xl font-bold text-text font-serif">
+                Build your own set
+              </h2>
+              <Link href="/combos" className="text-sm font-medium text-coral hover:underline whitespace-nowrap">
+                View All
+              </Link>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
+              {initialFeaturedCombos.map((combo) => (
+                <ComboCard key={combo.id} combo={combo} />
+              ))}
+            </div>
           </div>
         </section>
       )}

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
+import { ProductDetailPanel } from "@/components/admin/ProductDetailPanel";
 import { ProductForm } from "@/components/admin/ProductForm";
 import { ProductInvestorModal } from "@/components/admin/ProductInvestorModal";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
@@ -191,6 +192,8 @@ export default function AdminProductsPage() {
   const [visibilityFilter, setVisibilityFilter] = useState<VisibilityFilter>("all");
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductWithCategory | undefined>();
+  // Clicking a row opens a read-only slide-over instead of the whole edit form.
+  const [viewingProduct, setViewingProduct] = useState<ProductWithCategory | null>(null);
   const [investorModalProduct, setInvestorModalProduct] = useState<ProductWithCategory | undefined>();
   const [syncing, setSyncing] = useState(false);
 
@@ -259,7 +262,7 @@ export default function AdminProductsPage() {
 
   const handleCreate = async (data: Record<string, unknown>) => {
     const { assignInvestor, ...productData } = data;
-    const product = await createProduct(productData as Parameters<typeof createProduct>[0]);
+    const product = await createProduct(productData as unknown as Parameters<typeof createProduct>[0]);
     await assignInvestorToProduct(product.id, assignInvestor);
     toast.success("Product created");
     setShowForm(false);
@@ -269,7 +272,7 @@ export default function AdminProductsPage() {
   const handleUpdate = async (data: Record<string, unknown>) => {
     if (!editingProduct) return;
     const { assignInvestor, ...productData } = data;
-    await updateProduct(editingProduct.id, productData as Parameters<typeof updateProduct>[1]);
+    await updateProduct(editingProduct.id, productData as unknown as Parameters<typeof updateProduct>[1]);
     await assignInvestorToProduct(editingProduct.id, assignInvestor);
     toast.success("Product updated");
     setEditingProduct(undefined);
@@ -695,8 +698,12 @@ export default function AdminProductsPage() {
                             {!product.is_active && (
                               <span className="flex-shrink-0 w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600" title="Hidden" />
                             )}
-                            <div>
-                              <p className={`font-medium line-clamp-1 ${product.is_active ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>{product.name}</p>
+                            <div
+                              onClick={() => setViewingProduct(product)}
+                              className="cursor-pointer"
+                              title="Open details"
+                            >
+                              <p className={`font-medium line-clamp-1 hover:text-coral ${product.is_active ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>{product.name}</p>
                               <p className="text-xs text-gray-400 dark:text-gray-500 font-mono">{product.slug}</p>
                             </div>
                           </div>
@@ -796,6 +803,15 @@ export default function AdminProductsPage() {
           </div>
         )}
       </div>
+
+      <ProductDetailPanel
+        product={viewingProduct}
+        onClose={() => setViewingProduct(null)}
+        onEdit={(product) => {
+          setViewingProduct(null);
+          openEdit(product);
+        }}
+      />
     </AdminShell>
   );
 }

@@ -39,11 +39,22 @@ export async function checkCartStock(cartItems: CartItem[]): Promise<StockIssue[
     (data || []).forEach((v) => { variantStock[v.id] = v.stock_quantity; });
   }
 
-  const issues: StockIssue[] = [];
+  // Sum by product/variant first. The same piece can appear on more than one
+  // line — twice in a combo, or once loose and once inside one — and checking
+  // each line on its own would let the total quietly exceed what is in stock.
+  const wanted = new Map<string, { item: CartItem; requested: number }>();
   for (const item of cartItems) {
+    const key = item.variant_id || item.id;
+    const seen = wanted.get(key);
+    if (seen) seen.requested += item.quantity;
+    else wanted.set(key, { item, requested: item.quantity });
+  }
+
+  const issues: StockIssue[] = [];
+  for (const { item, requested } of wanted.values()) {
     const available = item.variant_id ? (variantStock[item.variant_id] ?? 0) : (productStock[item.id] ?? 0);
-    if (item.quantity > available) {
-      issues.push({ id: item.id, variant_id: item.variant_id, name: item.name, available, requested: item.quantity });
+    if (requested > available) {
+      issues.push({ id: item.id, variant_id: item.variant_id, name: item.name, available, requested });
     }
   }
   return issues;
@@ -82,6 +93,10 @@ export async function createOrder(
     color_id: item.color_id || null,
     color_name: item.color_name || null,
     size: item.size || null,
+    // Combos are stored as one line per piece so stock, the packing sticker and
+    // investor payouts keep reading a normal product line. This is what marks
+    // those lines as belonging together.
+    ...(item.combo ? { combo: item.combo } : {}),
   }));
 
   const isCod = paymentMethod === 'cod';

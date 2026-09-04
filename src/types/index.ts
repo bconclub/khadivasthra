@@ -12,6 +12,8 @@ export const ADMIN_SECTIONS = [
   'users',
   'investors',
   'looks',
+  'wholesale',
+  'combos',
 ] as const;
 
 export type AdminSection = (typeof ADMIN_SECTIONS)[number];
@@ -116,6 +118,9 @@ export interface Product {
   product_type: ProductType | null;
   manufactured_quantity: number;
   unit_cost: number | null;
+  // Wholesale (trade) channel. The flag is public; the trade price itself
+  // lives in `wholesale_prices`, which retail visitors cannot read.
+  is_wholesale: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -139,6 +144,8 @@ export interface OrderItem {
   color_id?: string | null;
   color_name?: string | null;
   size?: string | null;
+  /** Present when this line was bought as part of a combo. */
+  combo?: ComboLineMeta;
 }
 
 export type OrderStatus = 'pending' | 'confirmed' | 'billed' | 'shipped' | 'delivered' | 'cancelled';
@@ -229,6 +236,10 @@ export interface SiteSettings {
   shipping_tiers: ShippingTier[] | null;
   /** Master switch for the Shop the Look section and its pages. */
   looks_enabled: boolean;
+  /** Master switch for the wholesale channel and its pages. */
+  wholesale_enabled: boolean;
+  /** Master switch for combo offers and their pages. */
+  combos_enabled: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -306,6 +317,25 @@ export interface CartItem {
   size?: string;
   /** Available stock snapshot — caps quantity in cart/checkout. */
   stock?: number;
+  /**
+   * Set on the lines that make up a combo. The lines stay one-per-product so
+   * stock and investor payouts keep working; this is what groups them back
+   * together for display, and what holds the fixed combo price.
+   */
+  combo?: ComboLineMeta;
+}
+
+/**
+ * Combo identity carried as metadata on an ordinary product line.
+ * combo_line is a stable key shared by every line of one configured combo, so
+ * two differently-configured instances of the same combo never merge while an
+ * identical repeat does.
+ */
+export interface ComboLineMeta {
+  combo_id: string;
+  combo_name: string;
+  combo_line: string;
+  combo_price: number;
 }
 
 // Investor portal -----------------------------------------------------------
@@ -439,3 +469,98 @@ export interface CheckoutFormData {
   state: string;
   pincode: string;
 }
+
+// Wholesale (trade) channel -------------------------------------------------
+
+export type WholesaleEnquiryStatus = 'new' | 'contacted' | 'quoted' | 'won' | 'lost';
+
+export interface WholesaleAccount {
+  id: string;
+  account_code: string | null;
+  business_name: string;
+  contact_name: string;
+  phone: string | null;
+  email: string | null;
+  gst_number: string | null;
+  address: string | null;
+  city: string | null;
+  state: string | null;
+  pincode: string | null;
+  /** The approval gate. A buyer registers inactive; an admin flips this on. */
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+/** Trade price for one product. Readable only by approved buyers and admins. */
+export interface WholesalePrice {
+  product_id: string;
+  price: number;
+  min_qty: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WholesaleEnquiryItem {
+  product_id: string;
+  product_name: string;
+  product_image: string | null;
+  wholesale_price: number;
+  quantity: number;
+  subtotal: number;
+  min_qty: number;
+}
+
+export interface WholesaleEnquiry {
+  id: string;
+  enquiry_number: string | null;
+  account_id: string;
+  items: WholesaleEnquiryItem[];
+  item_count: number;
+  estimated_total: number;
+  status: WholesaleEnquiryStatus;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  /** Joined for the admin list. */
+  account?: WholesaleAccount;
+}
+
+/** A line held in the buyer's local enquiry basket before it is submitted. */
+export interface WholesaleCartItem {
+  product_id: string;
+  name: string;
+  slug: string;
+  image: string;
+  wholesale_price: number;
+  min_qty: number;
+  quantity: number;
+}
+
+// Combos --------------------------------------------------------------------
+
+export interface Combo {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  image_url: string | null;
+  mobile_image_url: string | null;
+  /** One fixed price for the whole combo, whatever the shopper picks. */
+  combo_price: number;
+  choose_count: number;
+  allow_duplicates: boolean;
+  is_featured: boolean;
+  is_active: boolean;
+  display_order: number;
+  created_at: string;
+  updated_at: string;
+  /** Joined: the pool a shopper chooses from, in curated order. */
+  products?: ProductWithCategory[];
+  product_count?: number;
+}
+
+export type ComboFormData = Omit<
+  Combo,
+  'id' | 'created_at' | 'updated_at' | 'products' | 'product_count'
+>;

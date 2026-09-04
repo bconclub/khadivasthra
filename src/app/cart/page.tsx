@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Trash2, Plus, Minus, MessageCircle, ShoppingBag, ImageOff } from "lucide-react";
 import { useState } from "react";
+import { groupCart } from "@/lib/combo";
 
 function CartItemImage({ src, alt }: { src: string; alt: string }) {
   const [imageError, setImageError] = useState(false);
@@ -39,7 +40,7 @@ function CartItemImage({ src, alt }: { src: string; alt: string }) {
 }
 
 export default function CartPage() {
-    const { items, updateQuantity, removeFromCart, cartTotal } = useCart();
+    const { items, updateQuantity, removeFromCart, updateComboQuantity, removeCombo, cartTotal } = useCart();
 
     const handleWhatsAppCheckout = () => {
         const phoneNumber = "918714090510";
@@ -72,49 +73,112 @@ export default function CartPage() {
 
             <div className="cart-page__content grid lg:grid-cols-3 gap-12">
                 <div className="cart-page__items lg:col-span-2 space-y-6">
-                    {items.map((item) => (
-                        <div key={item.id} className="cart-page__item flex gap-4 p-4 bg-white rounded-lg shadow-sm border border-cream/30 items-center">
+                    {groupCart(items).map((group) =>
+                        group.kind === "combo" ? (
+                            <div
+                                key={group.key}
+                                className="cart-page__combo p-4 bg-white rounded-lg shadow-sm border border-coral/30"
+                            >
+                                <div className="flex items-center justify-between mb-3">
+                                    <div>
+                                        <span className="inline-block px-2 py-0.5 rounded-full bg-coral/10 text-coral text-[10px] font-semibold uppercase tracking-wider mb-1">
+                                            Combo
+                                        </span>
+                                        <h3 className="font-medium text-text">{group.combo.combo_name}</h3>
+                                    </div>
+                                    <div className="text-orange font-semibold">
+                                        ₹{group.combo.combo_price * group.quantity}
+                                    </div>
+                                </div>
+
+                                {/* The pieces still ship, pack and count as individual products. */}
+                                <div className="flex flex-wrap gap-3 mb-3">
+                                    {group.lines.map((line, i) => (
+                                        <div key={`${line.id}-${line.variant_id ?? ""}-${i}`} className="flex gap-2 items-center">
+                                            <div className="relative w-12 h-14 bg-cream/30 rounded-md overflow-hidden flex-shrink-0">
+                                                <CartItemImage src={line.image} alt={line.name} />
+                                            </div>
+                                            <div className="text-xs">
+                                                <p className="text-text line-clamp-1 max-w-[9rem]">{line.name}</p>
+                                                {(line.color_name || line.size) && (
+                                                    <p className="text-text-muted">
+                                                        {[line.color_name, line.size].filter(Boolean).join(" / ")}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                <div className="flex items-center justify-between border-t border-cream/40 pt-3">
+                                    <div className="flex items-center border border-cream/30 rounded-md bg-white">
+                                        <button
+                                            className="p-1 hover:bg-cream/50 transition-colors text-coral"
+                                            onClick={() => updateComboQuantity(group.key, group.quantity - 1)}
+                                            disabled={group.quantity <= 1}
+                                        >
+                                            <Minus className="h-3 w-3" />
+                                        </button>
+                                        <span className="w-8 text-center text-sm font-medium text-text">{group.quantity}</span>
+                                        <button
+                                            className="p-1 hover:bg-cream/50 transition-colors text-coral"
+                                            onClick={() => updateComboQuantity(group.key, group.quantity + 1)}
+                                        >
+                                            <Plus className="h-3 w-3" />
+                                        </button>
+                                    </div>
+                                    <button
+                                        onClick={() => removeCombo(group.key)}
+                                        className="text-text-muted hover:text-coral text-sm flex items-center"
+                                    >
+                                        <Trash2 className="h-3 w-3 mr-1" /> Remove
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
+                        <div key={group.key} className="cart-page__item flex gap-4 p-4 bg-white rounded-lg shadow-sm border border-cream/30 items-center">
                             <div className="cart-page__item-image-wrapper relative w-20 h-24 bg-cream/30 rounded-md overflow-hidden flex-shrink-0">
-                                <CartItemImage src={item.image} alt={item.name} />
+                                <CartItemImage src={group.item.image} alt={group.item.name} />
                             </div>
 
                             <div className="cart-page__item-info flex-1">
-                                <Link href={`/product/${item.slug || item.id}`} className="cart-page__item-name font-medium text-text hover:text-coral transition-colors line-clamp-2">
-                                    {item.name}
+                                <Link href={`/product/${group.item.slug || group.item.id}`} className="cart-page__item-name font-medium text-text hover:text-coral transition-colors line-clamp-2">
+                                    {group.item.name}
                                 </Link>
-                                <div className="cart-page__item-price text-orange text-sm mt-1 font-semibold">₹{item.price}</div>
+                                <div className="cart-page__item-price text-orange text-sm mt-1 font-semibold">₹{group.item.price}</div>
                             </div>
 
                             <div className="cart-page__item-controls flex flex-col items-end gap-2">
                                 <div className="cart-page__item-quantity flex items-center border border-cream/30 rounded-md bg-white">
                                     <button
                                         className="cart-page__item-quantity-decrease p-1 hover:bg-cream/50 transition-colors text-coral"
-                                        onClick={() => updateQuantity(item.id, item.quantity - 1, item.variant_id)}
-                                        disabled={item.quantity <= 1}
+                                        onClick={() => updateQuantity(group.item.id, group.item.quantity - 1, group.item.variant_id)}
+                                        disabled={group.item.quantity <= 1}
                                     >
                                         <Minus className="h-3 w-3" />
                                     </button>
-                                    <span className="cart-page__item-quantity-value w-8 text-center text-sm font-medium text-text">{item.quantity}</span>
+                                    <span className="cart-page__item-quantity-value w-8 text-center text-sm font-medium text-text">{group.item.quantity}</span>
                                     <button
                                         className="cart-page__item-quantity-increase p-1 hover:bg-cream/50 transition-colors text-coral disabled:opacity-40 disabled:cursor-not-allowed"
-                                        onClick={() => updateQuantity(item.id, item.quantity + 1, item.variant_id)}
-                                        disabled={item.stock != null && item.stock > 0 && item.quantity >= item.stock}
+                                        onClick={() => updateQuantity(group.item.id, group.item.quantity + 1, group.item.variant_id)}
+                                        disabled={group.item.stock != null && group.item.stock > 0 && group.item.quantity >= group.item.stock}
                                     >
                                         <Plus className="h-3 w-3" />
                                     </button>
                                 </div>
-                                {item.stock != null && item.stock > 0 && item.quantity >= item.stock && (
-                                    <span className="text-[11px] text-coral">Only {item.stock} in stock</span>
+                                {group.item.stock != null && group.item.stock > 0 && group.item.quantity >= group.item.stock && (
+                                    <span className="text-[11px] text-coral">Only {group.item.stock} in stock</span>
                                 )}
                                 <button
-                                    onClick={() => removeFromCart(item.id, item.variant_id)}
+                                    onClick={() => removeFromCart(group.item.id, group.item.variant_id)}
                                     className="cart-page__item-remove text-text-muted hover:text-coral text-sm flex items-center"
                                 >
                                     <Trash2 className="h-3 w-3 mr-1" /> Remove
                                 </button>
                             </div>
                         </div>
-                    ))}
+                        )
+                    )}
                 </div>
 
                 <div className="cart-page__summary lg:col-span-1">

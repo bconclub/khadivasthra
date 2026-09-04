@@ -1,5 +1,12 @@
 import { supabase } from '@/lib/supabase';
+import { setWholesalePrice } from '@/lib/services/wholesale';
 import type { Product, Category, Banner, BannerPlacement, ProductFormData, CategoryFormData, BannerFormData, ProductWithCategory, ProductColor, ProductVariant } from '@/types';
+
+/** Trade price fields the product form sends alongside the product itself. */
+interface WholesaleInput {
+  wholesale_price?: number | null;
+  wholesale_min_qty?: number;
+}
 
 // Admin: get ALL products (including hidden) with category data
 export async function getAllProducts(): Promise<ProductWithCategory[]> {
@@ -43,9 +50,11 @@ async function getAdminProductVariants(productId: string): Promise<ProductVarian
 
 // Products CRUD
 export async function createProduct(
-  data: ProductFormData & { colors?: (Omit<ProductColor, 'id' | 'created_at' | 'updated_at'> & { id?: string })[]; variants?: (Omit<ProductVariant, 'id' | 'created_at' | 'updated_at'> & { id?: string })[] }
+  data: ProductFormData & WholesaleInput & { colors?: (Omit<ProductColor, 'id' | 'created_at' | 'updated_at'> & { id?: string })[]; variants?: (Omit<ProductVariant, 'id' | 'created_at' | 'updated_at'> & { id?: string })[] }
 ): Promise<Product> {
-  const { colors, variants, ...productData } = data;
+  // The trade price is deliberately not a column on `products` - see the
+  // wholesale_prices migration - so it is split off and written separately.
+  const { colors, variants, wholesale_price, wholesale_min_qty, ...productData } = data;
   
   // Check if slug already exists; if so, append a number to make it unique
   let slug = productData.slug;
@@ -125,14 +134,23 @@ export async function createProduct(
     }
   }
 
+  // Trade price lives in its own table so retail visitors cannot read it.
+  if (wholesale_price !== undefined || wholesale_min_qty !== undefined) {
+    await setWholesalePrice(
+      product.id,
+      productData.is_wholesale && wholesale_price != null ? wholesale_price : null,
+      wholesale_min_qty ?? 1
+    );
+  }
+
   return product;
 }
 
 export async function updateProduct(
   id: string,
-  data: Partial<ProductFormData> & { colors?: ProductColor[]; variants?: ProductVariant[] }
+  data: Partial<ProductFormData> & WholesaleInput & { colors?: ProductColor[]; variants?: ProductVariant[] }
 ): Promise<Product> {
-  const { colors, variants, ...productData } = data;
+  const { colors, variants, wholesale_price, wholesale_min_qty, ...productData } = data;
 
   const { data: product, error } = await supabase
     .from('products')
@@ -238,6 +256,15 @@ export async function updateProduct(
         await supabase.from('product_variants').delete().in('id', toDelete.map((v) => v.id));
       }
     }
+  }
+
+  // Trade price lives in its own table so retail visitors cannot read it.
+  if (wholesale_price !== undefined || wholesale_min_qty !== undefined) {
+    await setWholesalePrice(
+      id,
+      productData.is_wholesale && wholesale_price != null ? wholesale_price : null,
+      wholesale_min_qty ?? 1
+    );
   }
 
   return product;

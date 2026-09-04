@@ -5,6 +5,7 @@ import { uploadProductImage } from "@/lib/services/storage";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getCategories } from "@/lib/services/categories";
 import { listInvestors, listInvestmentsForProduct } from "@/lib/services/investors";
+import { getWholesalePrice } from "@/lib/services/wholesale";
 import type { ProductWithCategory, ProductColor, ProductVariant, Investor, Investment } from "@/types";
 import { Loader2, X, Plus, Camera, Package, Trash2, RefreshCw, Palette, GripVertical } from "lucide-react";
 import Image from "next/image";
@@ -95,6 +96,23 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const [productType, setProductType] = useState(product?.product_type || "");
   const [manufacturedQuantity, setManufacturedQuantity] = useState(product?.manufactured_quantity?.toString() || "0");
   const [unitCost, setUnitCost] = useState(product?.unit_cost?.toString() || "");
+
+  // Wholesale (trade) fields. The price is not on the product row - it lives in
+  // wholesale_prices so retail visitors cannot read it - so it is loaded here.
+  const [isWholesale, setIsWholesale] = useState(product?.is_wholesale || false);
+  const [wholesalePrice, setWholesalePrice] = useState("");
+  const [wholesaleMinQty, setWholesaleMinQty] = useState("1");
+
+  useEffect(() => {
+    if (!product?.id) return;
+    getWholesalePrice(product.id)
+      .then((row) => {
+        if (!row) return;
+        setWholesalePrice(String(row.price));
+        setWholesaleMinQty(String(row.min_qty));
+      })
+      .catch(() => { /* an admin without the wholesale section just sees blanks */ });
+  }, [product?.id]);
 
   // Investor assignment (only relevant while isInvestable is checked)
   const [investors, setInvestors] = useState<Investor[]>([]);
@@ -191,6 +209,9 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       if (d.productType !== undefined) setProductType(d.productType);
       if (d.manufacturedQuantity !== undefined) setManufacturedQuantity(d.manufacturedQuantity);
       if (d.unitCost !== undefined) setUnitCost(d.unitCost);
+      if (d.isWholesale !== undefined) setIsWholesale(d.isWholesale);
+      if (d.wholesalePrice !== undefined) setWholesalePrice(d.wholesalePrice);
+      if (d.wholesaleMinQty !== undefined) setWholesaleMinQty(d.wholesaleMinQty);
       if (d.colors !== undefined) setColors(d.colors);
     } catch { /* corrupt draft — ignore */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -206,6 +227,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
           isActive, hasVariants, careInstructions, weight, length, breadth, height,
           stockQuantity, isInvestable, designName, designCode, designPreviewUrl,
           productType, manufacturedQuantity, unitCost, colors,
+          isWholesale, wholesalePrice, wholesaleMinQty,
         }));
       } catch { /* storage full — skip */ }
     }, 400);
@@ -214,7 +236,8 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       categoryId, material, imageUrl, galleryImages, isFeatured, isBestSeller,
       isActive, hasVariants, careInstructions, weight, length, breadth, height,
       stockQuantity, isInvestable, designName, designCode, designPreviewUrl,
-      productType, manufacturedQuantity, unitCost, colors]);
+      productType, manufacturedQuantity, unitCost, colors,
+      isWholesale, wholesalePrice, wholesaleMinQty]);
 
   const clearDraft = () => {
     try { localStorage.removeItem(draftKey); } catch { /* noop */ }
@@ -484,6 +507,9 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         product_type: isInvestable && productType ? productType : null,
         manufactured_quantity: isInvestable ? (parseInt(manufacturedQuantity, 10) || 0) : 0,
         unit_cost: isInvestable && unitCost ? parseFloat(unitCost) : null,
+        is_wholesale: isWholesale,
+        wholesale_price: isWholesale && wholesalePrice ? parseFloat(wholesalePrice) : null,
+        wholesale_min_qty: isWholesale ? (parseInt(wholesaleMinQty, 10) || 1) : 1,
       };
 
       // Prepare colors and variants for submission
@@ -778,6 +804,50 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
                       Investors see their allocated units, sales and earnings from their own dashboard once assigned here.
                     </p>
                   </div>
+                </div>
+              )}
+            </div>
+
+            {/* === WHOLESALE === */}
+            <div className="bg-sky-50 dark:bg-sky-900/20 rounded-xl border border-sky-200 dark:border-sky-800 p-4 space-y-4">
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={isWholesale}
+                  onChange={(e) => setIsWholesale(e.target.checked)}
+                  className="w-5 h-5 rounded border-gray-300 text-coral focus:ring-coral"
+                  id="is-wholesale"
+                />
+                <label htmlFor="is-wholesale" className="flex-1 cursor-pointer">
+                  <span className="font-semibold text-gray-900 dark:text-white block">Sell wholesale</span>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    Shows this product in the trade catalogue at a wholesale price. Retail shoppers never see that price.
+                  </span>
+                </label>
+              </div>
+
+              {isWholesale && (
+                <div className="grid grid-cols-2 gap-3 pt-1">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Wholesale price (₹)</label>
+                    <input
+                      type="number" min="0" step="0.01" value={wholesalePrice}
+                      onChange={(e) => setWholesalePrice(e.target.value)}
+                      placeholder="e.g. 420"
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Minimum order qty</label>
+                    <input
+                      type="number" min="1" step="1" value={wholesaleMinQty}
+                      onChange={(e) => setWholesaleMinQty(e.target.value)}
+                      className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm"
+                    />
+                  </div>
+                  <p className="col-span-2 text-xs text-gray-400">
+                    A trade buyer cannot order fewer than this many pieces of this product.
+                  </p>
                 </div>
               )}
             </div>
