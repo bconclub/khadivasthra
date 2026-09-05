@@ -101,7 +101,13 @@ export async function setWholesalePrice(
     .upsert({ product_id: productId, price, min_qty: Math.max(1, minQty) }, { onConflict: 'product_id' })
     .select('product_id');
   if (error) {
-    if (isMissingTable(error)) return;
+    // Clearing a price on a database without the table is a no-op, but silently
+    // swallowing a real price would leave the admin believing it saved.
+    if (isMissingTable(error)) {
+      throw new Error(
+        'Wholesale pricing is not set up on the database yet. Run the wholesale_price_protection migration, then set the trade price again. The product itself has been saved.'
+      );
+    }
     throw new Error(error.message);
   }
   if (!rows || rows.length === 0) {
