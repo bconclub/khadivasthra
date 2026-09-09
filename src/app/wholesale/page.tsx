@@ -43,63 +43,15 @@ export default function WholesalePage() {
     );
   }
 
-  if (!user) {
-    return (
-      <Shell>
-        <Notice
-          title="Trade pricing is for approved buyers"
-          body="Sign in to see wholesale rates and minimum order quantities."
-          action={
-            <div className="flex gap-3 justify-center">
-              <Link href="/wholesale/login">
-                <Button variant="primary" size="lg">Sign in</Button>
-              </Link>
-              <Link href="/wholesale/register">
-                <Button variant="secondary" size="lg">Apply for an account</Button>
-              </Link>
-            </div>
-          }
-        />
-      </Shell>
-    );
-  }
-
-  if (!account) {
-    return (
-      <Shell onSignOut={signOut}>
-        <Notice
-          title="Finish your application"
-          body="We do not have your business details yet. Complete the short form and we will review your account."
-          action={
-            <Link href="/wholesale/register">
-              <Button variant="primary" size="lg">Complete registration</Button>
-            </Link>
-          }
-        />
-      </Shell>
-    );
-  }
-
-  if (!approved) {
-    return (
-      <Shell onSignOut={signOut}>
-        <Notice
-          title="Your account is awaiting approval"
-          body={`Thanks, ${account.business_name || "we have your details"}. Our team reviews trade applications by hand — you will see wholesale pricing here as soon as it is approved.`}
-        />
-      </Shell>
-    );
-  }
-
   return (
-    <Shell onSignOut={signOut}>
-      <Catalogue businessName={account.business_name} />
+    <Shell onSignOut={user ? signOut : undefined}>
+      <Catalogue businessName={account?.business_name || ""} approved={approved} />
     </Shell>
   );
 }
 
-function Catalogue({ businessName }: { businessName: string }) {
-  const { data: products, loading } = useSupabaseQuery(getWholesaleProducts);
+function Catalogue({ businessName, approved }: { businessName: string; approved: boolean }) {
+  const { data: products, loading, error, refetch } = useSupabaseQuery(getWholesaleProducts, [approved]);
   const [cart, setCart] = useState<WholesaleCartItem[]>([]);
   const [notes, setNotes] = useState("");
   const [sending, setSending] = useState(false);
@@ -163,14 +115,20 @@ function Catalogue({ businessName }: { businessName: string }) {
     <div className="container mx-auto px-4 max-w-7xl py-8">
       <div className="mb-8">
         <span className="inline-block px-3 py-1 rounded-full bg-coral/10 text-coral text-xs font-semibold uppercase tracking-wider mb-3">
-          Trade pricing
+          Wholesale collection
         </span>
         <h1 className="text-3xl md:text-4xl font-bold text-text font-serif">Wholesale catalogue</h1>
         <p className="text-text-muted mt-2">
-          {businessName ? `${businessName} — ` : ""}rates below are trade only. Build your list and
-          send it across; we will come back with a quote.
+          {businessName ? `${businessName}: ` : ""}Explore bulk prices and minimum quantities. Build your list for a wholesale quote.
         </p>
       </div>
+
+      {error && (
+        <div role="alert" className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+          Wholesale products could not load. {error}
+          <button onClick={refetch} className="ml-3 underline font-semibold">Try again</button>
+        </div>
+      )}
 
       {sent && (
         <div className="mb-8 bg-green-50 border border-green-200 rounded-xl p-5 flex items-start gap-3">
@@ -186,7 +144,7 @@ function Catalogue({ businessName }: { businessName: string }) {
 
       <div className="grid lg:grid-cols-3 gap-8 items-start">
         <div className="lg:col-span-2">
-          {list.length === 0 ? (
+          {list.length === 0 && !error ? (
             <div className="text-center py-16 bg-white rounded-xl">
               <p className="text-text-muted">No products are open for wholesale yet.</p>
             </div>
@@ -270,7 +228,7 @@ function Catalogue({ businessName }: { businessName: string }) {
                 className="w-full mt-4 px-3 py-2 rounded-lg border border-gray-200 text-sm resize-none focus:ring-2 focus:ring-coral focus:border-transparent"
               />
 
-              <Button
+              {approved ? <Button
                 variant="primary"
                 size="lg"
                 className="w-full mt-3"
@@ -282,7 +240,13 @@ function Catalogue({ businessName }: { businessName: string }) {
                 ) : (
                   "Send enquiry"
                 )}
-              </Button>
+              </Button> : (
+                <div className="mt-4 border-t border-gray-100 pt-4">
+                  <p className="text-sm text-text-muted mb-3">Your selection is saved. An approved trade account is needed to send an enquiry.</p>
+                  <Link href="/wholesale/login" className="block text-center rounded-lg bg-coral px-4 py-3 text-sm font-semibold text-white">Sign in to send enquiry</Link>
+                  <Link href="/wholesale/register" className="block text-center mt-3 text-sm text-text-muted underline">Register a trade account</Link>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -314,7 +278,11 @@ function TradeCard({ row, onAdd }: { row: WholesaleProduct; onAdd: () => void })
         <div className="mt-2 mb-3">
           <span className="text-base font-bold text-text">{money(price)}</span>
           <span className="text-xs text-text-muted"> / piece</span>
-          <p className="text-xs text-coral font-medium">Minimum {min} pieces</p>
+          <div className="mt-3 rounded-lg bg-amber-50 border border-amber-200 px-3 py-2">
+            <p className="text-[10px] uppercase tracking-wider text-amber-800">Minimum order</p>
+            <p className="text-sm font-bold text-amber-950">{min} pieces</p>
+            <p className="text-xs text-amber-800 mt-0.5">From {money(price * min)} per lot</p>
+          </div>
         </div>
         <Button variant="primary" size="sm" className="w-full mt-auto" onClick={onAdd}>
           Add to enquiry
@@ -370,22 +338,22 @@ function Shell({
 }) {
   return (
     <div className="min-h-screen bg-cream">
-      <header className="bg-white border-b border-gray-100">
+      <header className="bg-coral border-b border-white/10">
         <div className="container mx-auto px-4 max-w-7xl h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center">
             <Image
-              src="/KV Logo Colour.webp"
+              src="/logo-lanuages_hero/Artboard 1.webp"
               alt="Khadi Vasthra"
-              width={140}
-              height={44}
-              className="h-9 w-auto object-contain"
+              width={1080}
+              height={519}
+              className="h-11 w-auto object-contain"
               priority
             />
           </Link>
           {onSignOut && (
             <button
               onClick={() => onSignOut()}
-              className="inline-flex items-center gap-1.5 text-sm text-text-muted hover:text-coral"
+              className="inline-flex items-center gap-1.5 text-sm text-white hover:text-white/80"
             >
               <LogOut className="w-4 h-4" /> Sign out
             </button>

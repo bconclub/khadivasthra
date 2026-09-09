@@ -3,7 +3,7 @@ import { WholesaleAuthProvider } from "@/context/WholesaleAuthContext";
 
 export const metadata: Metadata = {
   title: "Wholesale | Khadi Vasthra",
-  description: "Trade pricing on Kerala handloom, for approved wholesale buyers.",
+  description: "Browse Kerala handloom wholesale prices and minimum order quantities.",
 };
 
 export default function WholesaleLayout({ children }: { children: React.ReactNode }) {

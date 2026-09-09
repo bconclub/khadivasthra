@@ -6,13 +6,14 @@ import { getProductColors, getProductVariants } from "@/lib/services/products";
 import { getWholesalePrice } from "@/lib/services/wholesale";
 import { storageImage, IMG } from "@/lib/image";
 import { Button } from "@/components/ui/button";
+import { SlideOver } from "@/components/admin/SlideOver";
 import type {
   ProductColor,
   ProductVariant,
   ProductWithCategory,
   WholesalePrice,
 } from "@/types";
-import { X, Pencil, ExternalLink, Loader2 } from "lucide-react";
+import { Pencil, ExternalLink, Loader2 } from "lucide-react";
 
 interface ProductDetailPanelProps {
   product: ProductWithCategory | null;
@@ -55,9 +56,6 @@ export function ProductDetailPanel({ product, onClose, onEdit }: ProductDetailPa
     Promise.all(jobs).finally(() => setLoading(false));
   }, [product]);
 
-  // Rendered but closed so the slide-in transition has something to move from.
-  const open = product !== null;
-
   const gallery = product
     ? [product.image_url, ...(product.images || [])].filter(
         (src, i, all): src is string => Boolean(src) && all.indexOf(src) === i
@@ -69,42 +67,17 @@ export function ProductDetailPanel({ product, onClose, onEdit }: ProductDetailPa
       .filter((v) => v.color_id === colorId)
       .reduce((n, v) => n + (v.stock_quantity || 0), 0);
 
-  return (
-    <>
-      <div
-        onClick={onClose}
-        className={`fixed inset-0 bg-black/40 z-40 transition-opacity ${
-          open ? "opacity-100" : "opacity-0 pointer-events-none"
-        }`}
-      />
-      <aside
-        className={`fixed top-0 right-0 h-full w-full max-w-md bg-white dark:bg-gray-900 shadow-2xl z-50 flex flex-col transition-transform duration-300 ${
-          open ? "translate-x-0" : "translate-x-full"
-        }`}
-        aria-hidden={!open}
-      >
-        {product && (
-          <>
-            <header className="flex items-start gap-3 p-4 border-b border-gray-100 dark:border-gray-700">
-              <div className="flex-1 min-w-0">
-                <p className="text-xs uppercase tracking-wide text-gray-400">
-                  {product.category?.name || "Uncategorised"}
-                </p>
-                <h2 className="font-bold text-gray-900 dark:text-white leading-tight">
-                  {product.name}
-                </h2>
-                <p className="text-xs text-gray-400 font-mono truncate">{product.slug}</p>
-              </div>
-              <button
-                onClick={onClose}
-                className="p-1.5 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
-                aria-label="Close"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </header>
+  if (!product) return null;
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-5">
+  return (
+    <SlideOver
+      title={product.name}
+      subtitle={`${product.category?.name || "Uncategorised"} · ${product.slug}`}
+      onClose={onClose}
+      width="md"
+    >
+      <div className="flex flex-col h-full">
+        <div className="flex-1 p-4 space-y-5">
               {/* Photos */}
               {gallery.length > 0 && (
                 <div className="flex gap-2 overflow-x-auto pb-1">
@@ -261,7 +234,7 @@ export function ProductDetailPanel({ product, onClose, onEdit }: ProductDetailPa
               </Section>
             </div>
 
-            <footer className="p-4 border-t border-gray-100 dark:border-gray-700 flex gap-2">
+        <footer className="p-4 border-t border-gray-100 dark:border-gray-700 flex gap-2 sticky bottom-0 bg-white dark:bg-gray-900">
               <Button variant="primary" className="flex-1" onClick={() => onEdit(product)}>
                 <Pencil className="w-4 h-4 mr-2" /> Edit
               </Button>
@@ -273,11 +246,9 @@ export function ProductDetailPanel({ product, onClose, onEdit }: ProductDetailPa
               >
                 <ExternalLink className="w-4 h-4" />
               </a>
-            </footer>
-          </>
-        )}
-      </aside>
-    </>
+        </footer>
+      </div>
+    </SlideOver>
   );
 }
 

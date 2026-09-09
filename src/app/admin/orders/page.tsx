@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { SlideOver } from "@/components/admin/SlideOver";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getOrders, updateOrderStatus, updateOrder, checkPaymentStatus } from "@/lib/services/orders";
@@ -1916,10 +1917,17 @@ export default function AdminOrdersPage() {
                   )}
                 </div>
 
-                {/* Expanded Details */}
+                {/* Everything about the order opens in the right-hand panel, so
+                    the list keeps its place instead of pushing rows around. */}
                 {expandedOrder === order.id && (
-                  <div className="px-4 md:px-6 py-4 border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 overflow-hidden">
-                    <div className="grid md:grid-cols-2 gap-6 min-w-0">
+                  <SlideOver
+                    title={`Order ${order.order_number}`}
+                    subtitle={`${order.customer_name} · ₹${Number(order.total).toLocaleString()}`}
+                    onClose={() => setExpandedOrder(null)}
+                    width="lg"
+                  >
+                  <div className="px-4 md:px-6 py-4 overflow-hidden">
+                    <div className="grid gap-6 min-w-0">
                       {/* Customer Details */}
                       <div>
                         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Customer Details</h3>
@@ -2112,6 +2120,7 @@ export default function AdminOrdersPage() {
                       </div>
                     </div>
                   </div>
+                  </SlideOver>
                 )}
               </div>
             ))}

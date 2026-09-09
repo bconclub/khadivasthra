@@ -22,9 +22,9 @@ export interface WholesaleProduct {
 }
 
 /**
- * The trade catalogue. The prices come from `wholesale_prices`, which only an
- * approved buyer (or an admin) can read, so an unapproved or logged-out visitor
- * gets an empty list rather than a price sheet.
+ * Public catalogue. The public SELECT policy exposes prices only for active
+ * wholesale products while the channel is enabled. Account approval is still
+ * required to submit an enquiry.
  */
 export async function getWholesaleProducts(): Promise<WholesaleProduct[]> {
   if (!(await wholesaleEnabled())) return [];
@@ -33,7 +33,6 @@ export async function getWholesaleProducts(): Promise<WholesaleProduct[]> {
     .from('wholesale_prices')
     .select('*');
   if (pErr) {
-    if (isMissingTable(pErr)) return [];
     throw new Error(pErr.message);
   }
   const rows = (prices || []) as WholesalePrice[];
