@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import CombosIndexClient from "./CombosIndexClient";
+import { Suspense } from "react";
+import ComboRouter from "./ComboRouter";
 
 export const metadata: Metadata = {
   title: "Combos | Khadi Vasthra",
@@ -9,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function CombosPage() {
-  return <CombosIndexClient />;
+  return <Suspense fallback={<div className="min-h-screen bg-cream p-12 text-center">Loading combos...</div>}><ComboRouter /></Suspense>;
 }

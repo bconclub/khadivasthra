@@ -23,8 +23,8 @@ export interface WholesaleProduct {
 
 /**
  * Public catalogue. The public SELECT policy exposes prices only for active
- * wholesale products while the channel is enabled. Account approval is still
- * required to submit an enquiry.
+ * wholesale products while the channel is enabled. Guests submit enquiries
+ * through a validated database function without an account.
  */
 export async function getWholesaleProducts(): Promise<WholesaleProduct[]> {
   if (!(await wholesaleEnabled())) return [];
@@ -156,32 +156,19 @@ export async function registerAccount(input: RegisterInput): Promise<WholesaleAc
 
 export async function submitEnquiry(
   items: WholesaleEnquiryItem[],
-  notes: string | null
-): Promise<WholesaleEnquiry> {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error('You need to be signed in to send an enquiry.');
-  if (items.length === 0) throw new Error('Your enquiry is empty.');
-
-  const short = items.find((i) => i.quantity < i.min_qty);
-  if (short) {
-    throw new Error(
-      `${short.product_name} has a minimum order of ${short.min_qty} pieces.`
-    );
-  }
-
-  const { data, error } = await supabase
-    .from('wholesale_enquiries')
-    .insert({
-      account_id: user.id,
-      items,
-      item_count: items.reduce((n, i) => n + i.quantity, 0),
-      estimated_total: items.reduce((n, i) => n + i.subtotal, 0),
-      notes,
-    })
-    .select()
-    .single();
+  notes: string | null,
+  contact: { name: string; phone: string; business: string }
+): Promise<{ enquiry_number: string }> {
+  if (!items.length) throw new Error('Your enquiry is empty.');
+  const { data, error } = await supabase.rpc('submit_guest_wholesale_enquiry', {
+    requested_items: items.map((i) => ({ product_id: i.product_id, quantity: i.quantity })),
+    buyer_name: contact.name.trim(),
+    buyer_phone: contact.phone.trim(),
+    buyer_business: contact.business.trim(),
+    buyer_notes: notes,
+  });
   if (error) throw new Error(error.message);
-  return data as WholesaleEnquiry;
+  return { enquiry_number: data as string };
 }
 
 export async function getMyEnquiries(): Promise<WholesaleEnquiry[]> {

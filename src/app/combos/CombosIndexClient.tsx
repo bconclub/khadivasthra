@@ -52,7 +52,7 @@ export default function CombosIndexClient() {
 /** Shared card used on the combos index and the homepage strip. */
 export function ComboCard({ combo }: { combo: Combo }) {
   return (
-    <Link href={`/combos/${combo.slug}`} className="group block">
+    <Link href={`/combos/?combo=${encodeURIComponent(combo.slug)}`} className="group block">
       <div className="relative aspect-[4/5] rounded-2xl overflow-hidden shadow-md bg-cream/50">
         {combo.image_url && (
           <Image

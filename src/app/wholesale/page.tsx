@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useWholesaleAuth } from "@/context/WholesaleAuthContext";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getWholesaleProducts, submitEnquiry, wholesaleEnabled } from "@/lib/services/wholesale";
 import {
@@ -19,16 +18,15 @@ import { storageImage, IMG } from "@/lib/image";
 import { Button } from "@/components/ui/button";
 import type { WholesaleCartItem } from "@/types";
 import type { WholesaleProduct } from "@/lib/services/wholesale";
-import { Loader2, Minus, Plus, Trash2, CheckCircle2, LogOut } from "lucide-react";
+import { Loader2, Minus, Plus, Trash2, CheckCircle2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 const money = (n: number) => `₹${Number(n).toLocaleString("en-IN")}`;
 
 export default function WholesalePage() {
-  const { ready, user, account, approved, signOut } = useWholesaleAuth();
   const { data: enabled, loading: loadingFlag } = useSupabaseQuery(wholesaleEnabled);
 
-  if (loadingFlag || !ready) return <FullPageSpinner />;
+  if (loadingFlag) return <FullPageSpinner />;
 
   // The master switch is checked live, so switching the channel off takes effect
   // without waiting for a rebuild.
@@ -44,16 +42,17 @@ export default function WholesalePage() {
   }
 
   return (
-    <Shell onSignOut={user ? signOut : undefined}>
-      <Catalogue businessName={account?.business_name || ""} approved={approved} />
+    <Shell>
+      <Catalogue />
     </Shell>
   );
 }
 
-function Catalogue({ businessName, approved }: { businessName: string; approved: boolean }) {
-  const { data: products, loading, error, refetch } = useSupabaseQuery(getWholesaleProducts, [approved]);
+function Catalogue() {
+  const { data: products, loading, error, refetch } = useSupabaseQuery(getWholesaleProducts);
   const [cart, setCart] = useState<WholesaleCartItem[]>([]);
   const [notes, setNotes] = useState("");
+  const [contact, setContact] = useState({ name: "", phone: "", business: "" });
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState<string | null>(null);
 
@@ -81,6 +80,10 @@ function Catalogue({ businessName, approved }: { businessName: string; approved:
   };
 
   const send = async () => {
+    if (!contact.name.trim() || contact.phone.replace(/\D/g, "").length < 7) {
+      toast.error("Enter your name and a valid phone number.");
+      return;
+    }
     setSending(true);
     try {
       const enquiry = await submitEnquiry(
@@ -93,7 +96,8 @@ function Catalogue({ businessName, approved }: { businessName: string; approved:
           subtotal: i.quantity * i.wholesale_price,
           min_qty: i.min_qty,
         })),
-        notes || null
+        notes || null,
+        contact
       );
       clearEnquiryCart();
       setCart([]);
@@ -119,7 +123,7 @@ function Catalogue({ businessName, approved }: { businessName: string; approved:
         </span>
         <h1 className="text-3xl md:text-4xl font-bold text-text font-serif">Wholesale catalogue</h1>
         <p className="text-text-muted mt-2">
-          {businessName ? `${businessName}: ` : ""}Explore bulk prices and minimum quantities. Build your list for a wholesale quote.
+          Explore bulk prices and minimum quantities. Build your list for a wholesale quote.
         </p>
       </div>
 
@@ -220,6 +224,20 @@ function Catalogue({ businessName, approved }: { businessName: string; approved:
                 </p>
               </div>
 
+              <div className="mt-4 space-y-3">
+                <p className="text-sm font-semibold text-text">Contact details</p>
+                <p className="text-xs text-text-muted">No account needed. We will contact you with a quote.</p>
+                {(["name", "phone", "business"] as const).map((field) => (
+                  <label key={field} className="block text-sm text-text">
+                    {field === "name" ? "Your name" : field === "phone" ? "Phone number" : "Business name (optional)"}
+                    <input type={field === "phone" ? "tel" : "text"} value={contact[field]}
+                      required={field !== "business"} maxLength={field === "phone" ? 30 : 120}
+                      autoComplete={field === "phone" ? "tel" : field === "name" ? "name" : "organization"}
+                      onChange={(e) => setContact({ ...contact, [field]: e.target.value })}
+                      className="mt-1 w-full rounded-lg border border-gray-200 px-3 py-2" />
+                  </label>
+                ))}
+              </div>
               <textarea
                 rows={3}
                 value={notes}
@@ -228,7 +246,7 @@ function Catalogue({ businessName, approved }: { businessName: string; approved:
                 className="w-full mt-4 px-3 py-2 rounded-lg border border-gray-200 text-sm resize-none focus:ring-2 focus:ring-coral focus:border-transparent"
               />
 
-              {approved ? <Button
+              <Button
                 variant="primary"
                 size="lg"
                 className="w-full mt-3"
@@ -240,13 +258,7 @@ function Catalogue({ businessName, approved }: { businessName: string; approved:
                 ) : (
                   "Send enquiry"
                 )}
-              </Button> : (
-                <div className="mt-4 border-t border-gray-100 pt-4">
-                  <p className="text-sm text-text-muted mb-3">Your selection is saved. An approved trade account is needed to send an enquiry.</p>
-                  <Link href="/wholesale/login" className="block text-center rounded-lg bg-coral px-4 py-3 text-sm font-semibold text-white">Sign in to send enquiry</Link>
-                  <Link href="/wholesale/register" className="block text-center mt-3 text-sm text-text-muted underline">Register a trade account</Link>
-                </div>
-              )}
+              </Button>
             </>
           )}
         </div>
@@ -329,13 +341,7 @@ function QtyStepper({
   );
 }
 
-function Shell({
-  children,
-  onSignOut,
-}: {
-  children: React.ReactNode;
-  onSignOut?: () => Promise<void>;
-}) {
+function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-cream">
       <header className="bg-coral border-b border-white/10">
@@ -350,14 +356,7 @@ function Shell({
               priority
             />
           </Link>
-          {onSignOut && (
-            <button
-              onClick={() => onSignOut()}
-              className="inline-flex items-center gap-1.5 text-sm text-white hover:text-white/80"
-            >
-              <LogOut className="w-4 h-4" /> Sign out
-            </button>
-          )}
+
         </div>
       </header>
       {children}

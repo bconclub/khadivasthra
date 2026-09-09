@@ -514,7 +514,10 @@ export interface WholesaleEnquiryItem {
 export interface WholesaleEnquiry {
   id: string;
   enquiry_number: string | null;
-  account_id: string;
+  account_id: string | null;
+  contact_name?: string | null;
+  contact_phone?: string | null;
+  business_name?: string | null;
   items: WholesaleEnquiryItem[];
   item_count: number;
   estimated_total: number;

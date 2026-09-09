@@ -1,0 +1,14 @@
+{
+  "redirects": [
+    {
+      "source": "/combos/:slug/",
+      "destination": "/combos/?combo=:slug",
+      "permanent": false
+    },
+    {
+      "source": "/combos/:slug",
+      "destination": "/combos/?combo=:slug",
+      "permanent": false
+    }
+  ]
+}

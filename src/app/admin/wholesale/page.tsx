@@ -26,7 +26,7 @@ const STATUS_STYLE: Record<WholesaleEnquiryStatus, string> = {
 const money = (n: number) => `₹${Number(n).toLocaleString("en-IN")}`;
 
 export default function AdminWholesalePage() {
-  const [tab, setTab] = useState<"accounts" | "enquiries">("accounts");
+  const [tab, setTab] = useState<"accounts" | "enquiries">("enquiries");
 
   return (
     <AdminShell>
@@ -179,7 +179,7 @@ function EnquiriesTab() {
             </span>
             <span className="flex-1 min-w-0">
               <span className="block font-medium text-gray-900 dark:text-white truncate">
-                {e.account?.business_name || "Unknown business"}
+                {e.business_name || e.contact_name || e.account?.business_name || "Wholesale enquiry"}
               </span>
               <span className="block text-xs text-gray-400">
                 {e.item_count} pieces · {new Date(e.created_at).toLocaleDateString("en-IN")}
@@ -203,8 +203,8 @@ function EnquiriesTab() {
               <div className="grid sm:grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-xs uppercase tracking-wide text-gray-400 mb-1">Buyer</p>
-                  <p className="text-gray-700 dark:text-gray-300">{e.account?.contact_name || "-"}</p>
-                  <p className="text-gray-500">{e.account?.phone || e.account?.email || ""}</p>
+                  <p className="text-gray-700 dark:text-gray-300">{e.contact_name || e.account?.contact_name || "-"}</p>
+                  <p className="text-gray-500">{e.contact_phone || e.account?.phone || e.account?.email || ""}</p>
                   <p className="text-gray-500">
                     {[e.account?.address, e.account?.city, e.account?.state, e.account?.pincode]
                       .filter(Boolean)

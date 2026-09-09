@@ -55,7 +55,7 @@ export default function HomeClient({
   // until someone remembered to publish a fresh build.
   const { data: siteSettings } = useSupabaseQuery(getSettings);
   const showLooks =
-    siteSettings != null ? siteSettings.looks_enabled === true : initialFeaturedLooks.length > 0;
+    siteSettings?.looks_enabled === true;
   const showCombos =
     siteSettings != null ? siteSettings.combos_enabled === true : initialFeaturedCombos.length > 0;
   // Admin-managed hero cover (separate mobile/desktop images); falls back to
