@@ -1,12 +1,12 @@
 {
   "redirects": [
     {
-      "source": "/combos/:slug/",
+      "source": "/combos/:slug([a-zA-Z0-9_-]+)/",
       "destination": "/combos/?combo=:slug",
       "permanent": false
     },
     {
-      "source": "/combos/:slug",
+      "source": "/combos/:slug([a-zA-Z0-9_-]+)",
       "destination": "/combos/?combo=:slug",
       "permanent": false
     }
