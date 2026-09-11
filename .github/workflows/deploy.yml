@@ -57,30 +57,13 @@ jobs:
         run: |
           mkdir -p deploy
 
-          # 1. Copy Next.js static export
+          # Next.js export already contains storefront and admin routes.
           cp -r out/* deploy/
 
-          # 2. Merge admin PHP backend into admin/ directory
-          mkdir -p deploy/admin/api
-          mkdir -p deploy/admin/includes
-          mkdir -p deploy/admin/data
-          mkdir -p deploy/admin/uploads
-
-          # PHP API endpoints
-          cp admin/api/*.php deploy/admin/api/
-
-          # PHP includes (config, functions, auth)
-          cp admin/includes/*.php deploy/admin/includes/
-
-          # Admin .htaccess for Apache PHP processing
-          cp admin/.htaccess deploy/admin/
-
-          # Seed data files
-          cp admin/data/*.json deploy/admin/data/ 2>/dev/null || true
-          touch deploy/admin/uploads/.gitkeep
-
           echo "=== Deploy directory ready ==="
-          find deploy/admin -type f | sort
+          test -f deploy/index.html
+          test -f deploy/admin/index.html
+          test -f deploy/version.json
 
       - name: Deploy via FTP
         run: |
