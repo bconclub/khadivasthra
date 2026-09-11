@@ -75,6 +75,17 @@ CREATE TABLE orders (
   settlement_date DATE,
   is_billed BOOLEAN NOT NULL DEFAULT false,
   billed_at TIMESTAMPTZ,
+  shipping_provider TEXT,
+  shipping_provider_order_id TEXT,
+  shipping_provider_shipment_id TEXT,
+  shipping_status TEXT,
+  shipping_label_url TEXT,
+  courier_id TEXT,
+  awb_code TEXT,
+  courier_name TEXT,
+  tracking_url TEXT,
+  charged_weight NUMERIC(8,3),
+  shipping_metadata JSONB NOT NULL DEFAULT '{}'::jsonb,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );

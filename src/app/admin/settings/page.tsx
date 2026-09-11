@@ -4,8 +4,9 @@ import { useState, useEffect } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getSettings, updateSettings } from "@/lib/services/settings";
+import { getShipwaySetupStatus, type ShipwaySetupStatus } from "@/lib/services/shipway";
 import { Button } from "@/components/ui/button";
-import { Loader2, Save } from "lucide-react";
+import { CheckCircle2, CircleAlert, Loader2, RefreshCw, Save } from "lucide-react";
 import toast from "react-hot-toast";
 import type { SiteSettings, ShippingTier } from "@/types";
 
@@ -40,6 +41,19 @@ export default function AdminSettingsPage() {
   const [combosEnabled, setCombosEnabled] = useState(false);
   const [savingCombos, setSavingCombos] = useState(false);
   const [tiers, setTiers] = useState<ShippingTier[]>(DEFAULT_TIERS);
+  const [shipwayStatus, setShipwayStatus] = useState<ShipwaySetupStatus | null>(null);
+  const [checkingShipway, setCheckingShipway] = useState(false);
+
+  const checkShipway = async () => {
+    setCheckingShipway(true);
+    try {
+      setShipwayStatus(await getShipwaySetupStatus());
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not check Shipway backend");
+    } finally {
+      setCheckingShipway(false);
+    }
+  };
 
   useEffect(() => {
     if (settings) {
@@ -319,6 +333,46 @@ export default function AdminSettingsPage() {
             >
               + Add tier
             </button>
+          </div>
+
+          {/* Shipway */}
+          <div className={cardClass}>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className={cardTitleClass}>Shipway Backend</h2>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                  Private credentials stay in Supabase. Shiprocket remains active until Shipway is ready.
+                </p>
+              </div>
+              <Button type="button" variant="outline" onClick={checkShipway} disabled={checkingShipway}>
+                {checkingShipway ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                Check backend
+              </Button>
+            </div>
+            {shipwayStatus && (
+              <div className={`rounded-lg border p-4 ${shipwayStatus.configured ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/20" : "border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/20"}`}>
+                <div className="flex items-center gap-2 font-medium text-sm">
+                  {shipwayStatus.configured
+                    ? <CheckCircle2 className="w-4 h-4 text-green-600" />
+                    : <CircleAlert className="w-4 h-4 text-amber-600" />}
+                  {shipwayStatus.configured ? "Ready for a test shipment" : "Setup incomplete"}
+                </div>
+                {shipwayStatus.missing.length > 0 && (
+                  <div className="mt-3">
+                    <p className="text-xs text-gray-600 dark:text-gray-300 mb-1">Missing Supabase secrets:</p>
+                    <div className="flex flex-wrap gap-1.5">
+                      {shipwayStatus.missing.map((name) => (
+                        <code key={name} className="rounded bg-white/80 dark:bg-black/20 px-2 py-1 text-[11px]">{name}</code>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
+                  Pickup {shipwayStatus.pickup_pincode}. Packaging {shipwayStatus.parcel_defaults.packaging_weight_kg} kg.
+                  Minimum box {shipwayStatus.parcel_defaults.min_box_cm.join(" × ")} cm.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Store Information */}

@@ -241,17 +241,10 @@ export async function verifyRazorpayPayment(
   });
 }
 
-// Shipment tracking stub (Shiprocket removed)
 export async function trackShipment(
-  _orderNumber: string
+  orderNumber: string
 ): Promise<TrackingResult> {
-  return {
-    status: 'unknown',
-    current_status: 'Tracking not available',
-    tracking_url: null,
-    etd: null,
-    scans: [],
-  };
+  return invokeEdgeFunction('shipway-track', { order_number: orderNumber });
 }
 
 // Shipping serviceability via Shiprocket edge function

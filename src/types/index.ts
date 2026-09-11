@@ -181,6 +181,17 @@ export interface Order {
   settlement_date: string | null;
   is_billed: boolean;
   billed_at: string | null;
+  shipping_provider: 'shipway' | 'shiprocket' | null;
+  shipping_provider_order_id: string | null;
+  shipping_provider_shipment_id: string | null;
+  shipping_status: string | null;
+  shipping_label_url: string | null;
+  courier_id: string | null;
+  awb_code: string | null;
+  courier_name: string | null;
+  tracking_url: string | null;
+  charged_weight: number | null;
+  shipping_metadata: Record<string, unknown>;
   created_at: string;
   updated_at: string;
 }

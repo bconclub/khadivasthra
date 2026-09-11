@@ -1,4 +1,4 @@
--- Color-First Product Variation System
+-- Color-First Product Variation System, fixed migration
 -- Separates colors (with images) from size variants
 
 -- Enable moddatetime extension for updated_at

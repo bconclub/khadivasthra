@@ -1,4 +1,4 @@
--- Color-First Product Variation System
+-- Color-First Product Variation System, v2 migration
 -- Separates colors (with images) from size variants
 
 -- Step 1: Add has_variants to products table
