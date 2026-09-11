@@ -12,6 +12,12 @@ concurrency:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    # These NEXT_PUBLIC values are browser credentials already embedded in the
+    # storefront bundle. Never add the Supabase service-role key here.
+    env:
+      NEXT_PUBLIC_SUPABASE_URL: 'https://etjxdomvtsxrnbjmjzxz.supabase.co'
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0anhkb212dHN4cm5iam1qenh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5NzM1NDYsImV4cCI6MjA4NjU0OTU0Nn0.wGyjd0vq35jhiqINXtt4cneevGXUYb49XRzWyYUD4xY'
+      NEXT_PUBLIC_RAZORPAY_KEY_ID: 'rzp_live_SK4KuQeOlV5'
 
     steps:
       - name: Checkout code
