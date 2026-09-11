@@ -78,6 +78,8 @@ jobs:
 
           echo "=== Deploying to domains/khadivasthra.com/public_html/ ==="
 
+          set +e
+          FTP_LOG=$(mktemp)
           lftp -u "${{ secrets.FTP_USERNAME }},${{ secrets.FTP_PASSWORD }}" "${{ secrets.FTP_HOST }}" -e "
             set ftp:ssl-allow no;
             set mirror:use-pget-n 5;
@@ -88,6 +90,14 @@ jobs:
               --exclude-glob node_modules/ \
               ./deploy/ domains/khadivasthra.com/public_html/;
             quit
-          "
+          " > "$FTP_LOG" 2>&1
+          FTP_STATUS=$?
+          tail -50 "$FTP_LOG"
+
+          if [ "$FTP_STATUS" -ne 0 ]; then
+            FTP_ERROR=$(tail -10 "$FTP_LOG" | tr '\n' ' ' | sed 's/%/%25/g; s/\r/%0D/g; s/\n/%0A/g')
+            echo "::error title=Hostinger FTP failed::$FTP_ERROR"
+            exit "$FTP_STATUS"
+          fi
 
           echo "=== Deploy complete ==="
