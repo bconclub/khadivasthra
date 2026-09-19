@@ -350,12 +350,12 @@ export default function AdminSettingsPage() {
               </Button>
             </div>
             {shipwayStatus && (
-              <div className={`rounded-lg border p-4 ${shipwayStatus.configured ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/20" : "border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/20"}`}>
+              <div className={`rounded-lg border p-4 ${shipwayStatus.ready_for_booking ? "border-green-200 bg-green-50 dark:border-green-900 dark:bg-green-950/20" : "border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950/20"}`}>
                 <div className="flex items-center gap-2 font-medium text-sm">
-                  {shipwayStatus.configured
+                  {shipwayStatus.ready_for_booking
                     ? <CheckCircle2 className="w-4 h-4 text-green-600" />
                     : <CircleAlert className="w-4 h-4 text-amber-600" />}
-                  {shipwayStatus.configured ? "Ready for a test shipment" : "Setup incomplete"}
+                  {shipwayStatus.ready_for_booking ? "Ready for a test shipment" : "Setup incomplete"}
                 </div>
                 {shipwayStatus.missing.length > 0 && (
                   <div className="mt-3">
@@ -367,9 +367,27 @@ export default function AdminSettingsPage() {
                     </div>
                   </div>
                 )}
+                {shipwayStatus.connection_error && (
+                  <p className="mt-3 text-xs text-red-700 dark:text-red-300">{shipwayStatus.connection_error}</p>
+                )}
+                {shipwayStatus.warehouse && (() => {
+                  const pickup = shipwayStatus.warehouse.available.find(
+                    (item) => item.warehouse_id === shipwayStatus.warehouse?.warehouse_id,
+                  );
+                  return (
+                    <p className="mt-3 text-xs text-gray-600 dark:text-gray-300">
+                      Warehouse: {pickup?.title || shipwayStatus.warehouse.warehouse_id}
+                      {pickup?.city ? `, ${pickup.city}` : ""}
+                      {pickup?.pincode ? `, ${pickup.pincode}` : ""}. ID {shipwayStatus.warehouse.warehouse_id}.
+                    </p>
+                  );
+                })()}
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
                   Pickup {shipwayStatus.pickup_pincode}. Packaging {shipwayStatus.parcel_defaults.packaging_weight_kg} kg.
                   Minimum box {shipwayStatus.parcel_defaults.min_box_cm.join(" × ")} cm.
+                </p>
+                <p className="text-[11px] text-gray-400 dark:text-gray-500 mt-2">
+                  Default warehouse is detected from Shipway. Warehouse ID secrets are optional overrides.
                 </p>
               </div>
             )}

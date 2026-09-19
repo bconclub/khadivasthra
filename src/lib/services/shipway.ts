@@ -2,6 +2,9 @@ import { supabase } from "@/lib/supabase";
 
 export interface ShipwaySetupStatus {
   configured: boolean;
+  credentials_valid: boolean;
+  ready_for_booking: boolean;
+  connection_error: string | null;
   missing: string[];
   required: string[];
   optional: string[];
@@ -10,6 +13,17 @@ export interface ShipwaySetupStatus {
     packaging_weight_kg: number;
     min_box_cm: number[];
   };
+  warehouse: {
+    warehouse_id: string;
+    return_warehouse_id: string;
+    available: Array<{
+      warehouse_id: string;
+      title: string;
+      city: string;
+      pincode: string;
+      is_default: boolean;
+    }>;
+  } | null;
 }
 
 async function invokeShipwayAdmin(body: Record<string, unknown>) {

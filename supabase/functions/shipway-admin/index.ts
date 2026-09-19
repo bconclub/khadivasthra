@@ -2,11 +2,13 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import {
   cleanPhone,
   corsHeaders,
+  fetchShipwayWarehouses,
   finiteNumber,
   getShipwayConfig,
   json,
   missingShipwaySecrets,
   requireOrderAdmin,
+  resolveShipwayWarehouseIds,
   shipwayRequest,
 } from "../_shared/shipway.ts";
 
@@ -46,16 +48,30 @@ serve(async (req) => {
     const missing = missingShipwaySecrets(config);
 
     if (action === "status") {
+      let credentialsValid = false;
+      let connectionError: string | null = null;
+      let resolvedWarehouse: Awaited<ReturnType<typeof resolveShipwayWarehouseIds>> | null = null;
+      if (missing.length === 0) {
+        try {
+          resolvedWarehouse = await resolveShipwayWarehouseIds(config);
+          credentialsValid = true;
+        } catch (error) {
+          connectionError = error instanceof Error ? error.message : "Could not connect to Shipway";
+        }
+      }
       return json({
-        configured: missing.length === 0,
+        configured: credentialsValid,
+        credentials_valid: credentialsValid,
+        ready_for_booking: credentialsValid && Boolean(resolvedWarehouse),
+        connection_error: connectionError,
         missing,
         required: [
           "SHIPWAY_EMAIL",
           "SHIPWAY_LICENSE_KEY",
-          "SHIPWAY_WAREHOUSE_ID",
-          "SHIPWAY_RETURN_WAREHOUSE_ID",
         ],
         optional: [
+          "SHIPWAY_WAREHOUSE_ID",
+          "SHIPWAY_RETURN_WAREHOUSE_ID",
           "SHIPWAY_PICKUP_PINCODE",
           "SHIPWAY_PACKAGING_WEIGHT_KG",
           "SHIPWAY_MIN_BOX_LENGTH_CM",
@@ -71,6 +87,13 @@ serve(async (req) => {
             config.minBoxHeightCm,
           ],
         },
+        warehouse: resolvedWarehouse
+          ? {
+              warehouse_id: resolvedWarehouse.warehouseId,
+              return_warehouse_id: resolvedWarehouse.returnWarehouseId,
+              available: resolvedWarehouse.warehouses,
+            }
+          : null,
       });
     }
 
@@ -79,8 +102,7 @@ serve(async (req) => {
     }
 
     if (action === "warehouses") {
-      const response = await shipwayRequest("/api/getwarehouses", { method: "GET" }, config);
-      return json({ warehouses: response });
+      return json({ warehouses: await fetchShipwayWarehouses(config) });
     }
 
     const orderId = safeId(input.order_id);
@@ -130,6 +152,8 @@ serve(async (req) => {
       return json({ error: `Order is already booked with ${order.shipping_provider}` }, 409);
     }
 
+    const warehouse = await resolveShipwayWarehouseIds(config);
+
     const items = (Array.isArray(order.items) ? order.items : []) as OrderItem[];
     if (items.length === 0) return json({ error: "Order has no products" }, 400);
     const productIds = [...new Set(items.map((item) => item.product_id).filter(Boolean))];
@@ -164,8 +188,8 @@ serve(async (req) => {
 
     const payload: Record<string, unknown> = {
       order_id: order.order_number,
-      warehouse_id: config.warehouseId,
-      return_warehouse_id: config.returnWarehouseId,
+      warehouse_id: warehouse.warehouseId,
+      return_warehouse_id: warehouse.returnWarehouseId,
       products: items.map((item) => {
         const variant = [item.color_name, item.size].filter(Boolean).join(" / ");
         return {
@@ -242,6 +266,8 @@ serve(async (req) => {
       charged_weight: Number(chargeableWeightKg.toFixed(3)),
       shipping_metadata: {
         booking_response: response,
+        warehouse_id: warehouse.warehouseId,
+        return_warehouse_id: warehouse.returnWarehouseId,
         parcel: {
           dead_weight_kg: Number(deadWeightKg.toFixed(3)),
           volumetric_weight_kg: Number(volumetricWeightKg.toFixed(3)),

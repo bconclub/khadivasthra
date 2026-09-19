@@ -26,6 +26,14 @@ export interface ShipwayConfig {
   minBoxHeightCm: number;
 }
 
+export interface ShipwayWarehouse {
+  warehouse_id: string;
+  title: string;
+  city: string;
+  pincode: string;
+  is_default: boolean;
+}
+
 function positiveNumber(value: string | undefined, fallback: number) {
   const parsed = Number(value);
   return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
@@ -64,8 +72,6 @@ export function missingShipwaySecrets(config = getShipwayConfig()) {
   const missing: string[] = [];
   if (!config.email) missing.push("SHIPWAY_EMAIL");
   if (!config.licenseKey) missing.push("SHIPWAY_LICENSE_KEY");
-  if (!config.warehouseId) missing.push("SHIPWAY_WAREHOUSE_ID");
-  if (!config.returnWarehouseId) missing.push("SHIPWAY_RETURN_WAREHOUSE_ID");
   return missing;
 }
 
@@ -104,6 +110,61 @@ export async function shipwayRequest(
   }
 
   return body;
+}
+
+export function normalizeShipwayWarehouses(body: unknown): ShipwayWarehouse[] {
+  if (!body || typeof body !== "object") return [];
+  const response = body as {
+    success?: unknown;
+    error?: unknown;
+    message?: unknown;
+  };
+  if (!response.success || response.error === true || !response.message) return [];
+
+  const source = Array.isArray(response.message)
+    ? response.message
+    : typeof response.message === "object"
+      ? Object.values(response.message as Record<string, unknown>)
+      : [];
+
+  return source.flatMap((value) => {
+    if (!value || typeof value !== "object") return [];
+    const row = value as Record<string, unknown>;
+    const warehouseId = String(row.warehouse_id || "").trim();
+    if (!warehouseId) return [];
+    return [{
+      warehouse_id: warehouseId,
+      title: String(row.title || "Warehouse"),
+      city: String(row.city || ""),
+      pincode: String(row.pincode || ""),
+      is_default: String(row.default || "") === "1" || row.default === true,
+    }];
+  });
+}
+
+export async function fetchShipwayWarehouses(config = getShipwayConfig()) {
+  const body = await shipwayRequest("/api/getwarehouses", { method: "GET" }, config);
+  const warehouses = normalizeShipwayWarehouses(body);
+  if (warehouses.length === 0) {
+    throw new Error("Shipway account has no warehouse. Create one in Shipway first.");
+  }
+  return warehouses;
+}
+
+export async function resolveShipwayWarehouseIds(config = getShipwayConfig()) {
+  const warehouses = await fetchShipwayWarehouses(config);
+  const fallback = warehouses.find((warehouse) => warehouse.is_default) || warehouses[0];
+  const warehouseId = config.warehouseId || fallback.warehouse_id;
+  const returnWarehouseId = config.returnWarehouseId || warehouseId;
+
+  if (!warehouses.some((warehouse) => warehouse.warehouse_id === warehouseId)) {
+    throw new Error(`Shipway warehouse ${warehouseId} was not found in this account.`);
+  }
+  if (!warehouses.some((warehouse) => warehouse.warehouse_id === returnWarehouseId)) {
+    throw new Error(`Shipway return warehouse ${returnWarehouseId} was not found in this account.`);
+  }
+
+  return { warehouseId, returnWarehouseId, warehouses };
 }
 
 export async function requireOrderAdmin(req: Request) {

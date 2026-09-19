@@ -247,6 +247,10 @@ export async function trackShipment(
   return invokeEdgeFunction('shipway-track', { order_number: orderNumber });
 }
 
+export async function bookShiprocketShipment(orderId: string) {
+  return invokeEdgeFunction('shiprocket-create-order', { order_id: orderId });
+}
+
 // Shipping serviceability via Shiprocket edge function
 export async function checkShippingServiceability(
   deliveryPincode: string,

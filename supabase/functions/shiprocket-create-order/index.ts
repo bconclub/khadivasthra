@@ -58,8 +58,40 @@ serve(async (req) => {
       );
     }
 
-    // Fetch order from Supabase
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const callerToken = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+    if (!callerToken) {
+      return new Response(JSON.stringify({ error: "Sign in required" }), {
+        status: 401,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (callerToken !== SUPABASE_SERVICE_ROLE_KEY) {
+      const { data: userData, error: userError } = await supabase.auth.getUser(callerToken);
+      if (userError || !userData.user) {
+        return new Response(JSON.stringify({ error: "Invalid or expired session" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const { data: profile } = await supabase
+        .from("admin_profiles")
+        .select("role, permissions, is_active")
+        .eq("id", userData.user.id)
+        .single();
+      const allowed = profile?.is_active && (
+        profile.role === "super_admin" ||
+        (Array.isArray(profile.permissions) && profile.permissions.includes("orders"))
+      );
+      if (!allowed) {
+        return new Response(JSON.stringify({ error: "Orders permission required" }), {
+          status: 403,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
+    // Fetch order from Supabase
     const { data: order, error: fetchError } = await supabase
       .from("orders")
       .select("*")
@@ -76,8 +108,27 @@ serve(async (req) => {
       );
     }
 
+    if (order.shipping_provider === "shipway" && order.awb_code) {
+      return new Response(
+        JSON.stringify({ error: "Order is already booked with Shipway" }),
+        {
+          status: 409,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
     // Skip if already has a valid Shiprocket order (ignore "undefined" string)
     if (order.shiprocket_order_id && order.shiprocket_order_id !== "undefined" && order.shiprocket_order_id !== "null") {
+      await supabase
+        .from("orders")
+        .update({
+          shipping_provider: "shiprocket",
+          shipping_provider_order_id: String(order.shiprocket_order_id),
+          shipping_provider_shipment_id: order.shipment_id ? String(order.shipment_id) : null,
+          shipping_status: order.awb_code ? "booked" : "created",
+        })
+        .eq("id", order_id);
       return new Response(
         JSON.stringify({
           shiprocket_order_id: order.shiprocket_order_id,
@@ -252,6 +303,10 @@ serve(async (req) => {
                 .update({
                   shiprocket_order_id: String(existingOrder.id),
                   shipment_id: existingOrder.shipments?.[0]?.id ? String(existingOrder.shipments[0].id) : null,
+                  shipping_provider: "shiprocket",
+                  shipping_provider_order_id: String(existingOrder.id),
+                  shipping_provider_shipment_id: existingOrder.shipments?.[0]?.id ? String(existingOrder.shipments[0].id) : null,
+                  shipping_status: existingOrder.shipments?.[0]?.awb ? "booked" : "created",
                 })
                 .eq("id", order_id);
 
@@ -328,6 +383,10 @@ serve(async (req) => {
       .update({
         shiprocket_order_id: String(shiprocketOrderId),
         shipment_id: shipmentId ? String(shipmentId) : null,
+        shipping_provider: "shiprocket",
+        shipping_provider_order_id: String(shiprocketOrderId),
+        shipping_provider_shipment_id: shipmentId ? String(shipmentId) : null,
+        shipping_status: "created",
       })
       .eq("id", order_id);
 
@@ -366,6 +425,10 @@ serve(async (req) => {
           await supabase
             .from("orders")
             .update({
+              shipping_provider: "shiprocket",
+              shipping_provider_order_id: String(shiprocketOrderId),
+              shipping_provider_shipment_id: shipmentId ? String(shipmentId) : null,
+              shipping_status: "booked",
               awb_code: awbCode,
               courier_name: courierName,
               tracking_url: trackingUrl,

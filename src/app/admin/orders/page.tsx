@@ -4,12 +4,13 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { SlideOver } from "@/components/admin/SlideOver";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
-import { getOrders, updateOrderStatus, updateOrder, checkPaymentStatus } from "@/lib/services/orders";
+import { getOrders, updateOrderStatus, updateOrder, checkPaymentStatus, bookShiprocketShipment } from "@/lib/services/orders";
+import { bookShipwayShipment, cancelShipwayShipment } from "@/lib/services/shipway";
 import { deleteOrder } from "@/lib/services/admin";
 import { supabase } from "@/lib/supabase";
 import type { Order, OrderStatus, Product, PaymentMethod, PaymentStatus } from "@/types";
 import { variantLabel, itemSummary, itemSummaryWithCombo, comboLabel } from "@/lib/order-item";
-import { Loader2, ChevronDown, ChevronUp, Trash2, CreditCard, Package, Plus, Search, X, Minus, Pencil, Printer, FileText, Tag, CheckSquare, Download, Check } from "lucide-react";
+import { Loader2, ChevronDown, ChevronUp, Trash2, CreditCard, Package, Plus, Search, X, Minus, Pencil, Printer, FileText, Tag, CheckSquare, Download, Check, ExternalLink, Truck, Ban } from "lucide-react";
 import { printOrder, printOrders } from "@/lib/print-order";
 import Image from "next/image";
 import toast from "react-hot-toast";
@@ -1458,6 +1459,7 @@ export default function AdminOrdersPage() {
   const [customEnd, setCustomEnd] = useState("");
   const [expandedOrder, setExpandedOrder] = useState<string | null>(null);
   const [checkingPayment, setCheckingPayment] = useState<string | null>(null);
+  const [shippingAction, setShippingAction] = useState<string | null>(null);
   const [showCheckPendingModal, setShowCheckPendingModal] = useState(false);
   const [showDownloadModal, setShowDownloadModal] = useState(false);
   const [showCreateOrder, setShowCreateOrder] = useState(false);
@@ -1583,6 +1585,38 @@ export default function AdminOrdersPage() {
       toast.error(err instanceof Error ? err.message : "Failed to check payment");
     } finally {
       setCheckingPayment(null);
+    }
+  };
+
+  const handleBookShipment = async (order: Order, provider: "shiprocket" | "shipway") => {
+    const actionKey = `${provider}:${order.id}`;
+    setShippingAction(actionKey);
+    try {
+      const result = provider === "shipway"
+        ? await bookShipwayShipment(order.id)
+        : await bookShiprocketShipment(order.id);
+      const awb = result?.awb_code ? ` AWB ${result.awb_code}` : "";
+      toast.success(`${provider === "shipway" ? "Shipway" : "Shiprocket"} shipment booked.${awb}`);
+      await refetch();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Shipment booking failed");
+    } finally {
+      setShippingAction(null);
+    }
+  };
+
+  const handleCancelShipway = async (order: Order) => {
+    if (!confirm(`Cancel Shipway shipment ${order.awb_code || ""}?`)) return;
+    const actionKey = `cancel:${order.id}`;
+    setShippingAction(actionKey);
+    try {
+      await cancelShipwayShipment(order.id);
+      toast.success("Shipway shipment cancelled");
+      await refetch();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Shipment cancellation failed");
+    } finally {
+      setShippingAction(null);
     }
   };
 
@@ -1977,6 +2011,58 @@ export default function AdminOrdersPage() {
                               <><CreditCard className="w-4 h-4" /> Check Payment</>
                             )}
                           </button>
+                        )}
+                      </div>
+
+                      {/* Shipping provider */}
+                      <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+                        <div className="flex items-center justify-between gap-3 mb-3">
+                          <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                            <Truck className="w-4 h-4" /> Shipping Provider
+                          </h3>
+                          {(order.shipping_provider || order.shiprocket_order_id) && (
+                            <span className="rounded-full bg-gray-100 dark:bg-gray-700 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide text-gray-600 dark:text-gray-300">
+                              {order.shipping_provider || "shiprocket"}
+                            </span>
+                          )}
+                        </div>
+
+                        {(order.shipping_provider || order.shiprocket_order_id || order.awb_code) ? (
+                          <div className="space-y-2 text-sm text-gray-900 dark:text-gray-200">
+                            {order.shipping_status && <p><span className="text-gray-500 dark:text-gray-400">Status:</span> {order.shipping_status}</p>}
+                            {order.awb_code && <p><span className="text-gray-500 dark:text-gray-400">AWB:</span> {order.awb_code}</p>}
+                            {order.courier_name && <p><span className="text-gray-500 dark:text-gray-400">Courier:</span> {order.courier_name}</p>}
+                            {order.charged_weight != null && <p><span className="text-gray-500 dark:text-gray-400">Chargeable weight:</span> {Number(order.charged_weight)} kg</p>}
+                            <div className="flex flex-wrap gap-2 pt-2">
+                              {order.shipping_label_url && (
+                                <a href={order.shipping_label_url} target="_blank" rel="noreferrer" className="px-3 py-2 rounded-lg bg-coral/10 text-coral text-sm font-medium flex items-center gap-1.5 hover:bg-coral/20">
+                                  <FileText className="w-4 h-4" /> Label <ExternalLink className="w-3 h-3" />
+                                </a>
+                              )}
+                              {order.tracking_url && (
+                                <a href={order.tracking_url} target="_blank" rel="noreferrer" className="px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-medium flex items-center gap-1.5 hover:bg-blue-100">
+                                  Track <ExternalLink className="w-3 h-3" />
+                                </a>
+                              )}
+                              {order.shipping_provider === "shipway" && order.awb_code && order.shipping_status !== "cancelled" && (
+                                <button onClick={() => handleCancelShipway(order)} disabled={shippingAction === `cancel:${order.id}`} className="px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-sm font-medium flex items-center gap-1.5 disabled:opacity-50">
+                                  {shippingAction === `cancel:${order.id}` ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ban className="w-4 h-4" />} Cancel shipment
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">Choose provider for this order. Booking creates shipment and AWB.</p>
+                            <div className="flex flex-wrap gap-2">
+                              <button onClick={() => handleBookShipment(order, "shiprocket")} disabled={shippingAction !== null} className="px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-medium flex items-center gap-2 disabled:opacity-50">
+                                {shippingAction === `shiprocket:${order.id}` ? <Loader2 className="w-4 h-4 animate-spin" /> : <Package className="w-4 h-4" />} Book with Shiprocket
+                              </button>
+                              <button onClick={() => handleBookShipment(order, "shipway")} disabled={shippingAction !== null} className="px-3 py-2 rounded-lg bg-coral/10 text-coral text-sm font-medium flex items-center gap-2 disabled:opacity-50">
+                                {shippingAction === `shipway:${order.id}` ? <Loader2 className="w-4 h-4 animate-spin" /> : <Truck className="w-4 h-4" />} Book with Shipway
+                              </button>
+                            </div>
+                          </div>
                         )}
                       </div>
 

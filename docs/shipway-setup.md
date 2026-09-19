@@ -8,13 +8,21 @@ Supabase Edge Function secrets are present and the database migration is applied
 ```text
 SHIPWAY_EMAIL
 SHIPWAY_LICENSE_KEY
+```
+
+Find the license key under Shipway > Profile > Manage profile. `SHIPWAY_EMAIL` must
+be the email registered against that license key. The backend discovers the default
+warehouse through Shipway after authentication.
+
+## Optional warehouse overrides
+
+```text
 SHIPWAY_WAREHOUSE_ID
 SHIPWAY_RETURN_WAREHOUSE_ID
 ```
 
-Find the license key under Shipway > Profile > Manage profile. Find warehouse IDs
-under Shipway > Warehouse, or use the authenticated `warehouses` action exposed by
-the `shipway-admin` function.
+Use these only when pickup or return should differ from the account default. Admin
+Settings displays the warehouse selected by the backend.
 
 ## Optional parcel defaults
 
@@ -40,8 +48,12 @@ chargeable weight on the order.
 ## Activation sequence
 
 1. Apply `20260911000000_shipway_backend.sql`.
-2. Set the four required Supabase secrets.
+2. Set `SHIPWAY_EMAIL` and `SHIPWAY_LICENSE_KEY`.
 3. Deploy the three functions.
 4. Check Admin > Settings > Shipway Backend.
-5. Confirm the warehouse IDs and run one internal test order.
-6. Only then connect Shipway booking buttons or checkout rate selection.
+5. Confirm the detected warehouse and run one internal test order.
+6. In Admin > Orders, choose Shiprocket or Shipway for each unbooked order.
+
+Shiprocket remains installed. Existing automatic Shiprocket booking continues, and
+manual provider buttons prevent a second provider from booking an order that already
+has an AWB.

@@ -182,6 +182,8 @@ export interface Order {
   is_billed: boolean;
   billed_at: string | null;
   shipping_provider: 'shipway' | 'shiprocket' | null;
+  shiprocket_order_id: string | null;
+  shipment_id: string | null;
   shipping_provider_order_id: string | null;
   shipping_provider_shipment_id: string | null;
   shipping_status: string | null;
