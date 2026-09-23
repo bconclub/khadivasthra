@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const RAZORPAY_KEY_SECRET = Deno.env.get("RAZORPAY_KEY_SECRET")!;
+const RAZORPAY_KEY_ID = Deno.env.get("RAZORPAY_KEY_ID")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
@@ -71,7 +72,25 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     if (isValid) {
-      const { error: updateError } = await supabase
+      const { data: order, error: orderError } = await supabase.from("orders")
+        .select("razorpay_order_id,total,payment_method,payment_status")
+        .eq("id", order_id).single();
+      if (orderError || !order || order.payment_method !== "online" || order.razorpay_order_id !== razorpay_order_id) {
+        return new Response(JSON.stringify({ verified: false, error: "Payment does not belong to this order" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const paymentRes = await fetch(`https://api.razorpay.com/v1/payments/${encodeURIComponent(razorpay_payment_id)}`, {
+        headers: { Authorization: `Basic ${btoa(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`)}` },
+      });
+      if (!paymentRes.ok) return new Response(JSON.stringify({ error: "Could not confirm payment" }), { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      const payment = await paymentRes.json();
+      if (payment.order_id !== razorpay_order_id || payment.currency !== "INR" || payment.amount !== Math.round(Number(order.total) * 100) || payment.status !== "captured") {
+        return new Response(JSON.stringify({ verified: false, error: "Payment is not captured for this order" }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      if (order.payment_status === "paid") return new Response(JSON.stringify({ verified: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (order.payment_status !== "pending") return new Response(JSON.stringify({ error: "Order is no longer payable. Staff will review the captured payment." }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      const { data: updated, error: updateError } = await supabase
         .from("orders")
         .update({
           razorpay_payment_id,
@@ -79,7 +98,7 @@ serve(async (req) => {
           payment_status: "paid",
           status: "confirmed",
         })
-        .eq("id", order_id);
+        .eq("id", order_id).eq("razorpay_order_id", razorpay_order_id).eq("payment_status", "pending").select("id");
 
       if (updateError) {
         console.error("Supabase update error:", updateError);
@@ -93,6 +112,7 @@ serve(async (req) => {
           }
         );
       }
+      if (!updated?.length) return new Response(JSON.stringify({ error: "Order is no longer payable. Staff will review the captured payment." }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
       // Auto-create Shiprocket shipment (non-blocking — don't fail payment if this errors)
       try {
@@ -122,11 +142,6 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     } else {
-      await supabase
-        .from("orders")
-        .update({ payment_status: "failed" })
-        .eq("id", order_id);
-
       return new Response(
         JSON.stringify({
           verified: false,
