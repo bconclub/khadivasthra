@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { trackShipment } from "@/lib/services/orders";
 import type { TrackingResult } from "@/types";
@@ -9,6 +9,7 @@ import Link from "next/link";
 
 export default function TrackPage() {
   const [orderNumber, setOrderNumber] = useState("");
+  useEffect(() => { setOrderNumber(new URLSearchParams(window.location.search).get("order") || ""); }, []);
   const [tracking, setTracking] = useState<TrackingResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -24,8 +25,8 @@ export default function TrackPage() {
     try {
       const result = await trackShipment(orderNumber.trim());
       setTracking(result);
-    } catch {
-      setError("Could not find order. Please check the order number and try again.");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Could not verify this order.");
     } finally {
       setLoading(false);
     }

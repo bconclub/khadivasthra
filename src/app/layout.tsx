@@ -23,16 +23,16 @@ const siteUrl = "https://khadivasthra.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
-  title: "Khadi Vasthra - Kerala Handloom Mundus & Dhotis | Since 2007",
-  description: "Premium traditional Kerala mundus and dhotis. Shop authentic Khadi mundus online from Aluva, Kerala.",
+  title: "Khadi Vasthra - Kerala Mundus, Dhotis & Clothing | Since 2007",
+  description: "Shop Kerala mundus, dhotis and clothing from Khadi Vasthra in Aluva. See each product page for fabric and care details.",
   icons: {
     icon: '/favicon.ico',
     shortcut: '/favicon.ico',
     apple: '/favicon.ico',
   },
   openGraph: {
-    title: "Khadi Vasthra - Kerala Handloom Mundus & Dhotis",
-    description: "Premium traditional Kerala mundus and dhotis. Shop authentic Khadi mundus online from Aluva, Kerala. Since 2007.",
+    title: "Khadi Vasthra - Kerala Mundus, Dhotis & Clothing",
+    description: "Shop Kerala mundus, dhotis and clothing from Khadi Vasthra in Aluva. See each product page for fabric and care details.",
     url: siteUrl,
     siteName: "Khadi Vasthra",
     images: [
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
         url: "/og-image.webp",
         width: 1200,
         height: 630,
-        alt: "Khadi Vasthra - Premium Kerala Handloom",
+        alt: "Khadi Vasthra Kerala clothing",
       },
     ],
     locale: "en_IN",
@@ -48,8 +48,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Khadi Vasthra - Kerala Handloom Mundus & Dhotis",
-    description: "Premium traditional Kerala mundus and dhotis. Shop authentic Khadi mundus online from Aluva, Kerala.",
+    title: "Khadi Vasthra - Kerala Mundus, Dhotis & Clothing",
+    description: "Shop Kerala mundus, dhotis and clothing from Khadi Vasthra in Aluva. See each product page for fabric and care details.",
     images: ["/og-image.webp"],
   },
 };

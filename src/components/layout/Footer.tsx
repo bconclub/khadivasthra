@@ -21,7 +21,7 @@ export function Footer() {
                             />
                         </Link>
                         <p className="footer__description text-white/80 text-sm leading-relaxed">
-                            Authentic Kerala handloom mundus woven with tradition and care.
+                            Kerala clothing and mundus selected with care.
                             Bring home the essence of Kerala culture.
                         </p>
                     </div>

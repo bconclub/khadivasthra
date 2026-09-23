@@ -44,23 +44,28 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    // Match on the Razorpay order id we stored, else on `notes.order_id`
-    // (retries create a new Razorpay order, so the stored id can be stale).
-    let query = supabase.from("orders").select("id, status").limit(1);
-    if (payment.notes?.order_id) {
-      query = query.eq("id", payment.notes.order_id);
-    } else {
-      query = query.eq("razorpay_order_id", payment.order_id);
-    }
+    // Payment's Razorpay order must equal the one stored on the merchant order.
+    // Customer-controlled notes are never sufficient to choose an order.
+    const query = supabase.from("orders").select("id,status,total,payment_status,reservation_expires_at")
+      .eq("razorpay_order_id", payment.order_id).limit(1);
     const { data: rows } = await query;
     const order = rows?.[0];
 
-    if (!order) {
+    if (!order || payment.currency !== "INR" || payment.amount !== Math.round(Number(order.total) * 100)) {
       console.error("Webhook: no matching order for payment", payment.id, payment.order_id);
       return new Response(JSON.stringify({ matched: false }), { status: 200 });
     }
 
-    const { error } = await supabase
+    if (order.payment_status === "paid") {
+      await supabase.from("kv_assisted_carts").update({ purchased_at: new Date().toISOString() }).eq("order_id", order.id).is("purchased_at", null);
+      return new Response(JSON.stringify({ matched: true }), { status: 200 });
+    }
+    if (order.payment_status !== "pending" || order.status === "cancelled" || !order.reservation_expires_at || Date.parse(order.reservation_expires_at) <= Date.now()) {
+      const recorded = await supabase.from("kv_payment_exceptions").upsert({ order_id: order.id, razorpay_payment_id: payment.id, reason: "captured_after_reservation_closed" }, { onConflict: "razorpay_payment_id" });
+      if (recorded.error) return new Response("exception logging failed", { status: 500 });
+      return new Response(JSON.stringify({ matched: true, review_required: true }), { status: 200 });
+    }
+    const { data: updated, error } = await supabase
       .from("orders")
       .update({
         razorpay_payment_id: payment.id,
@@ -68,12 +73,23 @@ serve(async (req) => {
         payment_status: "paid",
         status: order.status === "pending" ? "confirmed" : order.status,
       })
-      .eq("id", order.id);
+      .eq("id", order.id).eq("razorpay_order_id", payment.order_id).eq("payment_status", "pending").select("id");
 
     if (error) {
       console.error("Webhook: failed to update order", error.message);
       return new Response("update failed", { status: 500 });
     }
+    if (!updated?.length) {
+      const current = await supabase.from("orders").select("payment_status").eq("id", order.id).single();
+      if (current.data?.payment_status !== "paid") {
+        const recorded = await supabase.from("kv_payment_exceptions").upsert({ order_id: order.id, razorpay_payment_id: payment.id, reason: "captured_during_reservation_close" }, { onConflict: "razorpay_payment_id" });
+        if (recorded.error) return new Response("exception logging failed", { status: 500 });
+        return new Response(JSON.stringify({ matched: true, review_required: true }), { status: 200 });
+      }
+    }
+
+    const assisted = await supabase.from("kv_assisted_carts").update({ purchased_at: new Date().toISOString() }).eq("order_id", order.id).is("purchased_at", null);
+    if (assisted.error) return new Response("cart recovery suppression failed", { status: 500 });
 
     console.log("Webhook recorded payment", payment.id, "for order", order.id);
     return new Response(JSON.stringify({ matched: true }), { status: 200 });

@@ -53,8 +53,10 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [paymentStep, setPaymentStep] = useState<PaymentStep>("form");
-  const [pendingOrder, setPendingOrder] = useState<Order | null>(null);
+  const [pendingOrder, setPendingOrder] = useState<(Pick<Order, 'id' | 'order_number' | 'total'> & { statusToken: string }) | null>(null);
+  const checkoutKey = useRef<string>(crypto.randomUUID());
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("online");
+  const [orderUpdatesOptIn, setOrderUpdatesOptIn] = useState(false);
 
   // Address fields (split)
   const [name, setName] = useState("");
@@ -200,8 +202,8 @@ export default function CheckoutPage() {
     };
   };
 
-  const initiatePayment = async (order: Order) => {
-    const razorpayOrder = await createRazorpayOrder(order.id, order.total);
+  const initiatePayment = async (order: Pick<Order, 'id' | 'order_number' | 'total'> & { statusToken: string }) => {
+    const razorpayOrder = await createRazorpayOrder(order.id, order.statusToken);
 
     setPaymentStep("paying");
     openCheckout({
@@ -226,7 +228,9 @@ export default function CheckoutPage() {
             response.razorpay_signature
           );
           if (result.verified) {
+            localStorage.setItem(`kv_order_${order.order_number}`, JSON.stringify({ id: order.id, token: order.statusToken }));
             clearCart();
+            sessionStorage.removeItem("kv_assisted_cart_id");
             router.push(`/order-success?order=${order.order_number}&paid=true&total=${order.total}`);
           } else {
             setError("Payment verification failed. Please contact support.");
@@ -260,9 +264,11 @@ export default function CheckoutPage() {
     trackInitiateCheckout(items.map((i) => ({ id: i.id, price: i.price, quantity: i.quantity })), orderTotal);
 
     try {
-      const order = await createOrder(formData, items, cartTotal, shippingCost, "cod");
+      const order = await createOrder(formData, items, cartTotal, shippingCost, "cod", checkoutKey.current, orderTotal, orderUpdatesOptIn);
 
+      localStorage.setItem(`kv_order_${order.order_number}`, JSON.stringify({ id: order.id, token: order.statusToken }));
       clearCart();
+      sessionStorage.removeItem("kv_assisted_cart_id");
       router.push(`/order-success?order=${order.order_number}&paid=false&total=${order.total}`);
     } catch (err) {
       console.error("COD order error:", err);
@@ -323,8 +329,11 @@ export default function CheckoutPage() {
     trackInitiateCheckout(items.map((i) => ({ id: i.id, price: i.price, quantity: i.quantity })), orderTotal);
 
     try {
-      const order = pendingOrder || await createOrder(formData, items, cartTotal, shippingCost, "online");
-      if (!pendingOrder) setPendingOrder(order);
+      const order = pendingOrder || await createOrder(formData, items, cartTotal, shippingCost, "online", checkoutKey.current, orderTotal, orderUpdatesOptIn);
+      if (!pendingOrder) {
+        setPendingOrder(order);
+        localStorage.setItem(`kv_order_${order.order_number}`, JSON.stringify({ id: order.id, token: order.statusToken }));
+      }
 
       await initiatePayment(order);
     } catch (err) {
@@ -557,6 +566,10 @@ export default function CheckoutPage() {
               </div>
 
               {/* Payment Method */}
+              <label className="flex items-start gap-3 rounded-xl border border-cream/30 bg-white p-4 text-sm text-text">
+                <input type="checkbox" checked={orderUpdatesOptIn} onChange={event => setOrderUpdatesOptIn(event.target.checked)} className="mt-1 accent-coral" />
+                <span>Send WhatsApp updates about this order to the phone number above. This does not include cart reminders or promotions.</span>
+              </label>
               {shippingInfo?.available && (
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-cream/30">
                   <h2 className="text-lg font-bold text-text mb-4">Payment Method</h2>

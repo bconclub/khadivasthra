@@ -5,8 +5,12 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
 import { Trash2, Plus, Minus, MessageCircle, ShoppingBag, ImageOff } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { groupCart } from "@/lib/combo";
+import { getProducts } from "@/lib/services/products";
+import type { CartItem } from "@/types";
+
+type ProposedCart = { id: string; items: CartItem[]; changed: boolean };
 
 function CartItemImage({ src, alt }: { src: string; alt: string }) {
   const [imageError, setImageError] = useState(false);
@@ -40,7 +44,64 @@ function CartItemImage({ src, alt }: { src: string; alt: string }) {
 }
 
 export default function CartPage() {
-    const { items, updateQuantity, removeFromCart, updateComboQuantity, removeCombo, cartTotal } = useCart();
+    const { items, mergeAssistedCart, updateQuantity, removeFromCart, updateComboQuantity, removeCombo, cartTotal } = useCart();
+    const [proposal, setProposal] = useState<ProposedCart | null>(null);
+    const [proposalError, setProposalError] = useState("");
+    const [loadingProposal, setLoadingProposal] = useState(false);
+
+    useEffect(() => {
+        const id = new URLSearchParams(window.location.search).get("cart");
+        if (!id || !/^[0-9a-f-]{36}$/i.test(id)) return;
+        let cancelled = false;
+        queueMicrotask(() => { if (!cancelled) setLoadingProposal(true); });
+        const api = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/assisted-cart?id=${encodeURIComponent(id)}`;
+        fetch(api, { headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, Authorization: `Bearer ${process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!}` } })
+            .then(async response => {
+                if (!response.ok) throw new Error("This cart link is unavailable. Please ask us for a new one.");
+                const saved = await response.json() as { items: { id: string; variant_id?: string | null; quantity: number }[] };
+                const catalog = await getProducts();
+                const lines: CartItem[] = [];
+                let changed = false;
+                for (const line of saved.items) {
+                    const product = catalog.find(item => item.id === line.id && !item.is_wholesale);
+                    if (!product) { changed = true; continue; }
+                    const variant = line.variant_id ? product.variants?.find(item => item.id === line.variant_id && item.is_active) : undefined;
+                    if (product.has_variants && !variant) { changed = true; continue; }
+                    if (!product.has_variants && line.variant_id) { changed = true; continue; }
+                    const stock = variant ? variant.stock_quantity : product.stock_quantity;
+                    if (!product.in_stock || stock < 1) { changed = true; continue; }
+                    const quantity = Math.min(line.quantity, stock);
+                    if (quantity !== line.quantity) changed = true;
+                    lines.push({ id: product.id, name: product.name, slug: product.slug, price: product.price + (variant?.price_adjustment || 0), image: variant?.color?.images?.[0] || product.image_url || product.images?.[0] || "", quantity, variant_id: variant?.id, color_id: variant?.color_id, color_name: variant?.color?.name, size: variant?.size, stock });
+                }
+                if (!cancelled) setProposal({ id, items: lines, changed });
+            })
+            .catch(error => { if (!cancelled) setProposalError(error instanceof Error ? error.message : "Could not load cart."); })
+            .finally(() => { if (!cancelled) setLoadingProposal(false); });
+        return () => { cancelled = true; };
+    }, []);
+
+    const acceptProposal = () => {
+        if (!proposal) return;
+        mergeAssistedCart(proposal.items);
+        sessionStorage.setItem("kv_assisted_cart_id", proposal.id);
+        setProposal(null);
+    };
+
+    const proposalPanel = loadingProposal || proposal || proposalError ? (
+        <div className="mb-8 rounded-lg border border-coral/30 bg-white p-5" role="status">
+            {loadingProposal && <p>Loading your saved cart...</p>}
+            {proposalError && <p className="text-coral">{proposalError}</p>}
+            {proposal && <>
+                <h2 className="text-xl font-semibold mb-2">Review your saved cart</h2>
+                <p className="text-sm text-text-muted mb-4">Check current products and prices before adding them to your cart. Final shipping and total appear at checkout.</p>
+                {proposal.changed && <p className="text-coral mb-3">Some items or quantities changed because stock is no longer available.</p>}
+                {proposal.items.map(line => <div key={`${line.id}:${line.variant_id || ""}`} className="flex justify-between gap-4 py-2 border-t border-cream/30"><span>{line.name}{line.color_name ? `, ${line.color_name}` : ""}{line.size ? `, ${line.size}` : ""} × {line.quantity}</span><span>₹{line.price * line.quantity}</span></div>)}
+                {proposal.items.length > 0 && <Button className="mt-4" onClick={acceptProposal}>Add these items to cart</Button>}
+                {proposal.items.length === 0 && <Link href="/shop" className="text-coral underline">Browse available products</Link>}
+            </>}
+        </div>
+    ) : null;
 
     const handleWhatsAppCheckout = () => {
         const phoneNumber = "918714090510";
@@ -58,11 +119,12 @@ export default function CartPage() {
     if (items.length === 0) {
         return (
             <div className="cart-page cart-page--empty container mx-auto px-4 max-w-7xl py-20 text-center">
-                <h1 className="cart-page__empty-title text-3xl font-bold mb-6 text-text">Your Cart is Empty</h1>
-                <p className="cart-page__empty-message text-text-muted mb-8">Looks like you haven&apos;t added any authentic mundus yet.</p>
-                <Link href="/shop" className="cart-page__empty-cta">
+                <h1 className="cart-page__empty-title text-3xl font-bold mb-6 text-text">{proposal || loadingProposal ? "Your Saved Cart" : "Your Cart is Empty"}</h1>
+                {!proposal && !loadingProposal && <p className="cart-page__empty-message text-text-muted mb-8">No items in your cart yet.</p>}
+                {proposalPanel}
+                {(!proposal || proposal.items.length === 0) && <Link href="/shop" className="cart-page__empty-cta">
                     <Button size="lg" variant="primary">Start Shopping</Button>
-                </Link>
+                </Link>}
             </div>
         );
     }
@@ -70,6 +132,7 @@ export default function CartPage() {
     return (
         <div className="cart-page container mx-auto px-4 max-w-7xl py-12">
             <h1 className="cart-page__title text-3xl font-bold mb-8 text-text">Your Shopping Cart</h1>
+            {proposalPanel}
 
             <div className="cart-page__content grid lg:grid-cols-3 gap-12">
                 <div className="cart-page__items lg:col-span-2 space-y-6">

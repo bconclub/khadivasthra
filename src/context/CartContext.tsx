@@ -25,6 +25,7 @@ interface CartProduct {
 interface CartContextType {
     items: CartItem[];
     addToCart: (product: CartProduct, quantity?: number) => void;
+    mergeAssistedCart: (lines: CartItem[]) => void;
     /** Add every piece of one configured combo as its own line, in one go. */
     addComboToCart: (lines: CartProduct[]) => void;
     removeFromCart: (id: string, variant_id?: string, combo_line?: string) => void;
@@ -55,6 +56,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
                 try {
                     const parsed = JSON.parse(savedCart);
                     if (Array.isArray(parsed)) {
+                        // Keep server and first client render aligned before restoring local cart.
+                        // eslint-disable-next-line react-hooks/set-state-in-effect
                         setItems(parsed as CartItem[]);
                     }
                 } catch (e) {
@@ -124,6 +127,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         });
         trackAddToCart({ id: product.id, name: product.name, price: product.price }, quantity);
         setIsCartOpen(true);
+    };
+
+    const mergeAssistedCart = (lines: CartItem[]) => {
+        setItems(prev => {
+            const next = [...prev];
+            for (const line of lines) {
+                const index = next.findIndex(item => sameLine(item, line.id, line.variant_id));
+                if (index < 0) next.push(line);
+                else next[index] = { ...next[index], ...line, quantity: Math.max(next[index].quantity, line.quantity) };
+            }
+            return next;
+        });
     };
 
     /**
@@ -224,7 +239,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
     return (
         <CartContext.Provider
-            value={{ items, addToCart, addComboToCart, removeFromCart, updateQuantity, updateComboQuantity, removeCombo, clearCart, cartTotal, cartCount, isCartOpen, openCart, closeCart }}
+            value={{ items, addToCart, mergeAssistedCart, addComboToCart, removeFromCart, updateQuantity, updateComboQuantity, removeCombo, clearCart, cartTotal, cartCount, isCartOpen, openCart, closeCart }}
         >
             {children}
         </CartContext.Provider>

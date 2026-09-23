@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ group: st
   const group = getGroupBySlug(groupSlug);
   if (!group) return { title: "Not found" };
   const title = `${group.label} Collection | Khadi Vasthra`;
-  const description = `Shop our complete ${group.label.toLowerCase()} collection — authentic Kerala handloom from Khadi Vasthra, Aluva.`;
+  const description = `Shop our complete ${group.label.toLowerCase()} collection from Khadi Vasthra, Aluva. Check each product page for fabric details.`;
   const url = `${siteUrl}/shop/group/${group.slug}`;
   return {
     title,

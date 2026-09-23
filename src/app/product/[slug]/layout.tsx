@@ -26,7 +26,7 @@ export async function generateMetadata(
   const title = `${product.name} | Khadi Vasthra`;
   const description =
     product.description?.trim() ||
-    `${product.name} — authentic Kerala handloom from Khadi Vasthra. ₹${Number(product.price).toLocaleString()}`;
+    `${product.name} from Khadi Vasthra. Check product details for fabric and care. ₹${Number(product.price).toLocaleString()}`;
   const image = product.image_url || `${SITE_URL}/Cover KV.webp`;
 
   return {
