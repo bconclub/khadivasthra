@@ -1,0 +1,46 @@
+name: Refresh marketplace feeds
+
+on:
+  schedule:
+    - cron: '17 */3 * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: marketplace-feeds
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    env:
+      # Public storefront credentials, same values used by deploy.yml.
+      NEXT_PUBLIC_SUPABASE_URL: 'https://etjxdomvtsxrnbjmjzxz.supabase.co'
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV0anhkb212dHN4cm5iam1qenh6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA5NzM1NDYsImV4cCI6MjA4NjU0OTU0Nn0.wGyjd0vq35jhiqINXtt4cneevGXUYb49XRzWyYUD4xY'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+      - run: npm ci
+      - name: Generate fresh feeds
+        run: npx tsx scripts/generate-marketplace-feeds.ts
+      - name: Upload only catalog feeds
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          sudo apt-get install -y lftp > /dev/null 2>&1
+          lftp -u "$FTP_USERNAME,$FTP_PASSWORD" "$FTP_HOST" -e '
+            set ftp:ssl-allow no;
+            set cmd:fail-exit yes;
+            set net:max-retries 3;
+            set net:timeout 30;
+            cd domains/khadivasthra.com/public_html;
+            put public/feed.xml -o feed.xml.tmp;
+            mv feed.xml.tmp feed.xml;
+            put public/meta-feed.csv -o meta-feed.csv.tmp;
+            mv meta-feed.csv.tmp meta-feed.csv;
+            quit
+          '
