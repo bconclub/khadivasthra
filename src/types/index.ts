@@ -138,6 +138,8 @@ export interface OrderItem {
   product_name: string;
   product_image: string | null;
   price: number;
+  compare_price?: number | null;
+  discount_percent?: number | null;
   quantity: number;
   subtotal: number;
   variant_id?: string | null;

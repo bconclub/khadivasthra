@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { SlideOver } from "@/components/admin/SlideOver";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getOrders, updateOrderStatus, updateOrder, checkPaymentStatus, bookShiprocketShipment } from "@/lib/services/orders";
@@ -59,7 +58,7 @@ function ordersToCsvBlob(orders: Order[]): Blob {
     "Address", "City", "State", "Pincode",
     "Items", "Subtotal", "Shipping", "COD Charges", "Total",
     "Status", "Payment Status", "Payment Method",
-    "Article Number", "Settlement Status", "Amount Received", "Settlement Date",
+    "Invoice Number", "Tracking ID", "Article Number", "AWB", "Settlement Status", "Amount Received", "Settlement Date",
     "Razorpay Order ID", "Razorpay Payment ID", "Notes",
   ];
   const rows = orders.map((o) => [
@@ -69,7 +68,7 @@ function ordersToCsvBlob(orders: Order[]): Blob {
     (o.items || []).map(itemSummaryWithCombo).join("; "),
     Number(o.subtotal), Number(o.shipping), Number(o.cod_charges || 0), Number(o.total),
     o.status, o.payment_status, o.payment_method,
-    o.article_number || "", o.settlement_status || "",
+    o.invoice_number || o.order_number, o.awb_code || o.article_number || "", o.article_number || "", o.awb_code || "", o.settlement_status || "",
     o.amount_received != null ? Number(o.amount_received) : "",
     o.settlement_date || "",
     o.razorpay_order_id || "", o.razorpay_payment_id || "",
@@ -77,6 +76,18 @@ function ordersToCsvBlob(orders: Order[]): Blob {
   ]);
   const csv = [headers, ...rows].map((r) => r.map(escape).join(",")).join("\r\n");
   return new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+}
+
+function downloadOrdersCsv(orders: Order[], prefix: string) {
+  const blob = ordersToCsvBlob(orders);
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = `${prefix}-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(anchor);
+  anchor.click();
+  document.body.removeChild(anchor);
+  URL.revokeObjectURL(url);
 }
 
 // --- Check Pending Modal ---
@@ -210,14 +221,7 @@ function DownloadOrdersModal({ orders, onClose }: { orders: Order[]; onClose: ()
 
   const handleDownload = () => {
     if (matching.length === 0) { toast("No orders matching filters", { icon: "ℹ️" }); return; }
-    const blob = ordersToCsvBlob(matching);
-    const url = URL.createObjectURL(blob);
-    const dateStr = new Date().toISOString().slice(0, 10);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `orders-${dateStr}.csv`;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    downloadOrdersCsv(matching, "orders");
     toast.success(`Downloaded ${matching.length} order${matching.length === 1 ? "" : "s"}`);
     onClose();
   };
@@ -311,6 +315,9 @@ function DownloadOrdersModal({ orders, onClose }: { orders: Order[]; onClose: ()
 interface OrderLineItem {
   product: Product;
   quantity: number;
+  unitPrice: number;
+  cataloguePrice: number;
+  discountPercent: number;
 }
 
 interface CustomerLookupOrder {
@@ -386,7 +393,13 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
     if (existing) {
       setLineItems(lineItems.map((li) => li.product.id === product.id ? { ...li, quantity: li.quantity + 1 } : li));
     } else {
-      setLineItems([...lineItems, { product, quantity: 1 }]);
+      setLineItems([...lineItems, {
+        product,
+        quantity: 1,
+        unitPrice: Number(product.price),
+        cataloguePrice: Number(product.price),
+        discountPercent: 0,
+      }]);
     }
     setSearchQuery("");
     setSearchResults([]);
@@ -437,7 +450,13 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
       in_stock: true,
     } as unknown as Product & { discount_percent?: number };
 
-    addProduct(customProduct);
+    setLineItems([...lineItems, {
+      product: customProduct,
+      quantity: 1,
+      unitPrice: finalPrice,
+      cataloguePrice: price,
+      discountPercent,
+    }]);
     resetCustomItemForm();
   };
 
@@ -453,7 +472,29 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
     setLineItems(lineItems.filter((li) => li.product.id !== productId));
   };
 
-  const subtotal = lineItems.reduce((sum, li) => sum + li.product.price * li.quantity, 0);
+  const updateLinePrice = (productId: string, price: number) => {
+    const safePrice = Number.isFinite(price) && price >= 0 ? price : 0;
+    setLineItems((items) => items.map((item) => {
+      if (item.product.id !== productId) return item;
+      const discount = item.cataloguePrice > 0
+        ? Math.max(0, Math.min(100, ((item.cataloguePrice - safePrice) / item.cataloguePrice) * 100))
+        : 0;
+      return { ...item, unitPrice: safePrice, discountPercent: Number(discount.toFixed(2)) };
+    }));
+  };
+
+  const updateLineDiscount = (productId: string, discount: number) => {
+    const safeDiscount = Number.isFinite(discount) ? Math.max(0, Math.min(100, discount)) : 0;
+    setLineItems((items) => items.map((item) => item.product.id === productId
+      ? {
+          ...item,
+          discountPercent: safeDiscount,
+          unitPrice: Math.round(item.cataloguePrice * (1 - safeDiscount / 100) * 100) / 100,
+        }
+      : item));
+  };
+
+  const subtotal = lineItems.reduce((sum, li) => sum + li.unitPrice * li.quantity, 0);
   const isCodCreate = paymentMethod === "cod";
   const shippingAmount = shipping === "" ? 0 : shipping;
   const codCharges = isCodCreate ? Math.round((subtotal + shippingAmount) * 0.016) : 0;
@@ -526,11 +567,11 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
         product_id: li.product.id.startsWith("custom-") ? null : li.product.id,
         product_name: li.product.name,
         product_image: li.product.image_url || null,
-        price: li.product.price,
-        compare_price: li.product.compare_price || null,
-        discount_percent: (li.product as Product & { discount_percent?: number }).discount_percent || null,
+        price: li.unitPrice,
+        compare_price: li.discountPercent > 0 ? li.cataloguePrice : (li.product.compare_price || null),
+        discount_percent: li.discountPercent > 0 ? li.discountPercent : null,
         quantity: li.quantity,
-        subtotal: li.product.price * li.quantity,
+        subtotal: li.unitPrice * li.quantity,
       }));
 
       const { error } = await supabase.from("orders").insert({
@@ -756,41 +797,43 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
               <div className="space-y-2">
                 {lineItems.map((li) => {
                   const isCustom = li.product.id.startsWith("custom-");
-                  const customDiscountPercent = (li.product as Product & { discount_percent?: number }).discount_percent;
-                  const originalPrice = li.product.compare_price;
                   return (
-                  <div key={li.product.id} className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-2">
-                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-600 flex-shrink-0">
-                      {li.product.image_url ? (
-                        <Image src={li.product.image_url} alt="" width={40} height={40} className="w-full h-full object-cover" unoptimized />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center"><Package className="w-4 h-4 text-gray-300" /></div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900 dark:text-white truncate">
-                        {li.product.name}
-                        {isCustom && <span className="ml-2 text-[10px] uppercase tracking-wide text-coral bg-coral/10 px-1.5 py-0.5 rounded">Custom</span>}
-                      </p>
-                      <p className="text-xs text-gray-400">
-                        {originalPrice && originalPrice > li.product.price ? (
-                          <>
-                            <span className="line-through">₹{originalPrice.toLocaleString()}</span>{" "}
-                            <span>₹{li.product.price.toLocaleString()} each</span>
-                            {customDiscountPercent && <span className="ml-1 text-green-600">{customDiscountPercent}% off</span>}
-                          </>
+                  <div key={li.product.id} className="bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-600 flex-shrink-0">
+                        {li.product.image_url ? (
+                          <Image src={li.product.image_url} alt="" width={40} height={40} className="w-full h-full object-cover" unoptimized />
                         ) : (
-                          <>₹{li.product.price.toLocaleString()} each</>
+                          <div className="w-full h-full flex items-center justify-center"><Package className="w-4 h-4 text-gray-300" /></div>
                         )}
-                      </p>
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-900 dark:text-white truncate">
+                          {li.product.name}
+                          {isCustom && <span className="ml-2 text-[10px] uppercase tracking-wide text-coral bg-coral/10 px-1.5 py-0.5 rounded">Custom</span>}
+                        </p>
+                        <p className="text-xs text-gray-400">Catalogue price ₹{li.cataloguePrice.toLocaleString()}</p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button type="button" onClick={() => updateQty(li.product.id, -1)} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600"><Minus className="w-3.5 h-3.5 text-gray-500" /></button>
+                        <span className="w-6 text-center text-sm font-medium text-gray-900 dark:text-white">{li.quantity}</span>
+                        <button type="button" onClick={() => updateQty(li.product.id, 1)} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600"><Plus className="w-3.5 h-3.5 text-gray-500" /></button>
+                      </div>
+                      <button type="button" onClick={() => removeItem(li.product.id)} className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30"><X className="w-3.5 h-3.5 text-red-500" /></button>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <button onClick={() => updateQty(li.product.id, -1)} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600"><Minus className="w-3.5 h-3.5 text-gray-500" /></button>
-                      <span className="w-6 text-center text-sm font-medium text-gray-900 dark:text-white">{li.quantity}</span>
-                      <button onClick={() => updateQty(li.product.id, 1)} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600"><Plus className="w-3.5 h-3.5 text-gray-500" /></button>
+                    <div className="grid grid-cols-2 sm:grid-cols-[1fr_1fr_auto] gap-2 mt-3 sm:ml-[52px] items-end">
+                      <div>
+                        <label className={labelCls}>Selling price</label>
+                        <input type="number" min={0} step="0.01" className={inputCls} value={li.unitPrice} onChange={(e) => updateLinePrice(li.product.id, Number(e.target.value))} />
+                      </div>
+                      <div>
+                        <label className={labelCls}>Extra offer %</label>
+                        <input type="number" min={0} max={100} step="0.01" className={inputCls} value={li.discountPercent} onChange={(e) => updateLineDiscount(li.product.id, Number(e.target.value))} />
+                      </div>
+                      <div className="col-span-2 sm:col-span-1 text-right pb-2 text-sm font-semibold text-gray-900 dark:text-white">
+                        ₹{(li.unitPrice * li.quantity).toLocaleString()}
+                      </div>
                     </div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white w-20 text-right">₹{(li.product.price * li.quantity).toLocaleString()}</span>
-                    <button onClick={() => removeItem(li.product.id)} className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30"><X className="w-3.5 h-3.5 text-red-500" /></button>
                   </div>
                   );
                 })}
@@ -882,10 +925,15 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
             </div>
           )}
 
-          {/* Notes */}
+          {/* Remark */}
           <div>
-            <label className={labelCls}>Notes</label>
-            <textarea className={`${inputCls} resize-none`} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Order notes (optional)" />
+            <div className="flex items-center justify-between gap-3 mb-1">
+              <label className={`${labelCls} mb-0`}>Remark</label>
+              <button type="button" onClick={() => setNotes((current) => current.includes("WhatsApp purchase") ? current : [current.trim(), "WhatsApp purchase"].filter(Boolean).join(" | "))} className="text-xs font-medium text-green-700 dark:text-green-400 hover:underline">
+                + WhatsApp purchase
+              </button>
+            </div>
+            <textarea className={`${inputCls} resize-none`} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Example: WhatsApp purchase" />
           </div>
         </div>
 
@@ -913,6 +961,8 @@ interface EditLineItem {
   product_name: string;
   product_image: string | null;
   price: number;
+  catalogue_price: number;
+  discount_percent: number;
   quantity: number;
 }
 
@@ -937,13 +987,25 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
 
   // Editable line items
   const [lineItems, setLineItems] = useState<EditLineItem[]>(
-    (order.items || []).map((item) => ({
-      product_id: item.product_id,
-      product_name: item.product_name,
-      product_image: item.product_image,
-      price: Number(item.price),
-      quantity: item.quantity,
-    }))
+    (order.items || []).map((item) => {
+      const itemPrice = Number(item.price);
+      const cataloguePrice = Number(item.compare_price) > itemPrice ? Number(item.compare_price) : itemPrice;
+      const storedDiscount = Number(item.discount_percent);
+      const derivedDiscount = cataloguePrice > 0
+        ? Math.max(0, ((cataloguePrice - itemPrice) / cataloguePrice) * 100)
+        : 0;
+      return {
+        product_id: item.product_id,
+        product_name: item.product_name,
+        product_image: item.product_image,
+        price: itemPrice,
+        catalogue_price: cataloguePrice,
+        discount_percent: Number.isFinite(storedDiscount) && storedDiscount > 0
+          ? storedDiscount
+          : Number(derivedDiscount.toFixed(2)),
+        quantity: item.quantity,
+      };
+    })
   );
 
   // Product search
@@ -988,6 +1050,8 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
         product_name: product.name,
         product_image: product.image_url,
         price: product.price,
+        catalogue_price: product.price,
+        discount_percent: 0,
         quantity: 1,
       }]);
     }
@@ -1008,6 +1072,28 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
 
   const removeItem = (itemKey: string) => {
     setLineItems(lineItems.filter((li) => getLineItemKey(li) !== itemKey));
+  };
+
+  const updateEditLinePrice = (itemKey: string, price: number) => {
+    const safePrice = Number.isFinite(price) && price >= 0 ? price : 0;
+    setLineItems((items) => items.map((item) => {
+      if (getLineItemKey(item) !== itemKey) return item;
+      const discount = item.catalogue_price > 0
+        ? Math.max(0, Math.min(100, ((item.catalogue_price - safePrice) / item.catalogue_price) * 100))
+        : 0;
+      return { ...item, price: safePrice, discount_percent: Number(discount.toFixed(2)) };
+    }));
+  };
+
+  const updateEditLineDiscount = (itemKey: string, discount: number) => {
+    const safeDiscount = Number.isFinite(discount) ? Math.max(0, Math.min(100, discount)) : 0;
+    setLineItems((items) => items.map((item) => getLineItemKey(item) === itemKey
+      ? {
+          ...item,
+          discount_percent: safeDiscount,
+          price: Math.round(item.catalogue_price * (1 - safeDiscount / 100) * 100) / 100,
+        }
+      : item));
   };
 
   const subtotal = lineItems.reduce((sum, li) => sum + li.price * li.quantity, 0);
@@ -1034,6 +1120,8 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
         product_name: li.product_name,
         product_image: li.product_image,
         price: li.price,
+        compare_price: li.discount_percent > 0 ? li.catalogue_price : null,
+        discount_percent: li.discount_percent > 0 ? li.discount_percent : null,
         quantity: li.quantity,
         subtotal: li.price * li.quantity,
       }));
@@ -1169,6 +1257,8 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
                         product_name: searchQuery.trim(),
                         product_image: null,
                         price,
+                        catalogue_price: price,
+                        discount_percent: 0,
                         quantity: 1,
                       }]);
                       setSearchQuery("");
@@ -1198,25 +1288,39 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
                 {lineItems.map((li) => {
                   const itemKey = getLineItemKey(li);
                   return (
-                  <div key={itemKey} className="flex items-center gap-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-2">
-                    <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-600 flex-shrink-0">
-                      {li.product_image ? (
-                        <Image src={li.product_image} alt="" width={40} height={40} className="w-full h-full object-cover" unoptimized />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center"><Package className="w-4 h-4 text-gray-300" /></div>
-                      )}
+                  <div key={itemKey} className="bg-gray-50 dark:bg-gray-700/50 rounded-lg px-3 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-600 flex-shrink-0">
+                        {li.product_image ? (
+                          <Image src={li.product_image} alt="" width={40} height={40} className="w-full h-full object-cover" unoptimized />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center"><Package className="w-4 h-4 text-gray-300" /></div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm text-gray-900 dark:text-white truncate">{li.product_name}</p>
+                        <p className="text-xs text-gray-400">Base price ₹{li.catalogue_price.toLocaleString()}</p>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button type="button" onClick={() => updateQty(itemKey, -1)} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600"><Minus className="w-3.5 h-3.5 text-gray-500" /></button>
+                        <span className="w-6 text-center text-sm font-medium text-gray-900 dark:text-white">{li.quantity}</span>
+                        <button type="button" onClick={() => updateQty(itemKey, 1)} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600"><Plus className="w-3.5 h-3.5 text-gray-500" /></button>
+                      </div>
+                      <button type="button" onClick={() => removeItem(itemKey)} className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30"><X className="w-3.5 h-3.5 text-red-500" /></button>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900 dark:text-white truncate">{li.product_name}</p>
-                      <p className="text-xs text-gray-400">₹{li.price.toLocaleString()} each</p>
+                    <div className="grid grid-cols-2 sm:grid-cols-[1fr_1fr_auto] gap-2 mt-3 sm:ml-[52px] items-end">
+                      <div>
+                        <label className={labelCls}>Selling price</label>
+                        <input type="number" min={0} step="0.01" className={inputCls} value={li.price} onChange={(e) => updateEditLinePrice(itemKey, Number(e.target.value))} />
+                      </div>
+                      <div>
+                        <label className={labelCls}>Extra offer %</label>
+                        <input type="number" min={0} max={100} step="0.01" className={inputCls} value={li.discount_percent} onChange={(e) => updateEditLineDiscount(itemKey, Number(e.target.value))} />
+                      </div>
+                      <div className="col-span-2 sm:col-span-1 text-right pb-2 text-sm font-semibold text-gray-900 dark:text-white">
+                        ₹{(li.price * li.quantity).toLocaleString()}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-1">
-                      <button onClick={() => updateQty(itemKey, -1)} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600"><Minus className="w-3.5 h-3.5 text-gray-500" /></button>
-                      <span className="w-6 text-center text-sm font-medium text-gray-900 dark:text-white">{li.quantity}</span>
-                      <button onClick={() => updateQty(itemKey, 1)} className="p-1 rounded hover:bg-gray-200 dark:hover:bg-gray-600"><Plus className="w-3.5 h-3.5 text-gray-500" /></button>
-                    </div>
-                    <span className="text-sm font-medium text-gray-900 dark:text-white w-20 text-right">₹{(li.price * li.quantity).toLocaleString()}</span>
-                    <button onClick={() => removeItem(itemKey)} className="p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30"><X className="w-3.5 h-3.5 text-red-500" /></button>
                   </div>
                   );
                 })}
@@ -1308,10 +1412,15 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
             </div>
           )}
 
-          {/* Notes */}
+          {/* Remark */}
           <div>
-            <label className={labelCls}>Notes</label>
-            <textarea className={`${inputCls} resize-none`} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Order notes (optional)" />
+            <div className="flex items-center justify-between gap-3 mb-1">
+              <label className={`${labelCls} mb-0`}>Remark</label>
+              <button type="button" onClick={() => setNotes((current) => current.includes("WhatsApp purchase") ? current : [current.trim(), "WhatsApp purchase"].filter(Boolean).join(" | "))} className="text-xs font-medium text-green-700 dark:text-green-400 hover:underline">
+                + WhatsApp purchase
+              </button>
+            </div>
+            <textarea className={`${inputCls} resize-none`} rows={2} value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Example: WhatsApp purchase" />
           </div>
         </div>
 
@@ -1621,6 +1730,18 @@ export default function AdminOrdersPage() {
   };
 
   const pendingPaymentCount = allOrders.filter((o) => o.payment_status === "pending").length;
+  const settledCodOrders = allOrders.filter(
+    (order) => order.payment_method === "cod" && order.settlement_status === "settled",
+  );
+
+  const handleDownloadSettledCod = () => {
+    if (settledCodOrders.length === 0) {
+      toast("No settled COD orders", { icon: "ℹ️" });
+      return;
+    }
+    downloadOrdersCsv(settledCodOrders, "settled-cod");
+    toast.success(`Downloaded ${settledCodOrders.length} settled COD orders`);
+  };
 
   return (
     <AdminShell>
@@ -1690,6 +1811,13 @@ export default function AdminOrdersPage() {
                 <CreditCard className="w-4 h-4" /> Check Pending ({pendingPaymentCount})
               </button>
             )}
+            <button
+              onClick={handleDownloadSettledCod}
+              className="px-4 py-2 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg text-sm font-medium hover:bg-green-100 dark:hover:bg-green-900/50 transition-colors flex items-center gap-2"
+              title="Download settled COD orders with invoice and tracking IDs"
+            >
+              <Download className="w-4 h-4" /> Settled COD ({settledCodOrders.length})
+            </button>
             <button
               onClick={() => setShowDownloadModal(true)}
               className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg text-sm font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center gap-2"
@@ -1951,17 +2079,20 @@ export default function AdminOrdersPage() {
                   )}
                 </div>
 
-                {/* Everything about the order opens in the right-hand panel, so
-                    the list keeps its place instead of pushing rows around. */}
+                {/* Expanded order stays inside its row for easier comparison with the list. */}
                 {expandedOrder === order.id && (
-                  <SlideOver
-                    title={`Order ${order.order_number}`}
-                    subtitle={`${order.customer_name} · ₹${Number(order.total).toLocaleString()}`}
-                    onClose={() => setExpandedOrder(null)}
-                    width="lg"
-                  >
+                  <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-900/30">
+                  <div className="px-4 md:px-6 py-3 flex items-center justify-between gap-3 border-b border-gray-200 dark:border-gray-700">
+                    <div>
+                      <p className="font-semibold text-gray-900 dark:text-white">Order {order.order_number}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{order.customer_name} · ₹{Number(order.total).toLocaleString()}</p>
+                    </div>
+                    <button type="button" onClick={() => setExpandedOrder(null)} className="p-2 rounded-lg text-gray-400 hover:text-gray-700 hover:bg-gray-200 dark:hover:text-gray-200 dark:hover:bg-gray-700" title="Close order details">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
                   <div className="px-4 md:px-6 py-4 overflow-hidden">
-                    <div className="grid gap-6 min-w-0">
+                    <div className="grid gap-6 min-w-0 md:grid-cols-2">
                       {/* Customer Details */}
                       <div>
                         <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">Customer Details</h3>
@@ -1974,7 +2105,7 @@ export default function AdminOrdersPage() {
                           <p><span className="text-gray-500 dark:text-gray-400">Address:</span> {order.customer_address}</p>
                           <p><span className="text-gray-500 dark:text-gray-400">City:</span> {order.customer_city}, {order.customer_state} - {order.customer_pincode}</p>
                           {order.notes && (
-                            <p><span className="text-gray-500 dark:text-gray-400">Notes:</span> {order.notes}</p>
+                            <p><span className="text-gray-500 dark:text-gray-400">Remark:</span> {order.notes}</p>
                           )}
                         </div>
                       </div>
@@ -2206,7 +2337,7 @@ export default function AdminOrdersPage() {
                       </div>
                     </div>
                   </div>
-                  </SlideOver>
+                  </div>
                 )}
               </div>
             ))}

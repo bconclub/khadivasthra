@@ -332,12 +332,13 @@ export async function applyCategoryOffer(categoryId: string, pct: number): Promi
 
   const results = await Promise.all(
     updates.map(({ id, ...fields }) =>
-      supabase.from('products').update(fields).eq('id', id)
+      supabase.from('products').update(fields).eq('id', id).select('id')
     )
   );
-  const failed = results.find((r) => r.error);
+  const failed = results.find((result) => result.error || !result.data?.length);
   if (failed?.error) throw new Error(failed.error.message);
-  return updates.length;
+  if (failed) throw new Error('Category offer was not saved. Products permission is required.');
+  return results.reduce((count, result) => count + (result.data?.length || 0), 0);
 }
 
 // Banners CRUD

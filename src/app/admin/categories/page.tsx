@@ -207,10 +207,10 @@ export default function AdminCategoriesPage() {
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => { setOfferCategory(category); setOfferPct(""); }}
-                              className="p-2 text-gray-400 hover:text-emerald-600 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 rounded-lg transition-colors"
                               title="Set offer for all products in this category"
                             >
-                              <BadgePercent className="w-4 h-4" />
+                              <BadgePercent className="w-4 h-4" /> Offer
                             </button>
                             <button
                               onClick={() => openEdit(category)}

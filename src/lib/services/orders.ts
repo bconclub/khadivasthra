@@ -144,12 +144,20 @@ export async function createOrder(
 }
 
 export async function getOrders(): Promise<Order[]> {
-  const { data, error } = await supabase
-    .from('orders')
-    .select('*')
-    .order('created_at', { ascending: false });
-  if (error) throw error;
-  return data || [];
+  const pageSize = 1000;
+  const orders: Order[] = [];
+  for (let from = 0; ; from += pageSize) {
+    const { data, error } = await supabase
+      .from('orders')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .range(from, from + pageSize - 1);
+    if (error) throw error;
+    const page = (data || []) as Order[];
+    orders.push(...page);
+    if (page.length < pageSize) break;
+  }
+  return orders;
 }
 
 export async function getOrderById(id: string): Promise<Order | null> {
