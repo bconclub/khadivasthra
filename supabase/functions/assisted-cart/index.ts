@@ -21,6 +21,12 @@ serve(async (request) => {
   if (!secret || secret.length < 32 || request.headers.get("x-proxe-commerce-token") !== secret) return respond({ error: "Forbidden" }, 403);
   try {
     const input = await request.json();
+    if (input.action === "receipt") {
+      const messageId = String(input.messageId || "");
+      if (!/^wamid\.[A-Za-z0-9._:-]{8,250}$/.test(messageId) || !["sent","failed","delivered","read"].includes(input.status)) return respond({ error: "Invalid delivery receipt" }, 400);
+      const saved = await db.rpc("kv_record_commerce_receipt", { p_message_id: messageId, p_status: input.status });
+      return saved.error ? respond({ error: "Receipt unavailable" }, 503) : respond({ recorded: saved.data === true });
+    }
     if (input.action === "order-status") {
       const sender = String(input.verifiedSender || "").replace(/\D/g, "");
       const phone = sender.startsWith("91") && sender.length === 12 ? sender.slice(2) : sender;
@@ -54,7 +60,12 @@ serve(async (request) => {
     if (input.action === "ack-order-update") {
       if (!uuid(input.id) || !["sent", "held"].includes(input.status)) return respond({ error: "Invalid receipt" }, 400);
       const saved = await db.from("kv_order_update_events").update({ state: input.status, message_id: input.messageId || null }).eq("id", input.id).eq("state", "claimed").select("id");
-      return saved.error || !saved.data?.length ? respond({ error: "Event receipt unavailable" }, 409) : respond({ ok: true });
+      if (saved.error || !saved.data?.length) return respond({ error: "Event receipt unavailable" }, 409);
+      if (input.messageId) {
+        const receipt = await db.rpc("kv_record_commerce_receipt", { p_message_id: input.messageId, p_status: null });
+        if (receipt.error) return respond({ error: "Event saved; delivery receipt reconciliation unavailable" }, 503);
+      }
+      return respond({ ok: true });
     }
     if (input.action === "prepare") {
       const items = input.items;
@@ -148,7 +159,12 @@ serve(async (request) => {
       if (!uuid(input.id) || !["2h","24h"].includes(input.stage) || !["sent","held"].includes(input.status)) return respond({ error: "Invalid receipt" }, 400);
       const field = input.stage === "2h" ? "reminder_2h" : "reminder_24h";
       const saved = await db.from("kv_assisted_carts").update({ [field]: input.status, [`${field}_message_id`]: input.messageId || null }).eq("id", input.id).eq(field, "claimed").select("id");
-      return saved.error || !saved.data?.length ? respond({ error: "Claim unavailable" }, 409) : respond({ ok: true });
+      if (saved.error || !saved.data?.length) return respond({ error: "Claim unavailable" }, 409);
+      if (input.messageId) {
+        const receipt = await db.rpc("kv_record_commerce_receipt", { p_message_id: input.messageId, p_status: null });
+        if (receipt.error) return respond({ error: "Send saved; delivery receipt reconciliation unavailable" }, 503);
+      }
+      return respond({ ok: true });
     }
     return respond({ error: "Invalid action" }, 400);
   } catch { return respond({ error: "Invalid request" }, 400); }

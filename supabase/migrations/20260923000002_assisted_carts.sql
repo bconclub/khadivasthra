@@ -12,6 +12,8 @@ CREATE TABLE IF NOT EXISTS public.kv_assisted_carts (
   reminder_24h TEXT NOT NULL DEFAULT 'pending' CHECK (reminder_24h IN ('pending','claimed','sent','held')),
   reminder_2h_message_id TEXT,
   reminder_24h_message_id TEXT,
+  reminder_2h_delivery TEXT CHECK (reminder_2h_delivery IN ('sent','failed','delivered','read')),
+  reminder_24h_delivery TEXT CHECK (reminder_24h_delivery IN ('sent','failed','delivered','read')),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
