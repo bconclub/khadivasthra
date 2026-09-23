@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --webpack",
-    "generate:feeds": "npx tsx --env-file=.env.local scripts/generate-feeds.ts",
-    "build": "npx tsx scripts/convert-to-webp.ts && npx tsx scripts/generate-feeds.ts && next build --webpack",
+    "generate:feeds": "npx tsx --env-file=.env.local scripts/generate-feeds.ts && npx tsx --env-file=.env.local scripts/generate-marketplace-feeds.ts",
+    "build": "npx tsx scripts/convert-to-webp.ts && npx tsx scripts/generate-feeds.ts && npx tsx scripts/generate-marketplace-feeds.ts && next build --webpack",
     "build:static": "next build",
     "start": "next start",
     "lint": "eslint",

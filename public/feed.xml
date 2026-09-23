@@ -3,613 +3,2490 @@
   <channel>
     <title>Khadi Vasthra</title>
     <link>https://khadivasthra.com</link>
-    <description>Premium traditional Kerala mundus and dhotis - handloom quality</description>
+    <description>Khadi Vasthra product catalog</description>
     <item>
-      <g:id>9da86b72-907e-4c98-9e78-d518cb413862</g:id>
-      <g:title>Silver Kara Cream Double Mundu</g:title>
-      <g:description>Silver Kara Cream Double Mundu</g:description>
-      <g:link>https://khadivasthra.com/product/silver-kara-cream-double-mundu/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1771521157418.jpg</g:image_link>
-      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1771521204045.jpg</g:additional_image_link>
+      <g:id>020f3404-9490-42b9-a26a-1b3c6c34cbf4</g:id>
+      <g:title>Grey , Black and Silver Kara Offwhite Double Mundu</g:title>
+      <g:description>Grey , Black and Silver Kara Offwhite Double Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/grey-black-and-silver-kara-offwhite-double-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1776683736459.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1776683739686.jpg</g:additional_image_link>
       <g:availability>in stock</g:availability>
       <g:condition>new</g:condition>
-      <g:price>790.00 INR</g:price>
-      <g:sale_price>711.00 INR</g:sale_price>
+      <g:price>1485.00 INR</g:price>
+      <g:sale_price>1337.00 INR</g:sale_price>
       <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Offwhite Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton </g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>da7b1e4e-e5bc-418b-9e66-639c7dedab3e</g:id>
-      <g:title>Golden Kara Cream Double Mundu</g:title>
-      <g:description>Cream Colour Double Dhoti with Golden Kara(Border)</g:description>
-      <g:link>https://khadivasthra.com/product/golden-kara-cream-double-mundu/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1771516771230.jpg</g:image_link>
-      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1771516775054.jpg</g:additional_image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>750.00 INR</g:price>
-      <g:sale_price>675.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Offwhite Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
+      <g:product_type>Offwhite Double Mundu(4 Mtr)</g:product_type>
       <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
     </item>
     <item>
-      <g:id>8b9c5f31-f2dd-4a16-ac36-ef7651fc3d8b</g:id>
-      <g:title>Silver Kara Cream Double Mundu</g:title>
-      <g:description>Premium Cream Colour Double Dhoti With Silver Kara(Border)</g:description>
-      <g:link>https://khadivasthra.com/product/silverkara-Cream-double-mundu/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/cream-colour-double-dhoti-2/1771323069742.jpg</g:image_link>
-      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1771322756002.jpg</g:additional_image_link>
+      <g:id>052fca15-f769-4219-aa03-0ca9eb16d183</g:id>
+      <g:title>Purple Geometric Flower White Single Mundu </g:title>
+      <g:description>Purple Geometric Flower White Single Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/purple-geometric-flower-white-single-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785596253079.png</g:image_link>
       <g:availability>in stock</g:availability>
       <g:condition>new</g:condition>
-      <g:price>1480.00 INR</g:price>
-      <g:sale_price>1332.00 INR</g:sale_price>
+      <g:price>499.00 INR</g:price>
+      <g:sale_price>449.00 INR</g:sale_price>
       <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Offwhite Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100 % Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>0dbdf037-0922-4f24-a623-d1476b9eafbe</g:id>
-      <g:title>Orange and Golden Kara Cream Double Mundu</g:title>
-      <g:description>Premium Orange and Golden Cream Double Mundu with multiple Karas</g:description>
-      <g:link>https://khadivasthra.com/product/orange-and-golden-kara-cream-double-mundu/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1771519379374.jpg</g:image_link>
-      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1771519383199.jpg</g:additional_image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>640.00 INR</g:price>
-      <g:sale_price>576.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Offwhite Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
+      <g:product_type>Printed Mundu</g:product_type>
       <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
     </item>
     <item>
-      <g:id>daf0a5fd-1fcf-4389-b572-63139110d8d6</g:id>
-      <g:title>Brown and Golden Kara Double Mundu</g:title>
-      <g:description>Cream Colour Double Dhoti with Brown and Golden Kara(Border)</g:description>
-      <g:link>https://khadivasthra.com/product/brownandgolden-karadouble-mundu/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1771327475181.png</g:image_link>
-      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1771327480245.png</g:additional_image_link>
+      <g:id>0625dc66-6f77-41bd-9494-a014f89ed1cd</g:id>
+      <g:title>Black Kara Offwhite Double Mundu</g:title>
+      <g:description>Black Kara Offwhite Double Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/black-kara-offwhite-double-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1776684097077.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1776684100909.jpg</g:additional_image_link>
       <g:availability>in stock</g:availability>
       <g:condition>new</g:condition>
-      <g:price>840.00 INR</g:price>
-      <g:sale_price>756.00 INR</g:sale_price>
+      <g:price>1485.00 INR</g:price>
+      <g:sale_price>1337.00 INR</g:sale_price>
       <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Offwhite Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
+      <g:product_type>Offwhite Double Mundu(4 Mtr)</g:product_type>
       <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
     </item>
     <item>
-      <g:id>ccf56223-d88a-4193-bfac-03e785e46727</g:id>
-      <g:title>Blue Kara Cream Double Mundu</g:title>
-      <g:description>Premium Cream Colour Double Dhoti With Blue </g:description>
-      <g:link>https://khadivasthra.com/product/bluekara0-cream-double-mundu/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/cream-colour-double-dhoti-3/1771331350832.jpg</g:image_link>
-      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/cream-colour-double-dhoti-3/1771331209685.jpg</g:additional_image_link>
+      <g:id>07188545-e0d0-4eb0-873b-946587a3bee7</g:id>
+      <g:title>Green Khadi Full Sleeve Shirt</g:title>
+      <g:description>Green Khadi Shirt</g:description>
+      <g:link>https://khadivasthra.com/product/green-khadi-full-sleeve-shirt/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/green-khadi-full-sleeve-shirt/1775145911107.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/green-khadi-full-sleeve-shirt/1775145915638.jpg</g:additional_image_link>
       <g:availability>in stock</g:availability>
       <g:condition>new</g:condition>
       <g:price>1050.00 INR</g:price>
       <g:sale_price>945.00 INR</g:sale_price>
       <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Offwhite Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100%</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>a23c06d2-d7e9-423c-a8b5-7f89d3e19486</g:id>
-      <g:title>Brown Kara Cream Double Mundu</g:title>
-      <g:description>Cream Colour Cotton Dhoti with Brown colour Kara
-</g:description>
-      <g:link>https://khadivasthra.com/product/brown-kara-cream-double-mundu/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/cream-colour-double-dhoti/1771159222085.jpg</g:image_link>
-      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/cream-colour-double-dhoti/1771159236571.jpg</g:additional_image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>700.00 INR</g:price>
-      <g:sale_price>630.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Offwhite Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
+      <g:product_type> Shirts</g:product_type>
       <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
     </item>
     <item>
-      <g:id>ad4678ca-749a-4af1-889a-3b431b5f6575</g:id>
-      <g:title>Grey Kara CreamColour Double Mundu</g:title>
-      <g:description>Grey Kara Cream Colour Double Mundu</g:description>
-      <g:link>https://khadivasthra.com/product/grey-kara-creamcolour-double-mundu/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1771520327830.jpg</g:image_link>
-      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1771520331511.jpg</g:additional_image_link>
-      <g:availability>in stock</g:availability>
+      <g:id>0d207bd0-9a9f-4cfb-a1d7-30d4ee8974ad</g:id>
+      <g:title>Brown and Gloden Border 4.15 Mtr Offwhite Doubel Dhothi</g:title>
+      <g:description>Pure Cotton Double Dhothi in 4.15 Mtre , Perfect for Highwaist, Tall persons</g:description>
+      <g:link>https://khadivasthra.com/product/brown-and-gloden-border-4-15-mtr-offwhite-doubel-dhothi/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1784388663297.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1784388666892.png</g:additional_image_link>
+      <g:availability>out of stock</g:availability>
       <g:condition>new</g:condition>
-      <g:price>740.00 INR</g:price>
-      <g:sale_price>666.00 INR</g:sale_price>
+      <g:price>1485.00 INR</g:price>
+      <g:sale_price>1040.00 INR</g:sale_price>
       <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Offwhite Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
+      <g:product_type>4.5m Double Mundu</g:product_type>
       <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
     </item>
     <item>
-      <g:id>d7680a9c-b2db-46ea-87e8-e336bd3168c8</g:id>
-      <g:title>Green Kara Cream Double Mundu</g:title>
-      <g:description>Green Kara Cream Double Mundu</g:description>
-      <g:link>https://khadivasthra.com/product/green-kara-cream-double-mundu/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1771522063564.jpg</g:image_link>
-      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1771522067598.jpg</g:additional_image_link>
+      <g:id>0e492fbd-6231-49d3-892d-1995131e6c2a</g:id>
+      <g:title>Poovu Set Mundu Blue (Womens Wear)</g:title>
+      <g:description>Cotton Body with Neriya kasavu lines with Blue and green flower Print</g:description>
+      <g:link>https://khadivasthra.com/product/poovu-set-mundu-blue-womens-wear/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785421565372.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785421571561.png</g:additional_image_link>
       <g:availability>in stock</g:availability>
       <g:condition>new</g:condition>
-      <g:price>1050.00 INR</g:price>
-      <g:sale_price>945.00 INR</g:sale_price>
+      <g:price>1090.00 INR</g:price>
+      <g:sale_price>872.00 INR</g:sale_price>
       <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Offwhite Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
+      <g:product_type> Set-Mundu</g:product_type>
       <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
     </item>
     <item>
-      <g:id>f92f5ced-41ba-4364-a23f-43fb920459d7</g:id>
-      <g:title>Black and Gold Kara Cream Double Mundu</g:title>
-      <g:description>Premium Black and Gold Kara Cream Double Mundu</g:description>
-      <g:link>https://khadivasthra.com/product/black-and-gold-kara-cream-double-mundu/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1771597570647.jpg</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>840.00 INR</g:price>
-      <g:sale_price>756.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Offwhite Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>7553a919-ccef-4722-b709-45771f4c8f2e</g:id>
-      <g:title>Dark Red and Golden Kara Cream Mundu</g:title>
-      <g:description>Premium Dark Red and Golden Kara Cream Mundu</g:description>
-      <g:link>https://khadivasthra.com/product/dark-red-and-golden-kara-cream-mundu/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1771597736623.jpg</g:image_link>
-      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1771597730919.jpg</g:additional_image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>840.00 INR</g:price>
-      <g:sale_price>756.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Offwhite Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>a1b99bf4-1726-45d0-b700-1815bc42a236</g:id>
-      <g:title>Black and Golden Kara Cream double Mundu</g:title>
-      <g:description>Premium Black and Golden Kara Cream double Mundu</g:description>
-      <g:link>https://khadivasthra.com/product/black-and-golden-kara-cream-double-mundu/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1771597892124.jpg</g:image_link>
-      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1771597896393.jpg</g:additional_image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>580.00 INR</g:price>
-      <g:sale_price>522.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Offwhite Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>bd076c25-d5dd-4960-848f-03095e9db3c9</g:id>
-      <g:title>Lotus Print Kavi Mundu</g:title>
-      <g:description>Lotus and Buddha Print Kavi Mundu</g:description>
-      <g:link>https://khadivasthra.com/product/lotus-print-kavi-mundu/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1771653594075.png</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>320.00 INR</g:price>
-      <g:sale_price>288.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>1aa9c4a2-1620-405c-b75d-2f2ac97424f4</g:id>
-      <g:title>Maroon Krishna Print </g:title>
-      <g:description>Maroon Krishna Print </g:description>
-      <g:link>https://khadivasthra.com/product/maroon-krishna-print/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1771654174502.png</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>320.00 INR</g:price>
-      <g:sale_price>288.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton </g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>975ba955-35da-4044-98c7-925da7140ef3</g:id>
-      <g:title>Print Kavi </g:title>
-      <g:description>Geometric Print Kavi</g:description>
-      <g:link>https://khadivasthra.com/product/print-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1771651771705.png</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>320.00 INR</g:price>
-      <g:sale_price>288.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>9a5ea158-f3de-441a-b81c-2b39ddf23e5f</g:id>
-      <g:title>Blue Neriya Kara Kavi Mundu</g:title>
-      <g:description>Neriya Kara Light Kavi Mundu</g:description>
-      <g:link>https://khadivasthra.com/product/neriya-kara-light-kavi-mundu/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/neriya-kara-light-kavi-mundu/1772031435499.jpg</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>360.00 INR</g:price>
-      <g:sale_price>324.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>2b23ec81-3fd8-4a1a-8b06-6e2b2f6539cd</g:id>
-      <g:title>Green Border Colour Kavi</g:title>
-      <g:description>Green Border Colour Kavi</g:description>
-      <g:link>https://khadivasthra.com/product/green-border-colour-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772023854720.jpg</g:image_link>
+      <g:id>103b021d-f698-4d96-9a82-4a501c0ba455</g:id>
+      <g:title>Grey Border Saadha Kodi Colour Single Mundu</g:title>
+      <g:description>Grey Border Saadha Kodi Colour Single Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/grey-border-saadha-kodi-colour-single-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1784216877122.png</g:image_link>
       <g:availability>in stock</g:availability>
       <g:condition>new</g:condition>
       <g:price>390.00 INR</g:price>
-      <g:sale_price>351.00 INR</g:sale_price>
+      <g:sale_price>332.00 INR</g:sale_price>
       <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
+      <g:product_type>Single Mundu</g:product_type>
+      <g:material>Cotton Mix</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
     </item>
     <item>
-      <g:id>92c92f7c-dc84-490e-9c9a-6517f61408a6</g:id>
-      <g:title>Green Neriya Kara Kavi Mundu</g:title>
-      <g:description>Green Neriya Kara Kavi Mundu</g:description>
-      <g:link>https://khadivasthra.com/product/green-neriya-kara-kavi-mundu/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/green-neriya-kara-kavi-mundu/1772031176438.jpg</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>360.00 INR</g:price>
-      <g:sale_price>324.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>41e81a36-746a-4a5b-9666-4446927c5761</g:id>
-      <g:title>Green Kara Colour Kavi </g:title>
-      <g:description>Green Kara Colour Kavi </g:description>
-      <g:link>https://khadivasthra.com/product/green-kara-colour-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772026130261.jpg</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>440.00 INR</g:price>
-      <g:sale_price>396.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>f4f820b3-f06a-417c-88e2-984ceda23506</g:id>
-      <g:title>Red Neriya Kara Kavi </g:title>
-      <g:description>Red Neriya Kara Kavi </g:description>
-      <g:link>https://khadivasthra.com/product/red-neriya-kara-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/red-neriya-kara-kavi/1772031041648.jpg</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>360.00 INR</g:price>
-      <g:sale_price>324.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton </g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>2356a056-ad82-4395-b3b1-a143a4dd4960</g:id>
-      <g:title>Mustard Yellow Kara Colour Kavi</g:title>
-      <g:description>Mustard Yellow Kara Colour Kavi</g:description>
-      <g:link>https://khadivasthra.com/product/mustard-yellow-kara-colour-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772025713316.jpg</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>390.00 INR</g:price>
-      <g:sale_price>351.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>a67aa76d-016c-40ad-b2b2-744279bd934f</g:id>
-      <g:title>Brown Boarder  Khadi Kavi</g:title>
-      <g:description>Brown Boarder  Khadi Kavi</g:description>
-      <g:link>https://khadivasthra.com/product/brown-boarder-khadi-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/brown-boarder-khadi-kavi/1772027381167.jpg</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>440.00 INR</g:price>
-      <g:sale_price>396.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>e04c1643-841e-46cb-94e3-a35797f368bb</g:id>
-      <g:title>Brown Kara Kavi Mundu</g:title>
-      <g:description>Brown Kara Kavi Mundu</g:description>
-      <g:link>https://khadivasthra.com/product/brown-kara-kavi-mundu/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772032287391.jpg</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>390.00 INR</g:price>
-      <g:sale_price>351.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>fdb61484-40ab-40bb-99ec-cae32ecb45b3</g:id>
-      <g:title>Black Border Colour Kavi </g:title>
-      <g:description>Black Border Colour Kavi </g:description>
-      <g:link>https://khadivasthra.com/product/black-border-colour-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/black-border-colour-kavi/1772027769731.jpg</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>410.00 INR</g:price>
-      <g:sale_price>369.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>490f593b-0ee1-4099-b62f-e52e4726db11</g:id>
-      <g:title>Green Border Rose Colour Kavi </g:title>
-      <g:description>Green Border Rose Colour Kavi </g:description>
-      <g:link>https://khadivasthra.com/product/green-border-rose-colour-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772025590266.jpg</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>430.00 INR</g:price>
-      <g:sale_price>387.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>c782c520-e742-495b-a802-650b4c8f3ec5</g:id>
-      <g:title>Blue Kara Kavi Mundu</g:title>
-      <g:description>Blue Kara Kavi Mundu</g:description>
-      <g:link>https://khadivasthra.com/product/blue-kara-kavi-mundu/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/blue/1772033467340.jpg</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>390.00 INR</g:price>
-      <g:sale_price>351.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>213ae215-f79f-43b8-9a69-2d3290009748</g:id>
-      <g:title>Bottle Green Border Kavi</g:title>
-      <g:description>Bottle Green Border Kavi</g:description>
-      <g:link>https://khadivasthra.com/product/bottle-green-border-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772033880118.jpg</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>440.00 INR</g:price>
-      <g:sale_price>396.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>03a87e93-5aaa-44e6-8284-3fdd45dcd9eb</g:id>
-      <g:title>Green and Yellow stitch Border Purple Kavi</g:title>
-      <g:description>Green and Yellow stitch Border Purple Kavi</g:description>
-      <g:link>https://khadivasthra.com/product/green-and-yellow-stitch-border-purple-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772033954157.jpg</g:image_link>
+      <g:id>123833fa-fa14-470f-ae66-e3d30b6129ba</g:id>
+      <g:title>Kolam Print Maroon Border Kavi Single Mundu </g:title>
+      <g:description>Kolam Print Maroon Border Kavi Single Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/kolam-print-maroon-border-kavi-single-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785002917927.png</g:image_link>
       <g:availability>in stock</g:availability>
       <g:condition>new</g:condition>
       <g:price>380.00 INR</g:price>
       <g:sale_price>342.00 INR</g:sale_price>
       <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
+      <g:product_type>Printed Mundu</g:product_type>
       <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
     </item>
     <item>
-      <g:id>2da191b4-fd71-495a-b80a-e64296131220</g:id>
-      <g:title>Yellow Stitch Black  Kara Line All over Kavi</g:title>
-      <g:description>Yellow Kara Line All over Kavi</g:description>
-      <g:link>https://khadivasthra.com/product/yellow-stitch-black-kara-line-all-over-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772034154257.jpg</g:image_link>
+      <g:id>14dc0ada-bddf-496a-a6fd-e19c79fb6781</g:id>
+      <g:title>Blue Kara Double White Mundu</g:title>
+      <g:description>Blue Kara Double White Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/blue-kara-double-white-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1775999394761.jpg</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1400.00 INR</g:price>
+      <g:sale_price>1260.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>White Double Mundu(4Mtre)</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>178ef384-994b-4410-a9b8-e78757e6ea48</g:id>
+      <g:title>Maroon Border Cotton Double White Mundu(4.10Mtre)</g:title>
+      <g:description>Maroon Border Cotton Double White Mundu(4.10Mtre)</g:description>
+      <g:link>https://khadivasthra.com/product/maroon-border-cotton-double-white-mundu-4-10mtre/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786814135939.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786814199552.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1250.00 INR</g:price>
+      <g:sale_price>1000.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>White Double Mundu(4Mtre)</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>1edcba94-1161-42d2-89b6-8b535a5d5ece</g:id>
+      <g:item_group_id>191bf7d7-a32c-4287-ab2c-ffda868059a2</g:item_group_id>
+      <g:title>Orange Colour Khadi Full Sleeve Shirt - Orange / L</g:title>
+      <g:description>Orange Colour Khadi Full Sleeve Shirt</g:description>
+      <g:link>https://khadivasthra.com/product/orange-colour-khadi-full-sleeve-shirt/?color=Orange&amp;size=L</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/orange-colour-khadi-full-sleeve-shirt-color/1774979181385.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/orange-colour-khadi-full-sleeve-shirt/1775056738564.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1050.00 INR</g:price>
+      <g:sale_price>945.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Shirts</g:product_type>
+      <g:color>Orange</g:color>
+      <g:size>L</g:size>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-ORANGE-ORA-L</g:mpn>
+    </item>
+    <item>
+      <g:id>28220e94-809b-43e5-a75e-719e73cb1183</g:id>
+      <g:item_group_id>191bf7d7-a32c-4287-ab2c-ffda868059a2</g:item_group_id>
+      <g:title>Orange Colour Khadi Full Sleeve Shirt - Orange / M</g:title>
+      <g:description>Orange Colour Khadi Full Sleeve Shirt</g:description>
+      <g:link>https://khadivasthra.com/product/orange-colour-khadi-full-sleeve-shirt/?color=Orange&amp;size=M</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/orange-colour-khadi-full-sleeve-shirt-color/1774979181385.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/orange-colour-khadi-full-sleeve-shirt/1775056738564.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1050.00 INR</g:price>
+      <g:sale_price>945.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Shirts</g:product_type>
+      <g:color>Orange</g:color>
+      <g:size>M</g:size>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-ORANGE-ORA-M</g:mpn>
+    </item>
+    <item>
+      <g:id>05026af6-322e-4d7b-81a7-1174a34b621b</g:id>
+      <g:item_group_id>19b412fe-a26e-44f7-b5bd-22e377d5d89a</g:item_group_id>
+      <g:title>Classic Floral Print Tissue Set Saree - Pink / 6M</g:title>
+      <g:description>Classic Floral Print Tissue Set Saree</g:description>
+      <g:link>https://khadivasthra.com/product/classic-floral-print-tissue-set-saree/?color=Pink&amp;size=6M</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/classic-floral-print-tissue-set-saree-color/1785842569507.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/classic-floral-print-tissue-set-saree-color/1785842570663.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785842437617.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785842438616.png</g:additional_image_link>
+      <g:availability>out of stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1700.00 INR</g:price>
+      <g:sale_price>1190.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Set Saree</g:product_type>
+      <g:color>Pink</g:color>
+      <g:size>6M</g:size>
+      <g:material>Zari and Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-CLASSI-PIN-6M</g:mpn>
+    </item>
+    <item>
+      <g:id>0eae4d6a-d165-424b-a8e8-3f8e5ac4a35b</g:id>
+      <g:item_group_id>19b412fe-a26e-44f7-b5bd-22e377d5d89a</g:item_group_id>
+      <g:title>Classic Floral Print Tissue Set Saree - Violet / 6 M</g:title>
+      <g:description>Classic Floral Print Tissue Set Saree</g:description>
+      <g:link>https://khadivasthra.com/product/classic-floral-print-tissue-set-saree/?color=Violet&amp;size=6+M</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/classic-floral-print-tissue-set-saree-color/1785842535396.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/classic-floral-print-tissue-set-saree-color/1785842536870.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785842437617.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785842438616.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1700.00 INR</g:price>
+      <g:sale_price>1190.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Set Saree</g:product_type>
+      <g:color>Violet</g:color>
+      <g:size>6 M</g:size>
+      <g:material>Zari and Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-CLASSI-VIO-6 M</g:mpn>
+    </item>
+    <item>
+      <g:id>ecae1b63-9521-409c-b864-3532dac0547f</g:id>
+      <g:item_group_id>19b412fe-a26e-44f7-b5bd-22e377d5d89a</g:item_group_id>
+      <g:title>Classic Floral Print Tissue Set Saree - Orange / 6 M</g:title>
+      <g:description>Classic Floral Print Tissue Set Saree</g:description>
+      <g:link>https://khadivasthra.com/product/classic-floral-print-tissue-set-saree/?color=Orange&amp;size=6+M</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/classic-floral-print-tissue-set-saree-color/1785842520034.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785842437617.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785842438616.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1700.00 INR</g:price>
+      <g:sale_price>1190.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Set Saree</g:product_type>
+      <g:color>Orange</g:color>
+      <g:size>6 M</g:size>
+      <g:material>Zari and Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-CLASSI-ORA-6 M</g:mpn>
+    </item>
+    <item>
+      <g:id>1a35775e-b870-4e4a-a10f-a6576a077276</g:id>
+      <g:title>Teal and Silver Kara Double White Mundu</g:title>
+      <g:description>Teal and Silver Kara Double White Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/teal-and-silver-kara-double-white-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1775998862182.jpg</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1360.00 INR</g:price>
+      <g:sale_price>1224.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>White Double Mundu(4Mtre)</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>20160f9f-c7bd-4681-97f2-056d1b99181d</g:id>
+      <g:title>Sphere Flower Ash Colour Border Kavi </g:title>
+      <g:description>Sphere Flower Ash Colour Border Kavi</g:description>
+      <g:link>https://khadivasthra.com/product/sphere-flower-ash-colour-border-kavi/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/sphere-flower-ash-colour-border-kavi/1784227111666.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>380.00 INR</g:price>
+      <g:sale_price>342.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Printed Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>213ae215-f79f-43b8-9a69-2d3290009748</g:id>
+      <g:title>Green Border Kavi</g:title>
+      <g:description>Bottle Green Border Kavi</g:description>
+      <g:link>https://khadivasthra.com/product/bottle-green-border-kavi/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772033880118.jpg</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>460.00 INR</g:price>
+      <g:sale_price>414.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Kavi Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>25316a7c-5eb9-4897-9655-51ac2f74a3bd</g:id>
+      <g:title>Classic Peacock Blue Print White Mund</g:title>
+      <g:description>Classic Peacock Blue Print White Mund</g:description>
+      <g:link>https://khadivasthra.com/product/classic-peacock-blue-print-white-undu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1784216477717.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>499.00 INR</g:price>
+      <g:sale_price>449.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Printed Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>257365a1-318f-4a53-9c9d-c5ed130f1cbc</g:id>
+      <g:title>Orang and Beige Line  Cotton Shirt Bite (2 Mtr)</g:title>
+      <g:description>KHADI COTTON – SHIRT BIT * 100% Pure Khadi Cotton * 2 Metres Length * 58 Inch Width * Suitable for Half-Sleeve &amp; Full-Sleeve Shirts * Lightweight &amp; Breathable * Natural Khadi Texture &amp; Finish *Pre-wash Before Stitching to account for natural shrinkage</g:description>
+      <g:link>https://khadivasthra.com/product/orang-and-beige-line-cotton-shirt-bite-2-mtr/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1789646278487.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>540.00 INR</g:price>
+      <g:sale_price>486.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Shirt Bit</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>27a5759f-5a51-413e-8e39-dba4e96bec35</g:id>
+      <g:title>Red and Golden Veethikara Set-Mundu(Women&apos;s Wear)</g:title>
+      <g:description>Red and Golden Veethikara Set-Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/red-and-golden-veethikara-set-mundu-women-s-wear/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774638653278.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774638657601.jpg</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1260.00 INR</g:price>
+      <g:sale_price>1134.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Set-Mundu</g:product_type>
+      <g:material>Poly-Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>2d50b05a-10a2-43bc-8565-9c29b33983eb</g:id>
+      <g:title>Peach and Golden Border Offwhite 4.15 Mtre Double Dhothi</g:title>
+      <g:description>Pure Cotton Dhothi perfect for Highwaist , Tall Men</g:description>
+      <g:link>https://khadivasthra.com/product/peach-and-golden-border-offwhite-4-15-mtre-double-dhothi/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1784388787525.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1485.00 INR</g:price>
+      <g:sale_price>1188.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>4.5m Double Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>2eef3e37-f972-4a61-ab0f-cf01fb9a14ef</g:id>
+      <g:title>Blue and Pastel Blue Kara Offwhite Double Mundu</g:title>
+      <g:description>Blue and Pastel Blue Kara Offwhite Double Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/blue-and-pastel-blue-kara-offwhite-double-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1776683808574.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1776683822222.jpg</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1485.00 INR</g:price>
+      <g:sale_price>1337.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Offwhite Double Mundu(4 Mtr)</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>323b7aa7-f28f-45f4-9216-79c063b73d08</g:id>
+      <g:title>Blue Green Khadi Cotton Shirt Bite (2Mtr)</g:title>
+      <g:description>KHADI COTTON – SHIRT BIT * 100% Pure Khadi Cotton * 2 Metres Length * 58 Inch Width * Suitable for Half-Sleeve &amp; Full-Sleeve Shirts * Lightweight &amp; Breathable * Natural Khadi Texture &amp; Finish *Pre-wash Before Stitching to account for natural shrinkage</g:description>
+      <g:link>https://khadivasthra.com/product/blue-green-khadi-cotton-shirt-bite-2mtr/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1789642725473.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>540.00 INR</g:price>
+      <g:sale_price>486.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Shirt Bit</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>337d1135-5682-4f52-9bf7-6310a4896864</g:id>
+      <g:title>Blue Kambikara Set-Mundu</g:title>
+      <g:description>Blue Kambikara Set-Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/blue-kambikara-set-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774717463116.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774717467963.jpg</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1010.00 INR</g:price>
+      <g:sale_price>859.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Set-Mundu</g:product_type>
+      <g:material>Poly-Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>37825c12-5318-4c62-8e50-08e3fc113c8e</g:id>
+      <g:title>Khadi Cotton Shirt Bit</g:title>
+      <g:description>*100% Pure Khadi Cotton *2 Metres Length | 58&quot; Width * Ideal for Half-Sleeve &amp; Full-Sleeve Shirts *Breathable, Comfortable &amp; Naturally Textured *Khadi cotton may have **natural shrinkage after washing *Pre-wash &amp; soak in water before stitching** for better size accuracy * A natural fabric with an *authentic Khadi character*</g:description>
+      <g:link>https://khadivasthra.com/product/khadi-cotton-shirt-bite/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1789478863709.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>540.00 INR</g:price>
+      <g:sale_price>486.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Shirt Bit</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>378c0900-2c16-4cfd-9d15-125aa860313e</g:id>
+      <g:title>Yellow and Grey Chuttikara Double white Mundu</g:title>
+      <g:description>Yellow and Grey Chuttikara Double white Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/yellow-and-grey-chuttikara-double-white-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1776000718280.jpg</g:image_link>
+      <g:availability>out of stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1600.00 INR</g:price>
+      <g:sale_price>1440.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>White Double Mundu(4Mtre)</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>38233371-4ae5-4758-97b8-7b3bb1d19bfa</g:id>
+      <g:title>Golden Border With White Line Border White Double Mundu</g:title>
+      <g:description>Golden Border With White Line Border White Double Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/golden-border-with-white-line-border-white-double-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786188172881.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1185.00 INR</g:price>
+      <g:sale_price>948.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>White Double Mundu(4Mtre)</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>65c62da4-cfa1-4e4c-b9a1-a579962bfe6e</g:id>
+      <g:item_group_id>38ee7e69-6b14-41c9-9146-94b15d6afec1</g:item_group_id>
+      <g:title>Green Linen Shirt - Green / M</g:title>
+      <g:description>Green Linen Shirt</g:description>
+      <g:link>https://khadivasthra.com/product/green-linen-shirt/?color=Green&amp;size=M</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/green-linen-shirt-color/1775056605743.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774782585511.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774782591848.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1299.00 INR</g:price>
+      <g:sale_price>1104.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Shirts</g:product_type>
+      <g:color>Green</g:color>
+      <g:size>M</g:size>
+      <g:material>100% Linen</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-GREEN--GRE-M</g:mpn>
+    </item>
+    <item>
+      <g:id>6f177adc-364b-481a-ab9f-44420776a147</g:id>
+      <g:item_group_id>38ee7e69-6b14-41c9-9146-94b15d6afec1</g:item_group_id>
+      <g:title>Green Linen Shirt - Green / L</g:title>
+      <g:description>Green Linen Shirt</g:description>
+      <g:link>https://khadivasthra.com/product/green-linen-shirt/?color=Green&amp;size=L</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/green-linen-shirt-color/1775056605743.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774782585511.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774782591848.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1299.00 INR</g:price>
+      <g:sale_price>1104.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Shirts</g:product_type>
+      <g:color>Green</g:color>
+      <g:size>L</g:size>
+      <g:material>100% Linen</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-GREEN--GRE-L</g:mpn>
+    </item>
+    <item>
+      <g:id>3b41cae8-172d-4110-9f27-f236baac8302</g:id>
+      <g:title>Orange Mughal Print Set Mundu</g:title>
+      <g:description>Orange Mughal Print Set Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/orange-mughal-print-set-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785421423396.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785421427968.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1340.00 INR</g:price>
+      <g:sale_price>1072.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Set-Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>3b57a6f8-df93-4f19-8bdb-87ec65d21ece</g:id>
+      <g:title>Orange  and Green Flower Borderless Printed Set Mundu(Womens Wear)</g:title>
+      <g:description>Offwhite Cotton Body with Green and Orange colour screen Printed SetMundu</g:description>
+      <g:link>https://khadivasthra.com/product/orange-and-green-flower-borderless-printed-set-mundu-womens-wear/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785421642518.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785421646075.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>920.00 INR</g:price>
+      <g:sale_price>736.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Set-Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>3cbd6f7f-8878-4048-90e2-e759c643af57</g:id>
+      <g:title>Blue Lotus Print kasavu border Set Saree</g:title>
+      <g:description>Blue Lotus Print kasavu border Set Saree</g:description>
+      <g:link>https://khadivasthra.com/product/blue-lotus-print-kasavu-border-set-saree/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785421110555.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785421119349.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>980.00 INR</g:price>
+      <g:sale_price>784.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Set Saree</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>3e09afd2-8d7f-47c1-b82b-a8ecabe9cd84</g:id>
+      <g:title>Violet Aanathari Set Saree</g:title>
+      <g:description>Cotton Set Saree with Screen Print</g:description>
+      <g:link>https://khadivasthra.com/product/violet-aanathari-set-saree/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785420200783.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785420204875.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1950.00 INR</g:price>
+      <g:sale_price>1560.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Set Saree</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>3e1f5c5b-5853-4679-99d7-e066d5a38a7a</g:id>
+      <g:title>Green Geometric Print Single White Mundu</g:title>
+      <g:description>Green Geometric Print Single White Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/green-geometric-print-single-white-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774868644484.jpg</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>450.00 INR</g:price>
+      <g:sale_price>405.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Printed Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>40585b28-c060-4054-91c3-d21977c7cbbc</g:id>
+      <g:title>Milky White Single Mundu</g:title>
+      <g:description>Milky White Single Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/milky-white-single-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1784217237055.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>440.00 INR</g:price>
+      <g:sale_price>374.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Single Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>4396ad53-d741-4deb-b035-976c1687abb3</g:id>
+      <g:title>Varna Kudamattam Premium Set Saree</g:title>
+      <g:description>Cotton Set Saree with Kasavu Border , With Embroidery and Hand Painting</g:description>
+      <g:link>https://khadivasthra.com/product/varna-kudamattam-premium-set-saree/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785419918732.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785419924414.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785419926003.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785419928574.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1980.00 INR</g:price>
+      <g:sale_price>1584.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Set Saree</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>43bb295f-b281-4e82-acd6-a4c5a53180d8</g:id>
+      <g:title>Light Grey and Silver Kara Handloom Cream Colour Mundu</g:title>
+      <g:description>Light Grey and Silver Kara Handloom Cream Colour Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/light-grey-and-silver-kara-handloom-cream-colour-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1776681617573.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1776681621239.jpg</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1485.00 INR</g:price>
+      <g:sale_price>1337.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Offwhite Double Mundu(4 Mtr)</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>1db54e38-85a6-41e6-85c3-3a543e61b090</g:id>
+      <g:item_group_id>44331fc1-16d8-4b9a-b81b-300e5411700d</g:item_group_id>
+      <g:title>Violet Thick Garden  - Violet / 2M</g:title>
+      <g:description>Violet Thick Garden</g:description>
+      <g:link>https://khadivasthra.com/product/violet-thick-garden/?color=Violet&amp;size=2M</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/violet-thick-garden-color/1785843055678.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/violet-thick-garden-color/1785843056799.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/violet-thick-garden-color/1785843057671.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785842975146.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785842979720.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1800.00 INR</g:price>
+      <g:sale_price>1260.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Set-Mundu</g:product_type>
+      <g:color>Violet</g:color>
+      <g:size>2M</g:size>
+      <g:material>100% Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-VIOLET-VIO-2M</g:mpn>
+    </item>
+    <item>
+      <g:id>cf3812e3-ebdc-48c9-a847-d760e7e775b8</g:id>
+      <g:item_group_id>44331fc1-16d8-4b9a-b81b-300e5411700d</g:item_group_id>
+      <g:title>Violet Thick Garden  - Red / 2M</g:title>
+      <g:description>Violet Thick Garden</g:description>
+      <g:link>https://khadivasthra.com/product/violet-thick-garden/?color=Red&amp;size=2M</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/violet-thick-garden-color/1785843084404.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/violet-thick-garden-color/1785843085499.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785842975146.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785842979720.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1800.00 INR</g:price>
+      <g:sale_price>1260.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Set-Mundu</g:product_type>
+      <g:color>Red</g:color>
+      <g:size>2M</g:size>
+      <g:material>100% Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-VIOLET-RED-2M</g:mpn>
+    </item>
+    <item>
+      <g:id>d4cb1f5b-456c-4d60-ba5e-5e329e2f8996</g:id>
+      <g:item_group_id>4576d1fa-b42a-4233-8ed8-d79cee3fa5a6</g:item_group_id>
+      <g:title>Pastel PinkColour Half Sleeve Khadi Shirt - Pink / M</g:title>
+      <g:description>Purple Colour Half Sleeve Khadi Shirt</g:description>
+      <g:link>https://khadivasthra.com/product/pastel-pinkcolour-half-sleeve-khadi-shirt/?color=Pink&amp;size=M</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/purple-colour-half-sleeve-khadi-shirt-color/1774978986862.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/pastel-pinkcolour-half-sleeve-khadi-shirt/1775063102383.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1050.00 INR</g:price>
+      <g:sale_price>945.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Shirts</g:product_type>
+      <g:color>Pink</g:color>
+      <g:size>M</g:size>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-PASTEL-PIN-M</g:mpn>
+    </item>
+    <item>
+      <g:id>47fcb00d-a53b-4255-a991-8d5c1bb619f7</g:id>
+      <g:title>Yellow and Silver Kara Offwhite Double Mundu</g:title>
+      <g:description>Yellow and Silver Kara Offwhite Double Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/yellow-and-silver-kara-offwhite-double-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1776681704988.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1776681708940.jpg</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1485.00 INR</g:price>
+      <g:sale_price>1337.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Offwhite Double Mundu(4 Mtr)</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>4812faae-6a18-427f-a04c-a94911920170</g:id>
+      <g:title>Dark Green Khaid Cotton Shirt Bite(2 Mtr)</g:title>
+      <g:description>KHADI COTTON – SHIRT BIT * 100% Pure Khadi Cotton * 2 Metres Length * 58 Inch Width * Suitable for Half-Sleeve &amp; Full-Sleeve Shirts * Lightweight &amp; Breathable * Natural Khadi Texture &amp; Finish *Pre-wash Before Stitching to account for natural shrinkage</g:description>
+      <g:link>https://khadivasthra.com/product/dark-green-khaid-cotton-shirt-bite-2-mtr/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1789643610179.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>540.00 INR</g:price>
+      <g:sale_price>432.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Shirt Bit</g:product_type>
+      <g:material>100% cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>493e2c00-1b3c-4530-b7d7-7b4ff0d19145</g:id>
+      <g:title>Dark Green and Line Khadi Cotton Shirt Bit (2Mtr)</g:title>
+      <g:description>Dark Green and Line Khadi Cotton Shirt Bit (2Mtr)</g:description>
+      <g:link>https://khadivasthra.com/product/dark-green-and-line-khadi-cotton-shirt-bit-2mtr/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1789645845021.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>540.00 INR</g:price>
+      <g:sale_price>486.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Shirt Bit</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>4da4773d-d1c0-4c6e-ba0e-e14cdddbb864</g:id>
+      <g:title>Brown Single Lungi (2M)</g:title>
+      <g:description>Brown Single Lungi (2M)</g:description>
+      <g:link>https://khadivasthra.com/product/brown-single-lungi-2m/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786819232044.png</g:image_link>
       <g:availability>in stock</g:availability>
       <g:condition>new</g:condition>
       <g:price>360.00 INR</g:price>
       <g:sale_price>324.00 INR</g:sale_price>
       <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
+      <g:product_type>Single Mundu</g:product_type>
       <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>543baa0f-b5bf-4186-955d-3bccd18de334</g:id>
+      <g:title>Sky Blue Khadi Cotton Shirt Bit(2mtr)</g:title>
+      <g:description>KHADI COTTON – SHIRT BIT * 100% Pure Khadi Cotton * 2 Metres Length * 58 Inch Width * Suitable for Half-Sleeve &amp; Full-Sleeve Shirts * Lightweight &amp; Breathable * Natural Khadi Texture &amp; Finish *Pre-wash Before Stitching to account for natural shrinkage</g:description>
+      <g:link>https://khadivasthra.com/product/sky-blue-khadi-cotton-shirt-bit-2mtr/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1789646454374.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>540.00 INR</g:price>
+      <g:sale_price>486.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Shirt Bit</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>54961857-bd3f-4843-93ce-edfcbc183dca</g:id>
+      <g:title>Violet Khadi Cotton 2 Mtr </g:title>
+      <g:description>KHADI COTTON – SHIRT BIT * 100% Pure Khadi Cotton * 2 Metres Length * 58 Inch Width * Suitable for Half-Sleeve &amp; Full-Sleeve Shirts * Lightweight &amp; Breathable * Natural Khadi Texture &amp; Finish *Pre-wash Before Stitching to account for natural shrinkage</g:description>
+      <g:link>https://khadivasthra.com/product/violet-khadi-cotton-2-mtr/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1789642602126.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>540.00 INR</g:price>
+      <g:sale_price>486.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Shirt Bit</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>54dd3352-1ce9-4b76-96b5-b405d92a4152</g:id>
+      <g:title>Baby Violet Border Double (4M) Mundu</g:title>
+      <g:description>Baby Violet Border Double (4M) Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/baby-violet-border-double-4m-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786188765322.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1195.00 INR</g:price>
+      <g:sale_price>956.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Offwhite Double Mundu(4 Mtr)</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>54e7ee26-c71f-4429-9408-8ad51923326a</g:id>
+      <g:title>Aqua blue and Golden Kara Setu Mundu (Women&apos;s Wear)</g:title>
+      <g:description>Aqua blue and Golden Kara Setu Mundu (Women&apos;s Wear)</g:description>
+      <g:link>https://khadivasthra.com/product/aqua-blue-and-golden-kara-setu-mundu-women-s-wear/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774639353724.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774639358009.jpg</g:additional_image_link>
+      <g:availability>out of stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>950.00 INR</g:price>
+      <g:sale_price>855.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Set-Mundu</g:product_type>
+      <g:material>Poly-Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>55eb9572-3402-42c1-92cd-5dc1aacad71c</g:id>
+      <g:title>Green Blue Border Korva Kodi Colour Mundu </g:title>
+      <g:description>Green Blue Border Korva Kodi Colour Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/green-blue-border-korva-kodi-colour-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1784216686481.png</g:image_link>
+      <g:availability>out of stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>390.00 INR</g:price>
+      <g:sale_price>312.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Single Mundu</g:product_type>
+      <g:material>Cotton Mix</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>5b29fd08-afef-4eaa-b9e6-94a35239d926</g:id>
+      <g:title>Blue Colour SIngle Lungi(2 M)</g:title>
+      <g:description>Blue Colour SIngle Lungi(2 M)</g:description>
+      <g:link>https://khadivasthra.com/product/blue-colour-single-lungi-2-m/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786818932658.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>400.00 INR</g:price>
+      <g:sale_price>360.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Single Mundu</g:product_type>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>5b453fcc-d2c9-43ce-8455-b48a0542fca7</g:id>
+      <g:title>Red and Golden Veethikara Set-Mundu(women&apos;s wear)</g:title>
+      <g:description>Red and Golden Veethikara Set-Mundu(women&apos;s wear)</g:description>
+      <g:link>https://khadivasthra.com/product/red-and-golden-veethikara-set-mundu-women-s-wear-2/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774717602853.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774717608577.jpg</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1020.00 INR</g:price>
+      <g:sale_price>867.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Set-Mundu</g:product_type>
+      <g:material>Poly-Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>5c6e2387-4e92-44a1-94fa-0009321c791c</g:id>
+      <g:title>2 Mtr Shirt Bit</g:title>
+      <g:description>KHADI COTTON – SHIRT BIT * 100% Pure Khadi Cotton * 2 Metres Length * 58 Inch Width * Suitable for Half-Sleeve &amp; Full-Sleeve Shirts * Lightweight &amp; Breathable * Natural Khadi Texture &amp; Finish *Pre-wash Before Stitching to account for natural shrinkage</g:description>
+      <g:link>https://khadivasthra.com/product/2-mtr-shirt-bit/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1789646350922.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>540.00 INR</g:price>
+      <g:sale_price>486.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Shirt Bit</g:product_type>
+      <g:material>100% cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>5cc28a3d-0a28-4224-bd77-31bcc1edf440</g:id>
+      <g:title>2 Mtre Cotton Shirt Bite </g:title>
+      <g:description>KHADI COTTON – SHIRT BIT *100% Pure Khadi Cotton * 2 Metres Length * 58 Inch Width * Suitable for Half-Sleeve &amp; Full-Sleeve Shirts *Lightweight &amp; Breathable * Natural Khadi Texture &amp; Finish *Pre-wash Before Stitching to account for natural shrinkage</g:description>
+      <g:link>https://khadivasthra.com/product/2-mtre-cotton-shirt-bite/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1789642140805.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>540.00 INR</g:price>
+      <g:sale_price>486.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Shirt Bit</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>63664146-b1e4-491f-8bc5-43dac43df6f8</g:id>
+      <g:title>Black Cotton  Shirt Bite</g:title>
+      <g:description>### **KHADI COTTON – SHIRT BIT** * **100% Pure Khadi Cotton** * **2 Metres Length** * **58 Inch Width** * Suitable for **Half-Sleeve &amp; Full-Sleeve Shirts** * **Lightweight &amp; Breathable** * Natural **Khadi Texture &amp; Finish** * **Pre-wash Before Stitching** to account for natural shrinkage</g:description>
+      <g:link>https://khadivasthra.com/product/black-cotton-shirt-bite/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1789642403758.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>540.00 INR</g:price>
+      <g:sale_price>486.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Shirt Bit</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>64d94718-6793-4f9c-9b40-58a44b44fc45</g:id>
+      <g:title>Maroon Kambi Kara Set-Mundu(Women&apos;s Wear)</g:title>
+      <g:description>Maroon Kambi Kara Set-Mundu(Women&apos;s Wear)</g:description>
+      <g:link>https://khadivasthra.com/product/maroon-kambi-kara-set-mundu-women-s-wear/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774717534156.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774717538243.jpg</g:additional_image_link>
+      <g:availability>out of stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1010.00 INR</g:price>
+      <g:sale_price>859.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Set-Mundu</g:product_type>
+      <g:material>Poly-Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>652af481-a9f1-4884-b166-30997a605a0e</g:id>
+      <g:title>Blossom red and Kasavu Border Set Saree</g:title>
+      <g:description>Blossom red and Kasavu Border Set Saree</g:description>
+      <g:link>https://khadivasthra.com/product/blossom-red-and-kasavu-border-set-saree/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785420869791.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785420879399.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1580.00 INR</g:price>
+      <g:sale_price>1264.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Set Saree</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>0b89499d-d636-49f8-9a45-bbc733008715</g:id>
+      <g:item_group_id>65b42c77-ebc9-4fc4-8eeb-6382f52d7d70</g:item_group_id>
+      <g:title>Kambikara Red Double (4M) Mundu  - Black / 4M</g:title>
+      <g:description>Kambikara Red Double (4M) Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/kambikara-red-double-4m-mundu/?color=Black&amp;size=4M</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/kambikara-red-double-4m-mundu-color/1786188904857.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1035.00 INR</g:price>
+      <g:sale_price>828.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>White Double Mundu(4Mtre)</g:product_type>
+      <g:color>Black</g:color>
+      <g:size>4M</g:size>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-KAMBIK-BLA-4M</g:mpn>
+    </item>
+    <item>
+      <g:id>f986a7fd-7de2-4d77-b696-496c9554f048</g:id>
+      <g:item_group_id>65b42c77-ebc9-4fc4-8eeb-6382f52d7d70</g:item_group_id>
+      <g:title>Kambikara Red Double (4M) Mundu  - Red / 4M</g:title>
+      <g:description>Kambikara Red Double (4M) Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/kambikara-red-double-4m-mundu/?color=Red&amp;size=4M</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/kambikara-red-double-4m-mundu-color/1786188931653.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1035.00 INR</g:price>
+      <g:sale_price>828.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>White Double Mundu(4Mtre)</g:product_type>
+      <g:color>Red</g:color>
+      <g:size>4M</g:size>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-KAMBIK-RED-4M</g:mpn>
+    </item>
+    <item>
+      <g:id>66e25d51-3860-4e4c-8ed3-05a1d4aa9dec</g:id>
+      <g:title>Leaf Green Khadi Shirt Bite (2Mtr)</g:title>
+      <g:description>KHADI COTTON – SHIRT BIT * 100% Pure Khadi Cotton * 2 Metres Length * 58 Inch Width * Suitable for Half-Sleeve &amp; Full-Sleeve Shirts * Lightweight &amp; Breathable * Natural Khadi Texture &amp; Finish *Pre-wash Before Stitching to account for natural shrinkage</g:description>
+      <g:link>https://khadivasthra.com/product/leaf-green-khadi-shirt-bite-2mtr/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1789645749775.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>540.00 INR</g:price>
+      <g:sale_price>486.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Shirt Bit</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>67dcafa8-dd09-4c59-a516-8095bd3e2aff</g:id>
+      <g:title>Dark Green Border Single White Mundu(2M)</g:title>
+      <g:description>Dark Green Border Single White Mundu(2M)</g:description>
+      <g:link>https://khadivasthra.com/product/dark-green-border-single-white-mundu-2m/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1784998197602.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>400.00 INR</g:price>
+      <g:sale_price>360.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Single Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>6e3142f2-0297-42cb-9663-88cefab73009</g:id>
+      <g:title>Magenta and Golden Cherie kara Set-Mundu(Women&apos;s Wear)</g:title>
+      <g:description>Magenta and Golden Cherie kara Set-Mundu(Women&apos;s Wear)</g:description>
+      <g:link>https://khadivasthra.com/product/magenta-and-golden-cherie-kara-set-mundu-women-s-wear/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774638749990.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774638753385.jpg</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>890.00 INR</g:price>
+      <g:sale_price>801.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Set-Mundu</g:product_type>
+      <g:material>Poly -Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>7072998e-d7d2-4229-91e0-f0afca1a5b7d</g:id>
+      <g:title>MInimal Art Print Settumundu</g:title>
+      <g:description>MInimal Art Print Settumundu</g:description>
+      <g:link>https://khadivasthra.com/product/minimal-art-print-settumundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774636866775.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/minimal-art-print-settumundu/1774637023809.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1625.00 INR</g:price>
+      <g:sale_price>1381.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Set-Mundu</g:product_type>
+      <g:color>Blue/Orange</g:color>
+      <g:material>Cotton 80%</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>71e10c1d-5b8d-44eb-9ddd-c17649267a84</g:id>
+      <g:title>Fancy colour Single Lungi (2M)</g:title>
+      <g:description>Fancy colour Single Lungi (2M)</g:description>
+      <g:link>https://khadivasthra.com/product/fancy-colour-single-lungi-2m/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786819291960.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>360.00 INR</g:price>
+      <g:sale_price>324.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Single Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>17e45013-86db-4cb7-ab86-30d99c8d39bb</g:id>
+      <g:item_group_id>73d08b35-ef2a-4baf-97f6-141bed3b4ceb</g:item_group_id>
+      <g:title>Yellow Coloured Red Textured Khadi Shirt  - Light Yellow / M</g:title>
+      <g:description>Yellow Coloured Red Textured Khadi Shirt</g:description>
+      <g:link>https://khadivasthra.com/product/yellow-coloured-red-textured-khadi-shirt/?color=Light+Yellow&amp;size=M</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/yellow-coloured-red-textured-khadi-shirt-color/1775056799640.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/yellow-coloured-red-textured-khadi-shirt/1775056771170.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1050.00 INR</g:price>
+      <g:sale_price>945.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Shirts</g:product_type>
+      <g:color>Light Yellow</g:color>
+      <g:size>M</g:size>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-YELLOW-LIG-M</g:mpn>
+    </item>
+    <item>
+      <g:id>759295b5-0d0e-4f38-a404-8d4b2039b231</g:id>
+      <g:title>Blue Green Khadi Cotton Shirt Bite(2 Mtr)</g:title>
+      <g:description>KHADI COTTON – SHIRT BIT * 100% Pure Khadi Cotton * 2 Metres Length * 58 Inch Width * Suitable for Half-Sleeve &amp; Full-Sleeve Shirts * Lightweight &amp; Breathable * Natural Khadi Texture &amp; Finish *Pre-wash Before Stitching to account for natural shrinkage</g:description>
+      <g:link>https://khadivasthra.com/product/blue-green-khadi-cotton-shirt-bite-2-mtr/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1789646407379.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>540.00 INR</g:price>
+      <g:sale_price>486.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Shirt Bit</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>75de1f1d-9ff1-48a7-ab52-94078a34a8f9</g:id>
+      <g:title>Tissue Set-Mundu</g:title>
+      <g:description>Tissue Set-Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/tissue-set-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774707499514.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774707504676.jpg</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1880.00 INR</g:price>
+      <g:sale_price>1692.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Set-Mundu</g:product_type>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>76bf0794-0830-4dc1-8754-35624297bcae</g:id>
+      <g:title>Narthaki Set Saree</g:title>
+      <g:description>Narthaki Set Saree</g:description>
+      <g:link>https://khadivasthra.com/product/narthaki-set-saree/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1775150152905.jpg</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1485.00 INR</g:price>
+      <g:sale_price>1262.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Set Saree</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>76eca9da-bf80-46ea-9882-3e55f2cbfb53</g:id>
+      <g:title>Khadi Cotton Shirt Bit (2Mtr)</g:title>
+      <g:description>KHADI COTTON – SHIRT BIT * 100% Pure Khadi Cotton * 2 Metres Length * 58 Inch Width * Suitable for Half-Sleeve &amp; Full-Sleeve Shirts * Lightweight &amp; Breathable * Natural Khadi Texture &amp; Finish *Pre-wash Before Stitching to account for natural shrinkage</g:description>
+      <g:link>https://khadivasthra.com/product/khadi-cotton-shirt-bit-2mtr/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1789645909308.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>540.00 INR</g:price>
+      <g:sale_price>486.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Shirt Bit</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>7b7d2228-114a-44a7-b1cc-f7d3c5f85239</g:id>
+      <g:title>Grey and Silver Border 4.15 Mtr white Double Mundu</g:title>
+      <g:description>Pure Cotton Dhothi perfect for Highwaist , Tall Men</g:description>
+      <g:link>https://khadivasthra.com/product/grey-and-silver-border-4-15-mtr-white-double-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1784389384038.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1485.00 INR</g:price>
+      <g:sale_price>1188.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>4.5m Double Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>7bc11689-f965-4f25-b5d5-6cc8dfca4ce6</g:id>
+      <g:title>Brown and  Kasavu Premium Set Saress</g:title>
+      <g:description>Cotton and Kasavu Set Saree</g:description>
+      <g:link>https://khadivasthra.com/product/brown-and-kasavu-premium-set-saress/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785420403946.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785420424560.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1580.00 INR</g:price>
+      <g:sale_price>1343.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Set Saree</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>7c9044c6-1e77-4462-afc4-d45b87ce7ae0</g:id>
+      <g:title>Flower Print Settumundu(Women&apos;s Wear)</g:title>
+      <g:description>Flower Print Settumundu(Women&apos;s Wear)</g:description>
+      <g:link>https://khadivasthra.com/product/flower-print-settumundu-women-s-wear/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774637431246.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/flower-print-settumundu-women-s-wear/1785421225392.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1040.00 INR</g:price>
+      <g:sale_price>832.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Set-Mundu</g:product_type>
+      <g:material>Poly-cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>7e0306cd-569d-4d0b-acc7-2c6bf82cb8c1</g:id>
+      <g:title>Violet Kara White Double Mundu</g:title>
+      <g:description>Violet Kara White Double Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/violet-kara-white-double-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1775999747670.jpg</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>840.00 INR</g:price>
+      <g:sale_price>756.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>White Double Mundu(4Mtre)</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>7e75a3ed-7a51-4223-a5dd-91f669bde3ae</g:id>
+      <g:title>Thin Green Kara Double White Mundu</g:title>
+      <g:description>Thin Green Kara Double White Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/thin-green-kara-double-white-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1776000879593.jpg</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1000.00 INR</g:price>
+      <g:sale_price>900.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>White Double Mundu(4Mtre)</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>7ec55123-8d54-4802-a3e9-c74141b9a696</g:id>
+      <g:title>White Neriya Kara Kavi Mundu</g:title>
+      <g:description>White Neriya Kara Kavi Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/white-neriya-kara-kavi-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1775986763440.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>460.00 INR</g:price>
+      <g:sale_price>414.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Kavi Mundu</g:product_type>
+      <g:material>100% COTTON</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>8250fbac-3318-485b-a17a-8c916efd9db2</g:id>
+      <g:title>Oraneg Red and Silver Border Offwhite Mundu</g:title>
+      <g:description>Oraneg Red and Silver Border Offwhite Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/oraneg-red-and-silver-border-offwhite-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786188509427.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1395.00 INR</g:price>
+      <g:sale_price>1116.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Offwhite Double Mundu(4 Mtr)</g:product_type>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>834c7ea1-8694-453f-b341-d1f89429e0c0</g:id>
+      <g:title>Tissue and Cotton Strip Set-Mundu(Women&apos;s Wear)</g:title>
+      <g:description>Tissue and Cotton Strip Set-Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/tissue-and-cotton-strip-set-mundu-women-s-wear/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774702550913.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774702554793.jpg</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>2120.00 INR</g:price>
+      <g:sale_price>1908.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Set-Mundu</g:product_type>
+      <g:material>Poly- Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>85ab69d7-41e5-40cd-9b3d-e50647985dc7</g:id>
+      <g:title>Line Textured Blue SIngle Lungi(@M)</g:title>
+      <g:description>Line Textured Blue SIngle Lungi(@M)</g:description>
+      <g:link>https://khadivasthra.com/product/line-textured-blue-single-lungi-m/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786819100515.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>360.00 INR</g:price>
+      <g:sale_price>324.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Single Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>86702e96-7be5-4fef-8251-4efc2351fce1</g:id>
+      <g:title>Pink and Silver Border Double White Mundu(4Mtre)</g:title>
+      <g:description>Pink and Silver Border Double White Mundu(4Mtre)</g:description>
+      <g:link>https://khadivasthra.com/product/pink-and-silver-border-double-white-mundu-4mtre/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786817004602.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786817008180.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1395.00 INR</g:price>
+      <g:sale_price>1116.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>White Double Mundu(4Mtre)</g:product_type>
+      <g:material>1005 Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>8c644510-2a75-440f-b31c-d5dd014b1a42</g:id>
+      <g:title>Brown and Golden Kara Premium SettMundu</g:title>
+      <g:description>Brown and Golden Kara Premium SettMundu</g:description>
+      <g:link>https://khadivasthra.com/product/brown-and-golden-kara-premium-settmundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774638297663.jpg</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>2660.00 INR</g:price>
+      <g:sale_price>2261.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Set-Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>8f6775dd-edcc-44be-ad54-aec4a42b71e4</g:id>
+      <g:title>Black Krishna Print Kavi </g:title>
+      <g:description>Krishna Print Kavi - Black</g:description>
+      <g:link>https://khadivasthra.com/product/krishna-black-print-kavi/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1771651616375.png</g:image_link>
+      <g:availability>out of stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>380.00 INR</g:price>
+      <g:sale_price>342.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Printed Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>8fb898a3-df0f-47ba-b87e-a06a9cc548ea</g:id>
+      <g:title>Kasavu (Golden) Border Double Mundu</g:title>
+      <g:description>Kasavu (Golden) Border Double Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/kasavu-golden-border-double-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786188248987.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>980.00 INR</g:price>
+      <g:sale_price>784.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Offwhite Double Mundu(4 Mtr)</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>9141d535-57b9-457a-a237-de1b01697a26</g:id>
+      <g:title>Teal and Golden Fancy Border Double White Mundu(4Mtre)</g:title>
+      <g:description>Teal and Golden Fancy Border Double White Mundu(4Mtre)</g:description>
+      <g:link>https://khadivasthra.com/product/teal-and-golden-fancy-border-double-white-mundu-4mtre/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786815684130.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786815689568.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1395.00 INR</g:price>
+      <g:sale_price>1116.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>White Double Mundu(4Mtre)</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>9182c99e-5406-450e-9a9e-2a083830f861</g:id>
+      <g:title>Blue and Golden kara Premium Set-Mundu</g:title>
+      <g:description>Blue and Golden kara Premium Set-mundu</g:description>
+      <g:link>https://khadivasthra.com/product/blue-and-golden-kara-premium-set-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774638370961.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774638376633.jpg</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>2660.00 INR</g:price>
+      <g:sale_price>2261.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Set-Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>94851d53-f791-4381-8d8b-bf6a4b302d7b</g:id>
+      <g:title>Golden Garden with Royal Flower  Set Saree</g:title>
+      <g:description>Peacock and Royal Flower Digital Print Tissue Set Saree</g:description>
+      <g:link>https://khadivasthra.com/product/golden-garden-with-royal-flower-set-saree/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785842317058.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785842323837.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785842324907.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>2200.00 INR</g:price>
+      <g:sale_price>1540.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Set Saree</g:product_type>
+      <g:material>Cotton and Zari</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>00a46c62-9db9-4662-8eb2-f21800ca0130</g:id>
+      <g:item_group_id>949d8447-4438-440e-8c8a-69f8e13576f5</g:item_group_id>
+      <g:title>Teal Deer Print Shirt - Teal / S</g:title>
+      <g:description>Teal Deer Print Shirt</g:description>
+      <g:link>https://khadivasthra.com/product/teal-deer-print-shirt/?color=Teal&amp;size=S</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/teal-deer-print-shirt-color/1786386606083.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786386505046.jpg</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/teal-deer-print-shirt/1786604296220.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1099.00 INR</g:price>
+      <g:sale_price>879.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Shirts</g:product_type>
+      <g:color>Teal</g:color>
+      <g:size>S</g:size>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-TEAL-D-TEA-S</g:mpn>
+    </item>
+    <item>
+      <g:id>50d47a6e-d293-44ab-9a65-d900b567efa2</g:id>
+      <g:item_group_id>949d8447-4438-440e-8c8a-69f8e13576f5</g:item_group_id>
+      <g:title>Teal Deer Print Shirt - Teal / M</g:title>
+      <g:description>Teal Deer Print Shirt</g:description>
+      <g:link>https://khadivasthra.com/product/teal-deer-print-shirt/?color=Teal&amp;size=M</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/teal-deer-print-shirt-color/1786386606083.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786386505046.jpg</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/teal-deer-print-shirt/1786604296220.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1099.00 INR</g:price>
+      <g:sale_price>879.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Shirts</g:product_type>
+      <g:color>Teal</g:color>
+      <g:size>M</g:size>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-TEAL-D-TEA-M</g:mpn>
+    </item>
+    <item>
+      <g:id>94a3867f-eab0-4179-a29a-9d685eb3d3b4</g:id>
+      <g:title>Yellow - Green Kara white Double Mundu</g:title>
+      <g:description>Yellow - Green Kara white Double Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/yellow-green-kara-white-double-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1775999606988.jpg</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>930.00 INR</g:price>
+      <g:sale_price>837.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>White Double Mundu(4Mtre)</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>95c85d58-0813-4b69-bb23-b1178734af70</g:id>
+      <g:title>BlueGreen and Kasavu Border 4.15 Mtr Offwhite Double Dhothi</g:title>
+      <g:description>Pure Cotton Dhothi perfect for Highwaist , Tall Men</g:description>
+      <g:link>https://khadivasthra.com/product/bluegreen-and-kasavu-border-4-15-mtr-offwhite-double-dhothi/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1784388893989.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1784388901276.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1485.00 INR</g:price>
+      <g:sale_price>1188.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>4.5m Double Mundu</g:product_type>
+      <g:material>100% cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>9613f64f-17c4-46b8-b556-ae04d06373c1</g:id>
+      <g:title>Thin Violet Blue Shades Border Double Mundu</g:title>
+      <g:description>Thin Violet Blue Shades Border Double Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/thin-violet-blue-shades-border-double-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786188419005.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786188423475.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1195.00 INR</g:price>
+      <g:sale_price>956.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Offwhite Double Mundu(4 Mtr)</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>98f49054-1189-493c-b44d-472d708f974d</g:id>
+      <g:title>Maroon Single (2 Mtre, 4 Mulam) Mundu</g:title>
+      <g:description>Maroon Single (2 Mtre, 4 Mulam) Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/maroon-single-2-mtre-4-mulam-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1789115948499.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>360.00 INR</g:price>
+      <g:sale_price>324.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Single Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>9aabe5a9-3fb5-4494-a02e-ffeeff81603c</g:id>
+      <g:title>Maroon and Golden Kara Premium Settumund</g:title>
+      <g:description>Maroon and Golden Kara Premium Settumund</g:description>
+      <g:link>https://khadivasthra.com/product/maroon-and-golden-kara-premium-settumund/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774638208512.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774638212018.jpg</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>2660.00 INR</g:price>
+      <g:sale_price>2261.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Set-Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>a2ff545a-4a19-40a7-a8cb-f4d9a981082a</g:id>
+      <g:title>Navy Blue  and Golden VeethiKara Set-mundu(Women&apos;s Wear)</g:title>
+      <g:description>Navy Blue and Golden VeethiKara Set-mundu(Women&apos;s Wear)</g:description>
+      <g:link>https://khadivasthra.com/product/navy-blue-and-golden-veethikara-set-mundu-women-s-wear/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/minimal-blue-print-set-mundu/1774717182963.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/minimal-blue-print-set-mundu/1774717188236.jpg</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/minimal-blue-print-set-mundu/1774717193343.jpg</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>890.00 INR</g:price>
+      <g:sale_price>801.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Set-Mundu</g:product_type>
+      <g:material>Poly-Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>60d7f5f5-1952-490b-8546-78ec4f67bc5d</g:id>
+      <g:item_group_id>a652376e-3f83-4e71-97da-bd1b9e79839b</g:item_group_id>
+      <g:title> Orange Border White Double Mund - Green / 4M</g:title>
+      <g:description>Orange Border White Double Mund</g:description>
+      <g:link>https://khadivasthra.com/product/orange-border-white-double-mund/?color=Green&amp;size=4M</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/orange-border-white-double-mund-color/1786189251592.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1065.00 INR</g:price>
+      <g:sale_price>852.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>White Double Mundu(4Mtre)</g:product_type>
+      <g:color>Green</g:color>
+      <g:size>4M</g:size>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-ORANGE-GRE-4M</g:mpn>
+    </item>
+    <item>
+      <g:id>6e98029f-7f60-454f-9cc3-671189d20288</g:id>
+      <g:item_group_id>a652376e-3f83-4e71-97da-bd1b9e79839b</g:item_group_id>
+      <g:title> Orange Border White Double Mund - Ocean green / 4</g:title>
+      <g:description>Orange Border White Double Mund</g:description>
+      <g:link>https://khadivasthra.com/product/orange-border-white-double-mund/?color=Ocean+green&amp;size=4</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/orange-border-white-double-mund-color/1786189335580.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1065.00 INR</g:price>
+      <g:sale_price>852.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>White Double Mundu(4Mtre)</g:product_type>
+      <g:color>Ocean green</g:color>
+      <g:size>4</g:size>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-ORANGE-OCE-4</g:mpn>
+    </item>
+    <item>
+      <g:id>ed12db33-0edf-4ccc-becc-304d04865514</g:id>
+      <g:item_group_id>a652376e-3f83-4e71-97da-bd1b9e79839b</g:item_group_id>
+      <g:title> Orange Border White Double Mund - Blue / 4M</g:title>
+      <g:description>Orange Border White Double Mund</g:description>
+      <g:link>https://khadivasthra.com/product/orange-border-white-double-mund/?color=Blue&amp;size=4M</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/orange-border-white-double-mund-color/1786189284890.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1065.00 INR</g:price>
+      <g:sale_price>852.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>White Double Mundu(4Mtre)</g:product_type>
+      <g:color>Blue</g:color>
+      <g:size>4M</g:size>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-ORANGE-BLU-4M</g:mpn>
+    </item>
+    <item>
+      <g:id>749577b4-529b-41d3-bc23-b213766739e2</g:id>
+      <g:item_group_id>aa524b27-7f41-477b-af8e-7a61d30b0bbb</g:item_group_id>
+      <g:title>LGreen Linen Shirt - Light Green / L</g:title>
+      <g:description>LGreen Linen Shirt</g:description>
+      <g:link>https://khadivasthra.com/product/lgreen-linen-shirt/?color=Light+Green&amp;size=L</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/lgreen-linen-shirt-color/1786615422523.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786615300753.jpg</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1299.00 INR</g:price>
+      <g:sale_price>1169.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Shirts</g:product_type>
+      <g:color>Light Green</g:color>
+      <g:size>L</g:size>
+      <g:material>Linen</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-LGREEN-LIG-L</g:mpn>
+    </item>
+    <item>
+      <g:id>ae159bf4-2bb3-46d2-8290-7ba6f0ae16a3</g:id>
+      <g:title>Silver Print Ball Border Khadi Black Mundu</g:title>
+      <g:description>Silver Print Ball Border Khadi Black Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/silver-print-ball-border-khadi-black-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1784226247226.png</g:image_link>
+      <g:availability>out of stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>400.00 INR</g:price>
+      <g:sale_price>340.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Printed Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>b1e72816-8650-4b7c-a8a9-670cbfefdd13</g:id>
+      <g:title>Green Border White Double Mundu</g:title>
+      <g:description>Green Border White Double Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/green-border-white-double-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1775998339338.jpg</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>960.00 INR</g:price>
+      <g:sale_price>864.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>White Double Mundu(4Mtre)</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>b28f417f-5f6f-4ce1-8875-2312f042872f</g:id>
+      <g:title>Coffe Brown and Silver Border 4.15 Mtr White Mundu</g:title>
+      <g:description>Pure Cotton Dhothi perfect for Highwaist , Tall Men</g:description>
+      <g:link>https://khadivasthra.com/product/coffe-brown-and-silver-border-4-15-mtr-white-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1784389521288.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1784389524564.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1485.00 INR</g:price>
+      <g:sale_price>1040.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>4.5m Double Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>b64675a6-edfb-439b-968e-138534aeefc8</g:id>
+      <g:title>Half Sleeve Khadi Orange Colour Shirt</g:title>
+      <g:description>Half Sleeve Khadi Orange Colour Shirt</g:description>
+      <g:link>https://khadivasthra.com/product/half-sleeve-khadi-orange-colour-shirt/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1775148065388.jpg</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1050.00 INR</g:price>
+      <g:sale_price>945.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Shirts</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>b681cc52-b101-41cc-836f-59d767d4a094</g:id>
+      <g:title>Blue and Light Blue Border White Double Mundu</g:title>
+      <g:description>Blue and Light Blue Border White Double Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/blue-and-light-blue-border-white-double-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786189142321.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1095.00 INR</g:price>
+      <g:sale_price>876.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>White Double Mundu(4Mtre)</g:product_type>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>ba63547e-002e-4f1b-8468-d9643f0ebc53</g:id>
+      <g:title>Sky Blue Kara Double white Mundu</g:title>
+      <g:description>Sky Blue Kara Double white Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/sky-blue-kara-double-white-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1776000032304.jpg</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1330.00 INR</g:price>
+      <g:sale_price>1197.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>White Double Mundu(4Mtre)</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
     </item>
     <item>
       <g:id>ba8666d1-3c28-4a4d-b06e-12b8cce424af</g:id>
       <g:title> Yellow Border Stitch Saral kavi</g:title>
-      <g:description> Yellow Border Stitch Saral kavi</g:description>
+      <g:description>Yellow Border Stitch Saral kavi</g:description>
       <g:link>https://khadivasthra.com/product/yellow-border-stitch-saral-kavi/</g:link>
       <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772033572029.jpg</g:image_link>
-      <g:availability>in stock</g:availability>
+      <g:availability>out of stock</g:availability>
       <g:condition>new</g:condition>
       <g:price>378.00 INR</g:price>
       <g:sale_price>340.00 INR</g:sale_price>
       <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
+      <g:product_type>Kavi Mundu</g:product_type>
       <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
     </item>
     <item>
-      <g:id>db96ec4c-4336-4bf7-b471-45512c969894</g:id>
-      <g:title>Sky Blue Border and Kara Kavi</g:title>
-      <g:description>Sky Blue Border and Kara Kavi</g:description>
-      <g:link>https://khadivasthra.com/product/sky-blue-border-and-kara-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772034622827.jpg</g:image_link>
+      <g:id>bb4b77eb-3245-451b-a553-c88035126b1f</g:id>
+      <g:title>Khadi Cotton Shirt Bite(2mtr)</g:title>
+      <g:description>KHADI COTTON – SHIRT BIT * 100% Pure Khadi Cotton * 2 Metres Length * 58 Inch Width * Suitable for Half-Sleeve &amp; Full-Sleeve Shirts * Lightweight &amp; Breathable * Natural Khadi Texture &amp; Finish *Pre-wash Before Stitching to account for natural shrinkage</g:description>
+      <g:link>https://khadivasthra.com/product/khadi-cotton-shirt-bite-2mtr/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1789646556199.png</g:image_link>
       <g:availability>in stock</g:availability>
       <g:condition>new</g:condition>
-      <g:price>480.00 INR</g:price>
-      <g:sale_price>432.00 INR</g:sale_price>
+      <g:price>540.00 INR</g:price>
+      <g:sale_price>486.00 INR</g:sale_price>
       <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
+      <g:product_type>Shirt Bit</g:product_type>
+      <g:material>1005 cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
     </item>
     <item>
-      <g:id>218c41ce-cb9f-4d1d-91a5-085694edf416</g:id>
-      <g:title>Maroon Border and Kara Kavi</g:title>
-      <g:description>Maroon Border and Kara Kavi</g:description>
-      <g:link>https://khadivasthra.com/product/maroon-border-and-kara-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772034455971.jpg</g:image_link>
+      <g:id>c1a493a6-0ae4-4651-809d-6ead0a8aac19</g:id>
+      <g:title>Blue and Golden Border Handloom Offwhite Double Mundu</g:title>
+      <g:description>Blue and Golden Border Handloom Offwhite Double Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/blue-and-golden-border-handloom-offwhite-double-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1776681408571.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/blue-and-golden-border-handloom-offwhite-double-mundu/1776681517348.jpg</g:additional_image_link>
       <g:availability>in stock</g:availability>
       <g:condition>new</g:condition>
-      <g:price>480.00 INR</g:price>
-      <g:sale_price>432.00 INR</g:sale_price>
+      <g:price>1485.00 INR</g:price>
+      <g:sale_price>1337.00 INR</g:sale_price>
       <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
+      <g:product_type>Offwhite Double Mundu(4 Mtr)</g:product_type>
       <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
     </item>
     <item>
-      <g:id>7afe8284-3246-4cac-86c9-67569f10ad08</g:id>
-      <g:title>Black Kara Neriya Kavi</g:title>
-      <g:description>Black Kara Neriya Kavi</g:description>
-      <g:link>https://khadivasthra.com/product/black-kara-neriya-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772034330261.jpg</g:image_link>
+      <g:id>c1cb8ae8-bf6d-44cb-a6cb-07f4adf9ece8</g:id>
+      <g:title>Black TempleFlower Print with Black Border Kavi Mundu</g:title>
+      <g:description>Green TempleFlower Print with Black Border Kavi Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/green-templeflower-print-with-black-border-kavi-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1776689428977.jpg</g:image_link>
       <g:availability>in stock</g:availability>
       <g:condition>new</g:condition>
-      <g:price>340.00 INR</g:price>
-      <g:sale_price>306.00 INR</g:sale_price>
+      <g:price>380.00 INR</g:price>
+      <g:sale_price>342.00 INR</g:sale_price>
       <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
+      <g:product_type>Printed Mundu</g:product_type>
       <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
     </item>
     <item>
-      <g:id>8584b16a-8b5d-47e8-b344-e0c7cc87330e</g:id>
-      <g:title>Magenta Border Kavi</g:title>
-      <g:description>Magenta Border Kavi</g:description>
-      <g:link>https://khadivasthra.com/product/magenta-border-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772034272625.jpg</g:image_link>
+      <g:id>c1e8b97d-c04b-41ed-b068-596e75bd30ee</g:id>
+      <g:title>Trio Cross Black Printed Single Mundu</g:title>
+      <g:description>Trio Cross Black Printed Single Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/trio-cross-black-printed-single-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785596367522.png</g:image_link>
+      <g:availability>out of stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>499.00 INR</g:price>
+      <g:sale_price>449.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Printed Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>c382cb87-33a6-4c6b-9fef-246491cd3612</g:id>
+      <g:title>Violet Border Kavi Single Mundu (2Mtre)</g:title>
+      <g:description>100% Pure Cotton 2 More Length for a comfortable, elegant drape Traditional Kavi (Saffron) Colour Soft, breathable &amp; comfortable fabric Authentic traditional Kerala style Suitable for festive occasions &amp; daily wear Lightweight and easy to maintain</g:description>
+      <g:link>https://khadivasthra.com/product/violet-border-kavi-single-mundu-2mtre/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1788880423323.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>460.00 INR</g:price>
+      <g:sale_price>414.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Kavi Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>a460c843-ab24-4049-9453-7f54758099bb</g:id>
+      <g:item_group_id>c4470440-9cd9-416f-9186-b246b13777f9</g:item_group_id>
+      <g:title>BB Cotton Shirt  - Cream / XL</g:title>
+      <g:description>BB Cotton Shirt</g:description>
+      <g:link>https://khadivasthra.com/product/bb-cotton-shirt/?color=Cream&amp;size=XL</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/bb-cotton-shirt-color/1786624261642.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/bb-cotton-shirt/1786624275005.jpg</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/bb-cotton-shirt/1786624275648.jpg</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1299.00 INR</g:price>
+      <g:sale_price>1169.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Shirts</g:product_type>
+      <g:color>Cream</g:color>
+      <g:size>XL</g:size>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-BB-COT-CRE-XL</g:mpn>
+    </item>
+    <item>
+      <g:id>bc3c000e-852a-4175-ac65-2fa7e2b1794e</g:id>
+      <g:item_group_id>c4470440-9cd9-416f-9186-b246b13777f9</g:item_group_id>
+      <g:title>BB Cotton Shirt  - Cream / S</g:title>
+      <g:description>BB Cotton Shirt</g:description>
+      <g:link>https://khadivasthra.com/product/bb-cotton-shirt/?color=Cream&amp;size=S</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/bb-cotton-shirt-color/1786624261642.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/bb-cotton-shirt/1786624275005.jpg</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/bb-cotton-shirt/1786624275648.jpg</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1299.00 INR</g:price>
+      <g:sale_price>1169.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Shirts</g:product_type>
+      <g:color>Cream</g:color>
+      <g:size>S</g:size>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-BB-COT-CRE-S</g:mpn>
+    </item>
+    <item>
+      <g:id>cb58928b-bf77-42c6-b01a-e66193a06915</g:id>
+      <g:title>Orange Kara White Double Mundu</g:title>
+      <g:description>Orange Kara White Double Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/orange-kara-white-double-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1775999506288.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1775999509588.jpg</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>840.00 INR</g:price>
+      <g:sale_price>756.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>White Double Mundu(4Mtre)</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>cc049b97-4b60-4c6a-829e-a6f7285c3391</g:id>
+      <g:title>Green and Yellow Kara Double White Mundu</g:title>
+      <g:description>Green and Yellow Kara Double White Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/green-and-yellow-kara-double-white-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1776000409934.jpg</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1390.00 INR</g:price>
+      <g:sale_price>1251.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>White Double Mundu(4Mtre)</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>311f5e52-2b5b-487a-97ab-c270ef849c8b</g:id>
+      <g:item_group_id>cc45ed40-e7a4-4ae6-a978-1c500ba192e1</g:item_group_id>
+      <g:title>BG Cotton Printed Shirt - Beige / M</g:title>
+      <g:description>BG Cotton Printed Shirt</g:description>
+      <g:link>https://khadivasthra.com/product/bg-cotton-printed-shirt/?color=Beige&amp;size=M</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/bg-cotton-printed-shirt-color/1786595173027.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/bg-cotton-printed-shirt-color/1786595173910.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786595102232.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786595107321.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1299.00 INR</g:price>
+      <g:sale_price>1169.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Shirts</g:product_type>
+      <g:color>Beige</g:color>
+      <g:size>M</g:size>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-BG-COT-BEI-M</g:mpn>
+    </item>
+    <item>
+      <g:id>69438ba3-4fcc-483b-9d65-77bf9235e95d</g:id>
+      <g:item_group_id>cc45ed40-e7a4-4ae6-a978-1c500ba192e1</g:item_group_id>
+      <g:title>BG Cotton Printed Shirt - Beige / L</g:title>
+      <g:description>BG Cotton Printed Shirt</g:description>
+      <g:link>https://khadivasthra.com/product/bg-cotton-printed-shirt/?color=Beige&amp;size=L</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/bg-cotton-printed-shirt-color/1786595173027.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/bg-cotton-printed-shirt-color/1786595173910.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786595102232.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786595107321.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1299.00 INR</g:price>
+      <g:sale_price>1169.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Shirts</g:product_type>
+      <g:color>Beige</g:color>
+      <g:size>L</g:size>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-BG-COT-BEI-L</g:mpn>
+    </item>
+    <item>
+      <g:id>818edd42-40d8-46fe-a1f2-d29e6f65e66a</g:id>
+      <g:item_group_id>cc45ed40-e7a4-4ae6-a978-1c500ba192e1</g:item_group_id>
+      <g:title>BG Cotton Printed Shirt - Beige / XL</g:title>
+      <g:description>BG Cotton Printed Shirt</g:description>
+      <g:link>https://khadivasthra.com/product/bg-cotton-printed-shirt/?color=Beige&amp;size=XL</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/bg-cotton-printed-shirt-color/1786595173027.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/bg-cotton-printed-shirt-color/1786595173910.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786595102232.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786595107321.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1299.00 INR</g:price>
+      <g:sale_price>1169.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Shirts</g:product_type>
+      <g:color>Beige</g:color>
+      <g:size>XL</g:size>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-BG-COT-BEI-XL</g:mpn>
+    </item>
+    <item>
+      <g:id>c46ce67d-9579-43ec-b388-a09d296f46b9</g:id>
+      <g:item_group_id>cc45ed40-e7a4-4ae6-a978-1c500ba192e1</g:item_group_id>
+      <g:title>BG Cotton Printed Shirt - Beige / S</g:title>
+      <g:description>BG Cotton Printed Shirt</g:description>
+      <g:link>https://khadivasthra.com/product/bg-cotton-printed-shirt/?color=Beige&amp;size=S</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/bg-cotton-printed-shirt-color/1786595173027.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/bg-cotton-printed-shirt-color/1786595173910.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786595102232.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786595107321.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1299.00 INR</g:price>
+      <g:sale_price>1169.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Shirts</g:product_type>
+      <g:color>Beige</g:color>
+      <g:size>S</g:size>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-BG-COT-BEI-S</g:mpn>
+    </item>
+    <item>
+      <g:id>ccf56223-d88a-4193-bfac-03e785e46727</g:id>
+      <g:title>Blue Kara Cream Double Mundu</g:title>
+      <g:description>Premium Cream Colour Double Dhoti With Blue</g:description>
+      <g:link>https://khadivasthra.com/product/bluekara0-cream-double-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/cream-colour-double-dhoti-3/1771331350832.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/cream-colour-double-dhoti-3/1771331209685.jpg</g:additional_image_link>
+      <g:availability>out of stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1150.00 INR</g:price>
+      <g:sale_price>1035.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Offwhite Double Mundu(4 Mtr)</g:product_type>
+      <g:material>100%</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>cf6cb8a5-0922-4d21-97eb-d354c7e47399</g:id>
+      <g:title>Mullothu Set-Mundu (women&apos;s Wear)</g:title>
+      <g:description>Mullothu Set-Mundu (women&apos;s Wear)</g:description>
+      <g:link>https://khadivasthra.com/product/mullothu-set-mundu-women-s-wear/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774638880567.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774638883996.jpg</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1190.00 INR</g:price>
+      <g:sale_price>1071.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Set-Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>d33bc8c8-eaa7-45bc-bcb5-6a14c642230f</g:id>
+      <g:title>Blue Border Handloom Cotton  Double Mundu(4.10Mtr)</g:title>
+      <g:description>Blue Border Handloom Cotton Double Mundu(4.10Mtr)</g:description>
+      <g:link>https://khadivasthra.com/product/blue-border-handloom-cotton-double-mundu-4-10mtr/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786815350031.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786815357755.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1250.00 INR</g:price>
+      <g:sale_price>1000.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>White Double Mundu(4Mtre)</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>d3742655-952a-460f-afdc-5f6a072e6098</g:id>
+      <g:title>Dark Kavi with Black Border(2 Mt)</g:title>
+      <g:description>100% Pure Cotton 2 More Length for a comfortable, elegant drape Traditional Kavi (Saffron) Colour Soft, breathable &amp; comfortable fabric Authentic traditional Kerala style Suitable for festive occasions &amp; daily wear Lightweight and easy to maintain</g:description>
+      <g:link>https://khadivasthra.com/product/dark-kavi-with-black-border-2-mt/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1788879558213.png</g:image_link>
       <g:availability>in stock</g:availability>
       <g:condition>new</g:condition>
       <g:price>440.00 INR</g:price>
       <g:sale_price>396.00 INR</g:sale_price>
       <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
+      <g:product_type>Single Mundu</g:product_type>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
     </item>
     <item>
-      <g:id>746045f4-6455-4e7f-9253-8e0c5fa5c739</g:id>
-      <g:title>Black Border Kavi</g:title>
-      <g:description>Black Border Kavi</g:description>
-      <g:link>https://khadivasthra.com/product/black-border-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772033718557.jpg</g:image_link>
+      <g:id>d3bb65e3-c9cc-4a7b-aff0-d5292d9828c7</g:id>
+      <g:title>Grey Border Single White Mundu(2M)</g:title>
+      <g:description>Grey Border Single White Mundu(2M)</g:description>
+      <g:link>https://khadivasthra.com/product/grey-border-single-white-mundu-2m/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1784998309459.png</g:image_link>
       <g:availability>in stock</g:availability>
       <g:condition>new</g:condition>
-      <g:price>440.00 INR</g:price>
-      <g:sale_price>396.00 INR</g:sale_price>
+      <g:price>400.00 INR</g:price>
+      <g:sale_price>360.00 INR</g:sale_price>
       <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
+      <g:product_type>Single Mundu</g:product_type>
       <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>d4d9e5f4-becb-4296-95da-457eef818533</g:id>
+      <g:title>Ambari Set saree with Embroidery and hand Painted Premium Set Saree</g:title>
+      <g:description>Cotton Set Saree with Embroidery and Hand Painting</g:description>
+      <g:link>https://khadivasthra.com/product/ambari-set-saree-with-embroidery-and-hand-painted-premium-set-saree/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785419801169.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785419806615.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785419807827.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785419809452.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1950.00 INR</g:price>
+      <g:sale_price>1658.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Set Saree</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>d8b84fdc-4646-4afc-abd4-241ddea1b610</g:id>
+      <g:title>2 Mtr Khadi Cotton Shirt </g:title>
+      <g:description>KHADI COTTON – SHIRT BIT * 100% Pure Khadi Cotton * 2 Metres Length * 58 Inch Width * Suitable for Half-Sleeve &amp; Full-Sleeve Shirts * Lightweight &amp; Breathable * Natural Khadi Texture &amp; Finish *Pre-wash Before Stitching to account for natural shrinkage</g:description>
+      <g:link>https://khadivasthra.com/product/2-mtr-khadi-cotton-shirt/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1789642472880.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>540.00 INR</g:price>
+      <g:sale_price>486.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Shirt Bit</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>e338c823-1d96-42b2-a00b-0c2ab36b8501</g:id>
+      <g:title>Purple Kara Offwhite Handloom Double Mundu </g:title>
+      <g:description>Purple Kara Offwhite Handloom Double Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/purple-kara-offwhite-handloom-double-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1776681046894.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1776681050997.jpg</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1240.00 INR</g:price>
+      <g:sale_price>1116.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Offwhite Double Mundu(4 Mtr)</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>e4ce418d-4990-4896-8d89-8257c5e6b1d8</g:id>
+      <g:title>Poovu SetMundu (Womens Wear)</g:title>
+      <g:description>Cotton Body , NEriya Kasavu Lines and Flower Screen Prints</g:description>
+      <g:link>https://khadivasthra.com/product/poovu-setmundu-womens-wear/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785421472430.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785421478040.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1090.00 INR</g:price>
+      <g:sale_price>872.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Set-Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>e4d23d77-1558-49b1-adc5-7575649aa4bc</g:id>
+      <g:title>Royal Petal Tissue Set Saree</g:title>
+      <g:description>Hand Painted Flower Designer Tissue Set Sarees</g:description>
+      <g:link>https://khadivasthra.com/product/royal-petal-tissue-set-saree/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785841901978.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1994.00 INR</g:price>
+      <g:sale_price>1396.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Set Saree</g:product_type>
+      <g:material>Cotton and Zari</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>c139894c-8596-4dd1-93f0-3905a26539f9</g:id>
+      <g:item_group_id>e71d072a-4f1b-4966-a7a5-3a4ae36e3f0f</g:item_group_id>
+      <g:title>BEYE Cotton Shirt - Off-White / S</g:title>
+      <g:description>BEYE Cotton Shirt</g:description>
+      <g:link>https://khadivasthra.com/product/beye-cotton-shirt/?color=Off-White&amp;size=S</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/beye-cotton-shirt-color/1786624774555.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786624720356.jpg</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786624720966.jpg</g:additional_image_link>
+      <g:availability>out of stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1299.00 INR</g:price>
+      <g:sale_price>1169.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Shirts</g:product_type>
+      <g:color>Off-White</g:color>
+      <g:size>S</g:size>
+      <g:material>100% cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-BEYE-C-OFF-S</g:mpn>
+    </item>
+    <item>
+      <g:id>e7acba8a-2586-477c-b488-c9e217b30c24</g:id>
+      <g:title>Skygreen and Golden Border 4.5 Mtr Offwhite Double Mundu</g:title>
+      <g:description>Pure Cotton Dhothi perfect for Highwaist , Tall Men</g:description>
+      <g:link>https://khadivasthra.com/product/skygreen-and-golden-border-4-5-mtr-offwhite-double-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1784389301679.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1784389307507.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1485.00 INR</g:price>
+      <g:sale_price>1040.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>4.5m Double Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>ea226ad7-3eb1-4556-8671-4e51338b865c</g:id>
+      <g:title>Fire Orange Silver Border 4.15 mtr white Double Mundu</g:title>
+      <g:description>Pure Cotton Dhothi perfect for Highwaist , Tall Men</g:description>
+      <g:link>https://khadivasthra.com/product/fire-orange-silver-border-4-15-mtr-white-double-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1784389584275.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1784389587706.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1485.00 INR</g:price>
+      <g:sale_price>1040.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>4.5m Double Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>eb722848-632d-44b6-bd85-c0698afe31ed</g:id>
+      <g:title>Green and silver line Border Handloom Offwhite Mundu</g:title>
+      <g:description>Green Border Handloom Offwhite Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/green-border-handloom-offwhite-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1776681547418.jpg</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1776681553135.jpg</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1485.00 INR</g:price>
+      <g:sale_price>1337.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Offwhite Double Mundu(4 Mtr)</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>ecb1b96f-232d-41fc-830a-63078a70d67f</g:id>
+      <g:title>Grey Khadi Full Sleeve Shirt</g:title>
+      <g:description>Grey Khadi Shirt</g:description>
+      <g:link>https://khadivasthra.com/product/grey-khadi-shirt/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1774938625822.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1050.00 INR</g:price>
+      <g:sale_price>945.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type> Shirts</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>ed57b5c7-6481-4818-b0db-2bd94522ad87</g:id>
+      <g:title>Purple and Golden Kara Double white Mundu</g:title>
+      <g:description>Purple Kara Double white Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/purple-and-golden-kara-double-white-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1776000592516.jpg</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1340.00 INR</g:price>
+      <g:sale_price>1206.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>White Double Mundu(4Mtre)</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>f09363ad-e09d-4379-a3ca-0e89d952c207</g:id>
+      <g:title> Grey Lungi (2M)</g:title>
+      <g:description>Grey Lungi (2M)</g:description>
+      <g:link>https://khadivasthra.com/product/grey-lungi-2m/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/grey-lungi-2m/1789116177733.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>360.00 INR</g:price>
+      <g:sale_price>324.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Single Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>f2abcc80-a694-41fb-beba-015d53cf4d6c</g:id>
+      <g:title>Peacock Green Border Single White Mundu (2 M)</g:title>
+      <g:description>Peacock Green Border Single White Mundu (2 M)</g:description>
+      <g:link>https://khadivasthra.com/product/peacock-green-border-single-white-mundu-2-m/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1784998143338.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>400.00 INR</g:price>
+      <g:sale_price>360.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Single Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>f336d7c7-dbe1-4ecd-a91c-f9d174db6212</g:id>
+      <g:title>Yellow Border Handloom Cotton White Mundu</g:title>
+      <g:description>Yellow Border Handloom Cotton White Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/yellow-border-handloom-cotton-white-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786815522905.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1786815527775.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1250.00 INR</g:price>
+      <g:sale_price>1000.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>White Double Mundu(4Mtre)</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>84c3922c-490d-4e66-a0bd-d75bfc67905c</g:id>
+      <g:item_group_id>f6593e1c-f83b-47b9-b173-1a54a9182acf</g:item_group_id>
+      <g:title>Orange Hibiscus Garden Tissue Set Saree - Violet Print / 6M</g:title>
+      <g:description>Orange Hibiscus Garden Tissue Set Saree</g:description>
+      <g:link>https://khadivasthra.com/product/orange-hibiscus-garden-tissue-set-saree/?color=Violet+Print&amp;size=6M</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/orange-hibiscus-garden-tissue-set-saree-color/1785842899962.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/orange-hibiscus-garden-tissue-set-saree-color/1785842901214.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785842749269.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>2000.00 INR</g:price>
+      <g:sale_price>1400.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Set Saree</g:product_type>
+      <g:color>Violet Print</g:color>
+      <g:size>6M</g:size>
+      <g:material>Zari and Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-ORANGE-VIO-6M</g:mpn>
+    </item>
+    <item>
+      <g:id>b84b0abb-20b2-4d02-a3af-c0ed8e196d2a</g:id>
+      <g:item_group_id>f6593e1c-f83b-47b9-b173-1a54a9182acf</g:item_group_id>
+      <g:title>Orange Hibiscus Garden Tissue Set Saree - Orange Print / 6M</g:title>
+      <g:description>Orange Hibiscus Garden Tissue Set Saree</g:description>
+      <g:link>https://khadivasthra.com/product/orange-hibiscus-garden-tissue-set-saree/?color=Orange+Print&amp;size=6M</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/orange-hibiscus-garden-tissue-set-saree-color/1785842884756.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/orange-hibiscus-garden-tissue-set-saree-color/1785842886055.png</g:additional_image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785842749269.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>2000.00 INR</g:price>
+      <g:sale_price>1400.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Set Saree</g:product_type>
+      <g:color>Orange Print</g:color>
+      <g:size>6M</g:size>
+      <g:material>Zari and Cotton</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+      <g:mpn>KV-ORANGE-ORA-6M</g:mpn>
+    </item>
+    <item>
+      <g:id>f8c97695-9064-4304-bf25-38a935df28ec</g:id>
+      <g:title>Multi Line Peach and golden Kara 4.15 Mtre Double Mundu</g:title>
+      <g:description>Pure Cotton Dhothi perfect for Highwaist , Tall Men</g:description>
+      <g:link>https://khadivasthra.com/product/multi-line-peach-and-golden-kara-4-15-mtre-double-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1784388958679.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1784388963352.png</g:additional_image_link>
+      <g:availability>out of stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1485.00 INR</g:price>
+      <g:sale_price>1040.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>4.5m Double Mundu</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>f982645c-330a-46e7-8774-f08bafedcd9b</g:id>
+      <g:title>Tissue Printed Saree</g:title>
+      <g:description>Tissue Saree with Prints</g:description>
+      <g:link>https://khadivasthra.com/product/tissue-printed-saree/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785420568842.png</g:image_link>
+      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1785420573190.png</g:additional_image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>1830.00 INR</g:price>
+      <g:sale_price>1464.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Set Saree</g:product_type>
+      <g:material>Cotton + Zari</g:material>
+      <g:gender>female</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>fc5dcebd-00f8-4274-8918-3b71c98bd828</g:id>
+      <g:title>Dark Green Single Colour Mundu</g:title>
+      <g:description>Dark Green Single Colour Mundu</g:description>
+      <g:link>https://khadivasthra.com/product/dark-green-single-colour-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1789629904436.png</g:image_link>
+      <g:availability>out of stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>360.00 INR</g:price>
+      <g:sale_price>324.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Single Mundu</g:product_type>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
+    </item>
+    <item>
+      <g:id>fe026d9c-d9ef-41a1-8f2b-fe4d3846f375</g:id>
+      <g:title>Green beige Khadi Cotton Shirt Bite</g:title>
+      <g:description>KHADI COTTON – SHIRT BIT * 100% Pure Khadi Cotton * 2 Metres Length * 58 Inch Width * Suitable for Half-Sleeve &amp; Full-Sleeve Shirts * Lightweight &amp; Breathable * Natural Khadi Texture &amp; Finish *Pre-wash Before Stitching to account for natural shrinkage</g:description>
+      <g:link>https://khadivasthra.com/product/green-beige-khadi-cotton-shirt-bite/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1789646507098.png</g:image_link>
+      <g:availability>in stock</g:availability>
+      <g:condition>new</g:condition>
+      <g:price>540.00 INR</g:price>
+      <g:sale_price>486.00 INR</g:sale_price>
+      <g:brand>Khadi Vasthra</g:brand>
+      <g:product_type>Shirt Bit</g:product_type>
+      <g:material>100% Cotton</g:material>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
     </item>
     <item>
       <g:id>fe5d2498-1ae3-48a7-b31a-0374041defdf</g:id>
@@ -619,184 +2496,29 @@
       <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772033817506.jpg</g:image_link>
       <g:availability>in stock</g:availability>
       <g:condition>new</g:condition>
-      <g:price>440.00 INR</g:price>
-      <g:sale_price>396.00 INR</g:sale_price>
+      <g:price>460.00 INR</g:price>
+      <g:sale_price>414.00 INR</g:sale_price>
       <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
+      <g:product_type>Kavi Mundu</g:product_type>
       <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
     </item>
     <item>
-      <g:id>270a5289-a18c-48a6-bc21-fa58723f2088</g:id>
-      <g:title>Geometric Kara Kavi Mundu</g:title>
-      <g:description>Geometric Kara Kavi Mundu</g:description>
-      <g:link>https://khadivasthra.com/product/geometric-kara-kavi-mundu/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772638590678.jpg</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>480.00 INR</g:price>
-      <g:sale_price>432.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>1ed82069-ba20-4e23-8263-6ab122b31ae2</g:id>
-      <g:title>Geometric Print Kavi Mundu</g:title>
-      <g:description>Geometric Print Kavi Mundu</g:description>
-      <g:link>https://khadivasthra.com/product/geometric-print-kavi-mundu/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1771654354395.png</g:image_link>
+      <g:id>ff514c4b-646a-45aa-81e9-0e5651a97abd</g:id>
+      <g:title>Dark lined L Kavi Mundu</g:title>
+      <g:description>Dark lined L Kavi</g:description>
+      <g:link>https://khadivasthra.com/product/dark-lined-l-kavi-mundu/</g:link>
+      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1775308769641.jpg</g:image_link>
       <g:availability>in stock</g:availability>
       <g:condition>new</g:condition>
       <g:price>390.00 INR</g:price>
       <g:sale_price>351.00 INR</g:sale_price>
       <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
+      <g:product_type>Kavi Mundu</g:product_type>
       <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>255d5a1d-3be5-43d9-baea-1de13f3af6d1</g:id>
-      <g:title>Interlock Printe Kavi Mundu </g:title>
-      <g:description>Cotton Printed Kavi Mundu</g:description>
-      <g:link>https://khadivasthra.com/product/printed-kavi-mundu-3/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772693866859.jpg</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>480.00 INR</g:price>
-      <g:sale_price>432.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>15739f70-0839-4cc5-828d-bc90ac3be399</g:id>
-      <g:title>Bohemian Printed Kavi Mundu</g:title>
-      <g:description>Cotton Printed Kavi Mundu</g:description>
-      <g:link>https://khadivasthra.com/product/printed-kavi-mundu-4/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772693918834.jpg</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>480.00 INR</g:price>
-      <g:sale_price>432.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>38f5ba0c-7e4b-40f3-8fcd-4e8dd3a3ba08</g:id>
-      <g:title>Bohemian Locks Printed Kavi Mundu</g:title>
-      <g:description>Cotton Printed Kavis</g:description>
-      <g:link>https://khadivasthra.com/product/printed-kavis/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772693732164.jpg</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>480.00 INR</g:price>
-      <g:sale_price>432.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>67016499-3e77-4d3b-9cb8-b37896bf187a</g:id>
-      <g:title>Print Kavi </g:title>
-      <g:description>Cotton Print Kavi </g:description>
-      <g:link>https://khadivasthra.com/product/print-kavi-2/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/print-kavi-2/1772694134919.jpg</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>370.00 INR</g:price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>78106ce0-151e-46b8-898c-a4188b824519</g:id>
-      <g:title>Snake and Ladder Print Kavi Mundu</g:title>
-      <g:description>Cotton Printed Kavi Mundu</g:description>
-      <g:link>https://khadivasthra.com/product/printed-kavi-mundu-2/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772693806716.jpg</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>480.00 INR</g:price>
-      <g:sale_price>432.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>55bd99f7-a1f8-4cca-b153-5c287e687516</g:id>
-      <g:title>Krishna Print Kavi - Brown Border</g:title>
-      <g:description>Cotton Krishna Print Kavi - Brown Borde</g:description>
-      <g:link>https://khadivasthra.com/product/krishna-print-kavi-brown-border/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772699749669.jpg</g:image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>400.00 INR</g:price>
-      <g:sale_price>360.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>7907fb4b-14d4-4bea-af05-9a531b9a5ec9</g:id>
-      <g:title>5 - Saral Kavi</g:title>
-      <g:description>Saral Kavi Mundu</g:description>
-      <g:link>https://khadivasthra.com/product/saral-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772610233508.jpg</g:image_link>
-      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/saral-kavi/1772610607399.jpg</g:additional_image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>1099.00 INR</g:price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>
-    <item>
-      <g:id>e2f45f90-c874-4af6-b0f8-19f9108110d4</g:id>
-      <g:title>Violet and Green Border Khadi Kavi</g:title>
-      <g:description>Violet and Green Border Khadi Kavi</g:description>
-      <g:link>https://khadivasthra.com/product/violet-and-green-border-khadi-kavi/</g:link>
-      <g:image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772031951631.jpg</g:image_link>
-      <g:additional_image_link>https://etjxdomvtsxrnbjmjzxz.supabase.co/storage/v1/object/public/product-images/1772031956361.jpg</g:additional_image_link>
-      <g:availability>in stock</g:availability>
-      <g:condition>new</g:condition>
-      <g:price>410.00 INR</g:price>
-      <g:sale_price>369.00 INR</g:sale_price>
-      <g:brand>Khadi Vasthra</g:brand>
-      <g:google_product_category>5388</g:google_product_category>
-      <g:product_type>Kavi Mundus</g:product_type>
-      <g:shipping_weight>0.20 kg</g:shipping_weight>
-      <g:material>100% Cotton</g:material>
-      <g:identifier_exists>false</g:identifier_exists>
+      <g:gender>unisex</g:gender>
+      <g:age_group>adult</g:age_group>
     </item>
   </channel>
 </rss>

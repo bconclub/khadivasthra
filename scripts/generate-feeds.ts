@@ -1,5 +1,5 @@
 /**
- * Generate product catalog feeds, sitemap, and robots.txt
+ * Generate sitemap and robots.txt
  * Run: npx tsx --env-file=.env.local scripts/generate-feeds.ts
  */
 
@@ -9,9 +9,6 @@ import * as path from "path";
 
 // --- Config ---
 const SITE_URL = "https://khadivasthra.com";
-const BRAND = "Khadi Vasthra";
-const CURRENCY = "INR";
-const GOOGLE_CATEGORY_ID = 5388; // Traditional & Ceremonial Clothing
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -60,15 +57,6 @@ function escapeXml(text: string): string {
     .replace(/'/g, "&apos;");
 }
 
-function formatPrice(amount: number): string {
-  return `${Number(amount).toFixed(2)} ${CURRENCY}`;
-}
-
-function toAbsoluteUrl(url: string): string {
-  if (url.startsWith("http")) return url;
-  return `${SITE_URL}${url}`;
-}
-
 // --- Data Fetching ---
 async function fetchProducts(): Promise<Product[]> {
   const { data, error } = await supabase
@@ -88,77 +76,6 @@ async function fetchCategories(): Promise<Category[]> {
     .order("display_order", { ascending: true });
   if (error) throw error;
   return data || [];
-}
-
-// --- Product Feed (Google Shopping + Meta Commerce) ---
-function generateProductFeed(products: Product[]): string {
-  const items: string[] = [];
-  let skipped = 0;
-
-  for (const p of products) {
-    if (!p.image_url) {
-      console.warn(`  Skipping "${p.name}" — no image`);
-      skipped++;
-      continue;
-    }
-
-    const description = p.description || `${p.name}${p.material ? ` - ${p.material}` : ""} from ${BRAND}`;
-    const link = `${SITE_URL}/product/${p.slug}/`;
-    const imageLink = toAbsoluteUrl(p.image_url);
-    const availability = p.in_stock ? "in stock" : "out of stock";
-    const hasDiscount = p.compare_price && Number(p.compare_price) > Number(p.price);
-
-    let priceFields: string;
-    if (hasDiscount) {
-      priceFields = `      <g:price>${formatPrice(Number(p.compare_price))}</g:price>
-      <g:sale_price>${formatPrice(Number(p.price))}</g:sale_price>`;
-    } else {
-      priceFields = `      <g:price>${formatPrice(Number(p.price))}</g:price>`;
-    }
-
-    // Additional images (up to 10)
-    const additionalImages = (p.images || [])
-      .filter((img) => img && img !== p.image_url)
-      .slice(0, 10)
-      .map((img) => `      <g:additional_image_link>${escapeXml(toAbsoluteUrl(img))}</g:additional_image_link>`)
-      .join("\n");
-
-    const materialField = p.material
-      ? `\n      <g:material>${escapeXml(p.material)}</g:material>`
-      : "";
-
-    const categoryName = p.category?.name || "Mundus";
-
-    items.push(`    <item>
-      <g:id>${escapeXml(p.id)}</g:id>
-      <g:title>${escapeXml(p.name.slice(0, 150))}</g:title>
-      <g:description>${escapeXml(description.slice(0, 5000))}</g:description>
-      <g:link>${escapeXml(link)}</g:link>
-      <g:image_link>${escapeXml(imageLink)}</g:image_link>
-${additionalImages ? additionalImages + "\n" : ""}      <g:availability>${availability}</g:availability>
-      <g:condition>new</g:condition>
-${priceFields}
-      <g:brand>${BRAND}</g:brand>
-      <g:google_product_category>${GOOGLE_CATEGORY_ID}</g:google_product_category>
-      <g:product_type>${escapeXml(categoryName)}</g:product_type>
-      <g:shipping_weight>${Number(p.weight || 0.2).toFixed(2)} kg</g:shipping_weight>${materialField}
-      <g:identifier_exists>false</g:identifier_exists>
-    </item>`);
-  }
-
-  if (skipped > 0) {
-    console.warn(`  ${skipped} product(s) skipped (no image)`);
-  }
-
-  return `<?xml version="1.0" encoding="UTF-8"?>
-<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">
-  <channel>
-    <title>${BRAND}</title>
-    <link>${SITE_URL}</link>
-    <description>Premium traditional Kerala mundus and dhotis - handloom quality</description>
-${items.join("\n")}
-  </channel>
-</rss>`;
 }
 
 // --- Sitemap ---
@@ -244,11 +161,6 @@ async function main() {
   console.log(`Fetched ${products.length} products, ${categories.length} categories\n`);
 
   const publicDir = path.join(__dirname, "..", "public");
-
-  // Product feed
-  const feedXml = generateProductFeed(products);
-  fs.writeFileSync(path.join(publicDir, "feed.xml"), feedXml, "utf8");
-  console.log(`  feed.xml       (${products.length} products, ${(feedXml.length / 1024).toFixed(1)} KB)`);
 
   // Sitemap
   const sitemapXml = generateSitemap(products, categories);
