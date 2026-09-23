@@ -12,9 +12,10 @@ export async function createOrder(
   paymentMethod: PaymentMethod = 'online',
   checkoutKey: string = crypto.randomUUID(),
   expectedTotal: number = subtotal + shippingCost + (paymentMethod === 'cod' ? Math.round((subtotal + shippingCost) * 0.016) : 0),
+  orderUpdatesOptIn = false,
 ): Promise<{ id: string; order_number: string; total: number; statusToken: string }> {
   const result = await invokeEdgeFunction('secure-checkout', {
-    action: 'create', key: checkoutKey, customer: formData,
+    action: 'create', key: checkoutKey, customer: { ...formData, order_updates_opt_in: orderUpdatesOptIn },
     assistedCartId: typeof window === 'undefined' ? null : sessionStorage.getItem('kv_assisted_cart_id'),
     cart: cartItems.map(item => ({ id: item.id, variant_id: item.variant_id || null, quantity: item.quantity, ...(item.combo ? { combo: item.combo } : {}) })),
     paymentMethod, expectedTotal,

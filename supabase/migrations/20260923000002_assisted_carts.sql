@@ -4,6 +4,8 @@ CREATE TABLE IF NOT EXISTS public.kv_assisted_carts (
   phone TEXT,
   order_id UUID UNIQUE REFERENCES public.orders(id),
   marketing_opt_in BOOLEAN NOT NULL DEFAULT false,
+  consent_message_id TEXT,
+  consented_at TIMESTAMPTZ,
   human_takeover BOOLEAN NOT NULL DEFAULT false,
   purchased_at TIMESTAMPTZ,
   reminder_2h TEXT NOT NULL DEFAULT 'pending' CHECK (reminder_2h IN ('pending','claimed','sent','held')),
@@ -29,8 +31,8 @@ BEGIN
       AND ((p_stage='2h' AND c.reminder_2h='pending' AND c.updated_at<now()-interval '2 hours')
         OR (p_stage='24h' AND c.reminder_2h='sent' AND c.reminder_24h='pending' AND c.updated_at<now()-interval '24 hours'))
       AND (now() AT TIME ZONE 'Asia/Kolkata')::time >= time '09:00' AND (now() AT TIME ZONE 'Asia/Kolkata')::time < time '20:00'
-      AND NOT EXISTS (SELECT 1 FROM public.kv_assisted_carts newer WHERE newer.phone=c.phone AND newer.marketing_opt_in AND newer.purchased_at IS NULL AND newer.updated_at>c.updated_at)
-      AND NOT EXISTS (SELECT 1 FROM public.orders o WHERE o.customer_phone=c.phone AND o.created_at>=c.created_at AND (o.payment_status='paid' OR o.payment_status='cod'))
+      AND NOT EXISTS (SELECT 1 FROM public.kv_assisted_carts newer WHERE newer.phone=c.phone AND newer.purchased_at IS NULL AND newer.created_at>c.created_at)
+      AND NOT EXISTS (SELECT 1 FROM public.orders o WHERE o.customer_phone=right(c.phone,10) AND o.created_at>=c.created_at AND (o.payment_status='paid' OR o.payment_status='cod'))
     ORDER BY c.updated_at FOR UPDATE SKIP LOCKED LIMIT 1;
   IF NOT FOUND THEN RETURN NULL; END IF;
   IF p_stage='2h' THEN UPDATE public.kv_assisted_carts SET reminder_2h='claimed' WHERE id=v_cart.id;

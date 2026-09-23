@@ -2,6 +2,7 @@
 -- removed by the separate cutover migration after the client is live.
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS checkout_key UUID;
 ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS reservation_expires_at TIMESTAMPTZ;
+ALTER TABLE public.orders ADD COLUMN IF NOT EXISTS order_updates_opt_in BOOLEAN NOT NULL DEFAULT false;
 CREATE UNIQUE INDEX IF NOT EXISTS orders_checkout_key_unique ON public.orders(checkout_key) WHERE checkout_key IS NOT NULL;
 
 CREATE OR REPLACE FUNCTION public.kv_place_order(
@@ -83,8 +84,9 @@ BEGIN
   IF v_total_items > 99 OR (p_cod AND v_subtotal < 1000) THEN RAISE EXCEPTION 'checkout_not_allowed'; END IF;
   v_cod_fee := CASE WHEN p_cod THEN round((v_subtotal+p_shipping)*0.016) ELSE 0 END;
   IF p_expected IS NULL OR abs(p_expected-(v_subtotal+p_shipping+v_cod_fee)) > 0.009 THEN RAISE EXCEPTION 'checkout_total_changed'; END IF;
-  INSERT INTO public.orders (checkout_key,reservation_expires_at,order_number,customer_name,customer_phone,customer_email,customer_address,customer_city,customer_state,customer_pincode,items,subtotal,shipping,cod_charges,total,status,payment_status,payment_method)
+  INSERT INTO public.orders (checkout_key,reservation_expires_at,order_updates_opt_in,order_number,customer_name,customer_phone,customer_email,customer_address,customer_city,customer_state,customer_pincode,items,subtotal,shipping,cod_charges,total,status,payment_status,payment_method)
   VALUES (p_key,CASE WHEN p_cod THEN NULL ELSE now()+interval '30 minutes' END,
+    coalesce(p_customer->>'order_updates_opt_in'='true',false),
     'KV-'||to_char(now() AT TIME ZONE 'UTC','YYYYMMDD')||'-'||upper(substr(replace(gen_random_uuid()::text,'-',''),1,10)),
     p_customer->>'name',p_customer->>'phone',nullif(p_customer->>'email',''),p_customer->>'address',p_customer->>'city',p_customer->>'state',p_customer->>'pincode',
     v_items,v_subtotal,p_shipping,v_cod_fee,v_subtotal+p_shipping+v_cod_fee,

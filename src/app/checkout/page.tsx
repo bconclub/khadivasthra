@@ -56,6 +56,7 @@ export default function CheckoutPage() {
   const [pendingOrder, setPendingOrder] = useState<(Pick<Order, 'id' | 'order_number' | 'total'> & { statusToken: string }) | null>(null);
   const checkoutKey = useRef<string>(crypto.randomUUID());
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("online");
+  const [orderUpdatesOptIn, setOrderUpdatesOptIn] = useState(false);
 
   // Address fields (split)
   const [name, setName] = useState("");
@@ -263,7 +264,7 @@ export default function CheckoutPage() {
     trackInitiateCheckout(items.map((i) => ({ id: i.id, price: i.price, quantity: i.quantity })), orderTotal);
 
     try {
-      const order = await createOrder(formData, items, cartTotal, shippingCost, "cod", checkoutKey.current, orderTotal);
+      const order = await createOrder(formData, items, cartTotal, shippingCost, "cod", checkoutKey.current, orderTotal, orderUpdatesOptIn);
 
       localStorage.setItem(`kv_order_${order.order_number}`, JSON.stringify({ id: order.id, token: order.statusToken }));
       clearCart();
@@ -328,7 +329,7 @@ export default function CheckoutPage() {
     trackInitiateCheckout(items.map((i) => ({ id: i.id, price: i.price, quantity: i.quantity })), orderTotal);
 
     try {
-      const order = pendingOrder || await createOrder(formData, items, cartTotal, shippingCost, "online", checkoutKey.current, orderTotal);
+      const order = pendingOrder || await createOrder(formData, items, cartTotal, shippingCost, "online", checkoutKey.current, orderTotal, orderUpdatesOptIn);
       if (!pendingOrder) {
         setPendingOrder(order);
         localStorage.setItem(`kv_order_${order.order_number}`, JSON.stringify({ id: order.id, token: order.statusToken }));
@@ -565,6 +566,10 @@ export default function CheckoutPage() {
               </div>
 
               {/* Payment Method */}
+              <label className="flex items-start gap-3 rounded-xl border border-cream/30 bg-white p-4 text-sm text-text">
+                <input type="checkbox" checked={orderUpdatesOptIn} onChange={event => setOrderUpdatesOptIn(event.target.checked)} className="mt-1 accent-coral" />
+                <span>Send WhatsApp updates about this order to the phone number above. This does not include cart reminders or promotions.</span>
+              </label>
               {shippingInfo?.available && (
                 <div className="bg-white rounded-xl p-6 shadow-sm border border-cream/30">
                   <h2 className="text-lg font-bold text-text mb-4">Payment Method</h2>
