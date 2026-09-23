@@ -40,7 +40,7 @@ serve(async (req) => {
     // Fetch the order from our DB
     const { data: order, error: fetchError } = await supabase
       .from("orders")
-      .select("id,status,total,payment_status,payment_method,razorpay_order_id,razorpay_payment_id")
+      .select("id,status,total,payment_status,payment_method,razorpay_order_id,razorpay_payment_id,reservation_expires_at")
       .eq("id", order_id)
       .single();
 
@@ -69,6 +69,9 @@ serve(async (req) => {
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    if (!order.razorpay_order_id) return new Response(JSON.stringify({ error: "No stored Razorpay order mapping. Review manually." }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const authHeader = btoa(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`);
 
     // Query Razorpay API for payments on this order
     const authHeader = btoa(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`);
@@ -101,6 +104,10 @@ serve(async (req) => {
     if (capturedPayment) {
       if (order.payment_method !== "online" || order.payment_status !== "pending" || order.status === "cancelled") return new Response(JSON.stringify({ error: "Captured payment requires staff review" }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       // Payment was successful — update our order
+      if (order.payment_method !== "online" || order.payment_status !== "pending" || !order.reservation_expires_at || Date.parse(order.reservation_expires_at) <= Date.now()) {
+        await supabase.from("kv_payment_exceptions").upsert({ order_id, razorpay_payment_id: capturedPayment.id, reason: "captured_during_admin_reconciliation_after_reservation" }, { onConflict: "razorpay_payment_id" });
+        return new Response(JSON.stringify({ error: "Captured payment requires staff review" }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
       const { data: updated, error: updateError } = await supabase
         .from("orders")
         .update({
@@ -117,6 +124,8 @@ serve(async (req) => {
           { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       }
+      const assisted = await supabase.from("kv_assisted_carts").update({ purchased_at: new Date().toISOString() }).eq("order_id", order_id).is("purchased_at", null);
+      if (assisted.error) console.error("Could not suppress assisted cart recovery", assisted.error);
 
       // Also try to create Shiprocket order
       try {

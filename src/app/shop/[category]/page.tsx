@@ -43,7 +43,7 @@ export async function generateMetadata({
   const title = `${name} | Khadi Vasthra - Kerala Handloom`;
   const description = category?.description
     ? `${category.description} Shop authentic ${name} from Khadi Vasthra, Aluva, Kerala.`
-    : `Shop our ${name} collection — authentic Kerala handloom from Khadi Vasthra, Aluva. Premium quality, traditional craftsmanship.`;
+    : `Shop our ${name} collection from Khadi Vasthra, Aluva. Check each product page for fabric and care details.`;
   const url = `${siteUrl}/shop/${slug}`;
   const image = category?.image_url || `${siteUrl}/og-image.webp`;
 

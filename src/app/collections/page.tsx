@@ -47,7 +47,7 @@ export default function CollectionsPage() {
             Our Collections
           </h1>
           <p className="text-text-muted text-lg max-w-2xl mx-auto">
-            Browse our curated collections of authentic Kerala handloom mundus,
+            Browse our curated collections of Kerala clothing and mundus,
             organized by style and tradition.
           </p>
         </div>

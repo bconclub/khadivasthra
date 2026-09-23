@@ -110,7 +110,7 @@ export default function OffersPage() {
             Special Offers
           </h1>
           <p className="text-text-muted mt-2 max-w-md mx-auto">
-            Discover our latest deals and promotions on authentic Kerala handloom mundus
+            Discover our latest deals and promotions on Kerala clothing and mundus
           </p>
         </div>
 

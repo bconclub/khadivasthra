@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
-import { getOrders, updateOrderStatus, updateOrder, checkPaymentStatus, bookShiprocketShipment } from "@/lib/services/orders";
+import { getOrders, getPaymentExceptions, updateOrderStatus, updateOrder, checkPaymentStatus, bookShiprocketShipment } from "@/lib/services/orders";
 import { bookShipwayShipment, cancelShipwayShipment } from "@/lib/services/shipway";
 import { deleteOrder } from "@/lib/services/admin";
 import { supabase } from "@/lib/supabase";
@@ -1562,6 +1562,7 @@ function CodSaveField({
 
 export default function AdminOrdersPage() {
   const { data: orders, loading, refetch } = useSupabaseQuery(getOrders);
+  const { data: paymentExceptions } = useSupabaseQuery(getPaymentExceptions);
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [dateRange, setDateRange] = useState<"all" | "this_month" | "last_month" | "custom">("all");
   const [customStart, setCustomStart] = useState("");
@@ -1746,6 +1747,11 @@ export default function AdminOrdersPage() {
   return (
     <AdminShell>
       <div className="space-y-6">
+        {!!paymentExceptions?.length && <div className="rounded-lg border border-red-300 bg-red-50 p-4 text-sm text-red-900" role="alert">
+          <strong>{paymentExceptions.length} captured payment{paymentExceptions.length === 1 ? "" : "s"} need staff review.</strong>
+          <p className="mt-1">Check payment in Razorpay and stock before changing order or issuing refund. Do not ship until reconciled.</p>
+          <ul className="mt-2 space-y-1">{paymentExceptions.slice(0, 10).map(item => <li key={item.razorpay_payment_id}>{allOrders.find(order => order.id === item.order_id)?.order_number || item.order_id}: {item.razorpay_payment_id} ({item.reason})</li>)}</ul>
+        </div>}
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Orders</h1>

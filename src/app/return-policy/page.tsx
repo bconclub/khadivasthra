@@ -35,16 +35,15 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">3. Returns for Damaged Products</h2>
+            <h2 className="text-xl font-semibold text-gray-900 mb-3">3. Returns and Exchanges</h2>
             <p className="mb-3">
-              We accept returns only if the product is damaged during transit. To claim a return,
+              We accept return or exchange requests for defective or incorrect products. To raise a request,
               customers must follow these conditions:
             </p>
             <ul className="list-disc pl-5 space-y-2">
-              <li>Customers must record a <strong>clear opening/unboxing video</strong> while opening the parcel.</li>
-              <li>If any damage or defect is found, customers must capture <strong>clear photos or videos</strong> showing the defect.</li>
-              <li>The opening video and defect proof must be shared <strong>within 1 hour</strong> of receiving the parcel.</li>
-              <li>Claims without a valid opening video or submitted after 1 hour of delivery will <strong>not be accepted</strong>.</li>
+              <li>Contact us <strong>within 48 hours of delivery</strong>.</li>
+              <li>Share clear photos or videos showing the defect or incorrect item.</li>
+              <li>Keep the item unused, unwashed, and in its original packaging.</li>
             </ul>
           </section>
 
@@ -59,8 +58,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-gray-900 mb-3">5. Replacement Timeline</h2>
             <p>
-              Approved replacement requests will be processed, and the replacement product will be shipped
-              within <strong>7 working days</strong>.
+              Our team will confirm replacement timing after reviewing the request.
             </p>
           </section>
 
@@ -68,7 +66,7 @@ export default function TermsPage() {
             <h2 className="text-xl font-semibold text-gray-900 mb-3">6. Refund Policy</h2>
             <p>
               If a refund is approved instead of a replacement, the refund amount will be processed
-              within <strong>7 working days</strong> to the original payment method.
+              within <strong>5–7 business days</strong> to the original payment method. Shipping charges are non-refundable.
             </p>
           </section>
 
@@ -76,9 +74,9 @@ export default function TermsPage() {
             <h2 className="text-xl font-semibold text-gray-900 mb-3">7. Non-Returnable Conditions</h2>
             <p className="mb-3">Returns or replacements will not be accepted if:</p>
             <ul className="list-disc pl-5 space-y-2">
-              <li>No opening/unboxing video is provided.</li>
-              <li>The complaint is reported after 1 hour of delivery.</li>
-              <li>The product damage appears to have occurred after delivery.</li>
+              <li>The request is received more than 48 hours after delivery.</li>
+              <li>The item has been used, washed, or removed from its original packaging.</li>
+              <li>The item was purchased on sale or discount, where its terms exclude returns.</li>
             </ul>
           </section>
 

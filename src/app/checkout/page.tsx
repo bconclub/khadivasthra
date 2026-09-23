@@ -53,7 +53,8 @@ export default function CheckoutPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [paymentStep, setPaymentStep] = useState<PaymentStep>("form");
-  const [pendingOrder, setPendingOrder] = useState<Order | null>(null);
+  const [pendingOrder, setPendingOrder] = useState<(Pick<Order, 'id' | 'order_number' | 'total'> & { statusToken: string }) | null>(null);
+  const checkoutKey = useRef<string>(crypto.randomUUID());
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("online");
 
   // Address fields (split)
@@ -200,8 +201,8 @@ export default function CheckoutPage() {
     };
   };
 
-  const initiatePayment = async (order: Order) => {
-    const razorpayOrder = await createRazorpayOrder(order.id, order.total);
+  const initiatePayment = async (order: Pick<Order, 'id' | 'order_number' | 'total'> & { statusToken: string }) => {
+    const razorpayOrder = await createRazorpayOrder(order.id, order.statusToken);
 
     setPaymentStep("paying");
     openCheckout({
@@ -226,7 +227,9 @@ export default function CheckoutPage() {
             response.razorpay_signature
           );
           if (result.verified) {
+            localStorage.setItem(`kv_order_${order.order_number}`, JSON.stringify({ id: order.id, token: order.statusToken }));
             clearCart();
+            sessionStorage.removeItem("kv_assisted_cart_id");
             router.push(`/order-success?order=${order.order_number}&paid=true&total=${order.total}`);
           } else {
             setError("Payment verification failed. Please contact support.");
@@ -260,9 +263,11 @@ export default function CheckoutPage() {
     trackInitiateCheckout(items.map((i) => ({ id: i.id, price: i.price, quantity: i.quantity })), orderTotal);
 
     try {
-      const order = await createOrder(formData, items, cartTotal, shippingCost, "cod");
+      const order = await createOrder(formData, items, cartTotal, shippingCost, "cod", checkoutKey.current, orderTotal);
 
+      localStorage.setItem(`kv_order_${order.order_number}`, JSON.stringify({ id: order.id, token: order.statusToken }));
       clearCart();
+      sessionStorage.removeItem("kv_assisted_cart_id");
       router.push(`/order-success?order=${order.order_number}&paid=false&total=${order.total}`);
     } catch (err) {
       console.error("COD order error:", err);
@@ -323,8 +328,11 @@ export default function CheckoutPage() {
     trackInitiateCheckout(items.map((i) => ({ id: i.id, price: i.price, quantity: i.quantity })), orderTotal);
 
     try {
-      const order = pendingOrder || await createOrder(formData, items, cartTotal, shippingCost, "online");
-      if (!pendingOrder) setPendingOrder(order);
+      const order = pendingOrder || await createOrder(formData, items, cartTotal, shippingCost, "online", checkoutKey.current, orderTotal);
+      if (!pendingOrder) {
+        setPendingOrder(order);
+        localStorage.setItem(`kv_order_${order.order_number}`, JSON.stringify({ id: order.id, token: order.statusToken }));
+      }
 
       await initiatePayment(order);
     } catch (err) {

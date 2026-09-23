@@ -46,7 +46,7 @@ serve(async (req) => {
 
     // Payment's Razorpay order must equal the one stored on the merchant order.
     // Customer-controlled notes are never sufficient to choose an order.
-    const query = supabase.from("orders").select("id,status,total,payment_status")
+    const query = supabase.from("orders").select("id,status,total,payment_status,reservation_expires_at")
       .eq("razorpay_order_id", payment.order_id).limit(1);
     const { data: rows } = await query;
     const order = rows?.[0];
@@ -56,9 +56,13 @@ serve(async (req) => {
       return new Response(JSON.stringify({ matched: false }), { status: 200 });
     }
 
-    if (order.payment_status === "paid") return new Response(JSON.stringify({ matched: true }), { status: 200 });
-    if (order.payment_status !== "pending" || order.status === "cancelled") {
-      console.error("Captured payment needs staff review", order.id, payment.id);
+    if (order.payment_status === "paid") {
+      await supabase.from("kv_assisted_carts").update({ purchased_at: new Date().toISOString() }).eq("order_id", order.id).is("purchased_at", null);
+      return new Response(JSON.stringify({ matched: true }), { status: 200 });
+    }
+    if (order.payment_status !== "pending" || order.status === "cancelled" || !order.reservation_expires_at || Date.parse(order.reservation_expires_at) <= Date.now()) {
+      const recorded = await supabase.from("kv_payment_exceptions").upsert({ order_id: order.id, razorpay_payment_id: payment.id, reason: "captured_after_reservation_closed" }, { onConflict: "razorpay_payment_id" });
+      if (recorded.error) return new Response("exception logging failed", { status: 500 });
       return new Response(JSON.stringify({ matched: true, review_required: true }), { status: 200 });
     }
     const { data: updated, error } = await supabase
@@ -78,10 +82,14 @@ serve(async (req) => {
     if (!updated?.length) {
       const current = await supabase.from("orders").select("payment_status").eq("id", order.id).single();
       if (current.data?.payment_status !== "paid") {
-        console.error("Captured payment needs staff review after update race", order.id, payment.id);
+        const recorded = await supabase.from("kv_payment_exceptions").upsert({ order_id: order.id, razorpay_payment_id: payment.id, reason: "captured_during_reservation_close" }, { onConflict: "razorpay_payment_id" });
+        if (recorded.error) return new Response("exception logging failed", { status: 500 });
         return new Response(JSON.stringify({ matched: true, review_required: true }), { status: 200 });
       }
     }
+
+    const assisted = await supabase.from("kv_assisted_carts").update({ purchased_at: new Date().toISOString() }).eq("order_id", order.id).is("purchased_at", null);
+    if (assisted.error) return new Response("cart recovery suppression failed", { status: 500 });
 
     console.log("Webhook recorded payment", payment.id, "for order", order.id);
     return new Response(JSON.stringify({ matched: true }), { status: 200 });

@@ -8,6 +8,17 @@ import { BottomBar } from "./BottomBar";
 import { SearchOverlay } from "./SearchOverlay";
 import { ScrollToTop } from "@/components/ScrollToTop";
 import { useSearch } from "@/context/SearchContext";
+import Script from "next/script";
+
+const connectionUrl = process.env.NEXT_PUBLIC_PROXE_CONNECTION_URL;
+const installationId = process.env.NEXT_PUBLIC_PROXE_INSTALLATION_ID;
+const connectionReady = (() => {
+  if (!connectionUrl || !installationId || !/^[0-9a-f-]{36}$/i.test(installationId)) return false;
+  try {
+    const parsed = new URL(connectionUrl);
+    return parsed.protocol === "https:" && parsed.pathname === "/proxe-connection.js";
+  } catch { return false; }
+})();
 
 export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -28,6 +39,7 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
 
   return (
     <>
+      {connectionReady && <Script src={connectionUrl!} data-installation-id={installationId} strategy="afterInteractive" />}
       <ScrollToTop />
       <Header />
       {/* Shop/product pages sit under a fixed header (h-16 mobile, h-20 desktop),

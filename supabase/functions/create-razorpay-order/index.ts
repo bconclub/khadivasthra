@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { verifyOrderToken } from "../_shared/order-token.ts";
 
 const RAZORPAY_KEY_ID = Deno.env.get("RAZORPAY_KEY_ID")!;
 const RAZORPAY_KEY_SECRET = Deno.env.get("RAZORPAY_KEY_SECRET")!;
@@ -19,7 +20,7 @@ serve(async (req) => {
   }
 
   try {
-    const { order_id } = await req.json();
+    const { order_id, status_token } = await req.json();
 
     if (!order_id) {
       return new Response(
@@ -33,9 +34,12 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const { data: order, error: orderError } = await supabase.from("orders")
-      .select("id,total,payment_status,payment_method,razorpay_order_id")
+      .select("id,customer_phone,total,payment_status,payment_method,razorpay_order_id,reservation_expires_at")
       .eq("id", order_id).single();
-    if (orderError || !order || order.payment_method !== "online" || order.payment_status !== "pending") {
+    if (orderError || !order || !await verifyOrderToken(order.id, order.customer_phone, status_token)) {
+      return new Response(JSON.stringify({ error: "Order link is invalid" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    if (order.payment_method !== "online" || order.payment_status !== "pending" || !order.reservation_expires_at || Date.parse(order.reservation_expires_at) <= Date.now()) {
       return new Response(JSON.stringify({ error: "Order is not payable" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });

@@ -73,7 +73,7 @@ serve(async (req) => {
 
     if (isValid) {
       const { data: order, error: orderError } = await supabase.from("orders")
-        .select("razorpay_order_id,total,payment_method,payment_status")
+        .select("razorpay_order_id,total,payment_method,payment_status,reservation_expires_at")
         .eq("id", order_id).single();
       if (orderError || !order || order.payment_method !== "online" || order.razorpay_order_id !== razorpay_order_id) {
         return new Response(JSON.stringify({ verified: false, error: "Payment does not belong to this order" }), {
@@ -88,8 +88,15 @@ serve(async (req) => {
       if (payment.order_id !== razorpay_order_id || payment.currency !== "INR" || payment.amount !== Math.round(Number(order.total) * 100) || payment.status !== "captured") {
         return new Response(JSON.stringify({ verified: false, error: "Payment is not captured for this order" }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
-      if (order.payment_status === "paid") return new Response(JSON.stringify({ verified: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
-      if (order.payment_status !== "pending") return new Response(JSON.stringify({ error: "Order is no longer payable. Staff will review the captured payment." }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (order.payment_status === "paid") {
+        await supabase.from("kv_assisted_carts").update({ purchased_at: new Date().toISOString() }).eq("order_id", order_id).is("purchased_at", null);
+        return new Response(JSON.stringify({ verified: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      if (order.payment_status !== "pending" || !order.reservation_expires_at || Date.parse(order.reservation_expires_at) <= Date.now()) {
+        const exception = await supabase.from("kv_payment_exceptions").upsert({ order_id, razorpay_payment_id, reason: "captured_after_reservation_closed" }, { onConflict: "razorpay_payment_id" });
+        if (exception.error) return new Response(JSON.stringify({ error: "Payment needs staff review; exception recording failed" }), { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return new Response(JSON.stringify({ error: "Payment captured after reservation closed. Staff will review it." }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
       const { data: updated, error: updateError } = await supabase
         .from("orders")
         .update({
@@ -112,7 +119,13 @@ serve(async (req) => {
           }
         );
       }
-      if (!updated?.length) return new Response(JSON.stringify({ error: "Order is no longer payable. Staff will review the captured payment." }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (!updated?.length) {
+        await supabase.from("kv_payment_exceptions").upsert({ order_id, razorpay_payment_id, reason: "captured_during_reservation_close" }, { onConflict: "razorpay_payment_id" });
+        return new Response(JSON.stringify({ error: "Order is no longer payable. Staff will review the captured payment." }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+
+      const assisted = await supabase.from("kv_assisted_carts").update({ purchased_at: new Date().toISOString() }).eq("order_id", order_id).is("purchased_at", null);
+      if (assisted.error) console.error("Could not suppress assisted cart recovery", assisted.error);
 
       // Auto-create Shiprocket shipment (non-blocking — don't fail payment if this errors)
       try {
