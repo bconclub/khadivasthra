@@ -19,11 +19,11 @@ serve(async (req) => {
   }
 
   try {
-    const { amount, currency = "INR", order_id } = await req.json();
+    const { order_id } = await req.json();
 
-    if (!amount || !order_id) {
+    if (!order_id) {
       return new Response(
-        JSON.stringify({ error: "Missing required fields: amount, order_id" }),
+        JSON.stringify({ error: "order_id is required" }),
         {
           status: 400,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -31,8 +31,30 @@ serve(async (req) => {
       );
     }
 
-    // Razorpay expects amount in paise (smallest currency unit)
-    const amountInPaise = Math.round(amount * 100);
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const { data: order, error: orderError } = await supabase.from("orders")
+      .select("id,total,payment_status,payment_method,razorpay_order_id")
+      .eq("id", order_id).single();
+    if (orderError || !order || order.payment_method !== "online" || order.payment_status !== "pending") {
+      return new Response(JSON.stringify({ error: "Order is not payable" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const amountInPaise = Math.round(Number(order.total) * 100);
+    if (!Number.isSafeInteger(amountInPaise) || amountInPaise <= 0) {
+      return new Response(JSON.stringify({ error: "Invalid stored order amount" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (order.razorpay_order_id) {
+      const existing = await fetch(`https://api.razorpay.com/v1/orders/${encodeURIComponent(order.razorpay_order_id)}`, {
+        headers: { Authorization: `Basic ${btoa(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`)}` },
+      });
+      if (!existing.ok) return new Response(JSON.stringify({ error: "Could not verify existing payment order" }), { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      const saved = await existing.json();
+      if (saved.amount !== amountInPaise || saved.currency !== "INR") return new Response(JSON.stringify({ error: "Payment amount mismatch" }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ razorpay_order_id: saved.id, amount: saved.amount, currency: saved.currency }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     const razorpayRes = await fetch("https://api.razorpay.com/v1/orders", {
       method: "POST",
@@ -42,7 +64,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         amount: amountInPaise,
-        currency,
+        currency: "INR",
         receipt: order_id,
         notes: { order_id },
       }),
@@ -63,14 +85,14 @@ serve(async (req) => {
     const razorpayOrder = await razorpayRes.json();
 
     // Store razorpay_order_id on the Supabase order row
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-    const { error: updateError } = await supabase
+    const { data: savedRows, error: updateError } = await supabase
       .from("orders")
       .update({ razorpay_order_id: razorpayOrder.id })
-      .eq("id", order_id);
+      .eq("id", order_id).is("razorpay_order_id", null).select("id");
 
-    if (updateError) {
+    if (updateError || !savedRows?.length) {
       console.error("Supabase update error:", updateError);
+      return new Response(JSON.stringify({ error: "Could not save payment order" }), { status: 503, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     return new Response(

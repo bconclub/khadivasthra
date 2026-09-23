@@ -198,15 +198,17 @@ export async function updateOrder(id: string, data: Record<string, unknown>): Pr
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
-async function invokeEdgeFunction(functionName: string, body: Record<string, unknown>) {
+async function invokeEdgeFunction(functionName: string, body: Record<string, unknown>, admin = false) {
   const url = `${SUPABASE_URL}/functions/v1/${functionName}`;
   console.log(`Calling edge function: ${url}`);
+  const session = admin ? (await supabase.auth.getSession()).data.session : null;
+  if (admin && !session) throw new Error('Admin sign-in required');
 
   const res = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+      'Authorization': `Bearer ${session?.access_token || SUPABASE_ANON_KEY}`,
       'apikey': SUPABASE_ANON_KEY,
     },
     body: JSON.stringify(body),
@@ -256,7 +258,7 @@ export async function trackShipment(
 }
 
 export async function bookShiprocketShipment(orderId: string) {
-  return invokeEdgeFunction('shiprocket-create-order', { order_id: orderId });
+  return invokeEdgeFunction('shiprocket-create-order', { order_id: orderId }, true);
 }
 
 // Shipping serviceability via Shiprocket edge function
@@ -273,5 +275,5 @@ export async function checkShippingServiceability(
 export async function checkPaymentStatus(
   orderId: string
 ): Promise<{ payment_status: string; reconciled: boolean; message: string; razorpay_payment_id?: string }> {
-  return invokeEdgeFunction('check-payment-status', { order_id: orderId });
+  return invokeEdgeFunction('check-payment-status', { order_id: orderId }, true);
 }

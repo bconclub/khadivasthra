@@ -31,11 +31,16 @@ serve(async (req) => {
     }
 
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const bearer = (req.headers.get("authorization") || "").replace(/^Bearer\s+/i, "");
+    const user = bearer && bearer !== SUPABASE_SERVICE_ROLE_KEY ? await supabase.auth.getUser(bearer) : null;
+    if (!user?.data.user || user.error) return new Response(JSON.stringify({ error: "Admin sign-in required" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    const { data: profile } = await supabase.from("admin_profiles").select("role,permissions,is_active").eq("id", user.data.user.id).single();
+    if (!profile?.is_active || (profile.role !== "super_admin" && !(Array.isArray(profile.permissions) && profile.permissions.includes("orders")))) return new Response(JSON.stringify({ error: "Orders permission required" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     // Fetch the order from our DB
     const { data: order, error: fetchError } = await supabase
       .from("orders")
-      .select("*")
+      .select("id,status,total,payment_status,payment_method,razorpay_order_id,razorpay_payment_id")
       .eq("id", order_id)
       .single();
 
@@ -43,6 +48,13 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: "Order not found" }),
         { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!order.razorpay_order_id) {
+      return new Response(
+        JSON.stringify({ error: "No Razorpay order ID found for this order" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -58,52 +70,10 @@ serve(async (req) => {
       );
     }
 
-    const authHeader = btoa(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`);
-    let razorpayOrderId: string | null = order.razorpay_order_id;
-
-    // If no razorpay_order_id stored, search Razorpay by receipt (our internal order_id)
-    if (!razorpayOrderId) {
-      const lookupRes = await fetch(
-        `${RAZORPAY_BASE}/orders?receipt=${encodeURIComponent(order_id)}`,
-        { headers: { Authorization: `Basic ${authHeader}` } }
-      );
-
-      if (!lookupRes.ok) {
-        const errText = await lookupRes.text();
-        console.error("Razorpay order lookup error:", lookupRes.status, errText);
-        return new Response(
-          JSON.stringify({ error: "Failed to look up order on Razorpay", details: errText }),
-          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      const lookupData = await lookupRes.json();
-      const razorpayOrders = lookupData.items || [];
-
-      if (razorpayOrders.length === 0) {
-        return new Response(
-          JSON.stringify({
-            payment_status: "no_razorpay_order",
-            reconciled: false,
-            message: "No Razorpay order found for this order — customer likely never started payment",
-          }),
-          { headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-
-      // Use the most recent matching Razorpay order
-      razorpayOrderId = razorpayOrders[0].id as string;
-
-      // Backfill it onto our order so future checks are direct
-      await supabase
-        .from("orders")
-        .update({ razorpay_order_id: razorpayOrderId })
-        .eq("id", order_id);
-    }
-
     // Query Razorpay API for payments on this order
+    const authHeader = btoa(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`);
     const paymentsRes = await fetch(
-      `${RAZORPAY_BASE}/orders/${razorpayOrderId}/payments`,
+      `${RAZORPAY_BASE}/orders/${order.razorpay_order_id}/payments`,
       {
         headers: {
           Authorization: `Basic ${authHeader}`,
@@ -123,23 +93,24 @@ serve(async (req) => {
     const paymentsData = await paymentsRes.json();
     const payments = paymentsData.items || [];
 
-    console.log("Razorpay payments for order:", razorpayOrderId, JSON.stringify(payments.map((p: { id: string; status: string; amount: number }) => ({ id: p.id, status: p.status, amount: p.amount }))));
+    console.log("Razorpay payments for order:", order.razorpay_order_id, JSON.stringify(payments.map((p: { id: string; status: string; amount: number }) => ({ id: p.id, status: p.status, amount: p.amount }))));
 
     // Find a captured (successful) payment
-    const capturedPayment = payments.find((p: { status: string }) => p.status === "captured");
+    const capturedPayment = payments.find((p: { status: string; amount: number; currency: string; order_id: string }) => p.status === "captured" && p.order_id === order.razorpay_order_id && p.currency === "INR" && p.amount === Math.round(Number(order.total) * 100));
 
     if (capturedPayment) {
+      if (order.payment_method !== "online" || order.payment_status !== "pending" || order.status === "cancelled") return new Response(JSON.stringify({ error: "Captured payment requires staff review" }), { status: 409, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       // Payment was successful — update our order
-      const { error: updateError } = await supabase
+      const { data: updated, error: updateError } = await supabase
         .from("orders")
         .update({
           razorpay_payment_id: capturedPayment.id,
           payment_status: "paid",
           status: order.status === "pending" ? "confirmed" : order.status,
         })
-        .eq("id", order_id);
+        .eq("id", order_id).eq("razorpay_order_id", capturedPayment.order_id).eq("payment_status", "pending").select("id");
 
-      if (updateError) {
+      if (updateError || !updated?.length) {
         console.error("Failed to update order:", updateError);
         return new Response(
           JSON.stringify({ error: "Payment found but failed to update order" }),
