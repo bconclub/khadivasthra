@@ -1,0 +1,5 @@
+[functions.proxe-orders]
+verify_jwt = false
+
+[functions.proxe-catalog]
+verify_jwt = false
