@@ -19,8 +19,8 @@ serve(async (request) => {
     const [settings, banners, combos, products] = await Promise.all([
       db.from("settings").select("combos_enabled").limit(1).maybeSingle(),
       db.from("banners")
-        .select("id,title,subtitle,image_url,link_type,link_value,starts_at,ends_at,display_order")
-        .eq("is_active", true).eq("placement", "offers")
+        .select("id,title,subtitle,image_url,placement,starts_at,ends_at,display_order")
+        .eq("is_active", true)
         .or(`starts_at.is.null,starts_at.lte.${now}`)
         .or(`ends_at.is.null,ends_at.gte.${now}`)
         .order("display_order"),
@@ -47,7 +47,8 @@ serve(async (request) => {
       url: `https://www.khadivasthra.com/combos/${encodeURIComponent(combo.slug)}/`,
     })) : [];
     return reply({ ok: true, data: {
-      banners: banners.data || [], combos: activeCombos, discounts,
+      banners: banners.data || [], combos: activeCombos,
+      discounts: discounts.slice(0, 12), discountsTotal: discounts.length,
       website: "https://www.khadivasthra.com", checkedAt: now,
     } });
   }
