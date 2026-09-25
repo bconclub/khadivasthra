@@ -16,11 +16,11 @@ serve(async (request) => {
   const url = new URL(request.url);
   const slug = url.searchParams.get("slug")?.trim();
   const query = url.searchParams.get("q")?.trim().slice(0, 100) || "";
-  const limit = Math.min(Math.max(Number(url.searchParams.get("limit")) || 5, 1), 10);
+  const limit = Math.min(Math.max(Number(url.searchParams.get("limit")) || 5, 1), 12);
   if (slug && !/^[a-z0-9][a-z0-9-]{0,150}$/i.test(slug)) return reply({ ok: false, error: "Invalid slug" }, 400);
   if (query && /[,()]/.test(query)) return reply({ ok: false, error: "Invalid search" }, 400);
 
-  let search = db.from("products").select(productColumns).eq("is_active", true).eq("is_wholesale", false).eq("category.is_active", true);
+  let search = db.from("products").select(productColumns, { count: "exact" }).eq("is_active", true).eq("is_wholesale", false).eq("category.is_active", true);
   if (slug) search = search.eq("slug", slug);
   else if (query) search = search.or(`name.ilike.%${query}%,description.ilike.%${query}%`);
   const products = await search.order("display_order").limit(slug ? 1 : limit);
@@ -51,5 +51,6 @@ serve(async (request) => {
       url: `https://www.khadivasthra.com/product/${encodeURIComponent(product.slug)}/`,
     };
   });
-  return slug ? reply(data[0] ? { ok: true, data: data[0] } : { ok: false, error: "Product not found" }, data[0] ? 200 : 404) : reply({ ok: true, data });
+  return slug ? reply(data[0] ? { ok: true, data: data[0] } : { ok: false, error: "Product not found" }, data[0] ? 200 : 404)
+    : reply({ ok: true, data, meta: { total: products.count ?? 0, returned: data.length, checkedAt: new Date().toISOString() } });
 });
