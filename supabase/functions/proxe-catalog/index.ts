@@ -14,6 +14,43 @@ function reply(data: unknown, status = 200) {
 serve(async (request) => {
   if (request.method !== "GET") return reply({ ok: false, error: "Method not allowed" }, 405);
   const url = new URL(request.url);
+  if (url.searchParams.get("view") === "offers") {
+    const now = new Date().toISOString();
+    const [settings, banners, combos, products] = await Promise.all([
+      db.from("settings").select("combos_enabled").limit(1).maybeSingle(),
+      db.from("banners")
+        .select("id,title,subtitle,image_url,link_type,link_value,starts_at,ends_at,display_order")
+        .eq("is_active", true).eq("placement", "offers")
+        .or(`starts_at.is.null,starts_at.lte.${now}`)
+        .or(`ends_at.is.null,ends_at.gte.${now}`)
+        .order("display_order"),
+      db.from("combos")
+        .select("id,name,slug,description,image_url,combo_price,choose_count,is_featured,display_order")
+        .eq("is_active", true).order("display_order"),
+      db.from("products")
+        .select("id,name,slug,price,compare_price,image_url,images,category:categories!inner(is_active)")
+        .eq("is_active", true).eq("is_wholesale", false).eq("category.is_active", true)
+        .not("compare_price", "is", null).order("display_order").limit(1000),
+    ]);
+    if (settings.error || banners.error || combos.error || products.error) {
+      return reply({ ok: false, error: "Offers unavailable" }, 503);
+    }
+    const discounts = (products.data || []).filter((product) =>
+      Number(product.compare_price) > Number(product.price) && Number(product.price) > 0
+    ).map((product) => ({
+      id: product.id, name: product.name, price: Number(product.price),
+      mrp: Number(product.compare_price), image: product.image_url || product.images?.[0] || null,
+      url: `https://www.khadivasthra.com/product/${encodeURIComponent(product.slug)}/`,
+    }));
+    const activeCombos = settings.data?.combos_enabled ? (combos.data || []).map((combo) => ({
+      ...combo, combo_price: Number(combo.combo_price),
+      url: `https://www.khadivasthra.com/combos/${encodeURIComponent(combo.slug)}/`,
+    })) : [];
+    return reply({ ok: true, data: {
+      banners: banners.data || [], combos: activeCombos, discounts,
+      website: "https://www.khadivasthra.com", checkedAt: now,
+    } });
+  }
   const slug = url.searchParams.get("slug")?.trim();
   const query = url.searchParams.get("q")?.trim().slice(0, 100) || "";
   const limit = Math.min(Math.max(Number(url.searchParams.get("limit")) || 5, 1), 12);
