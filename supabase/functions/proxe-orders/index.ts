@@ -25,19 +25,45 @@ serve(async (request) => {
   }
 
   let page: number;
+  let filter: string;
+  let search: string;
   try {
     const body = await request.json();
     page = body.page ?? 0;
     if (!Number.isInteger(page) || page < 0 || page > 1000) return json({ error: "Invalid page" }, 400);
+    filter = body.filter ?? "all";
+    search = String(body.search ?? "").trim();
+    if (!["all", "unpaid", "paid_online", "cod", "fulfillment", "tracking_missing"].includes(filter)) return json({ error: "Invalid filter" }, 400);
+    if (search.length > 80 || (search && !/^[\p{L}\p{N} .-]+$/u.test(search))) return json({ error: "Invalid search" }, 400);
   } catch {
     return json({ error: "Invalid request" }, 400);
   }
 
+  function applyFilter(query: any, selected: string) {
+    switch (selected) {
+      case "unpaid": return query.eq("payment_status", "pending");
+      case "paid_online": return query.eq("payment_status", "paid").eq("payment_method", "online");
+      case "cod": return query.eq("payment_method", "cod");
+      case "fulfillment": return query.in("payment_status", ["paid", "cod"]).in("status", ["pending", "confirmed", "billed"]);
+      case "tracking_missing": return query.in("status", ["shipped", "delivered"]).is("awb_code", null);
+      default: return query;
+    }
+  }
+
   const pageSize = 25;
-  const { data, count, error } = await db.from("orders")
-    .select("order_number,created_at,customer_name,items,total,status,payment_status,payment_method,shipping_status,shipping_provider", { count: "exact" })
+  let rowsQuery = applyFilter(db.from("orders")
+    .select("order_number,created_at,updated_at,customer_name,items,total,status,payment_status,payment_method,shipping_status,shipping_provider,awb_code,courier_name,tracking_url", { count: "exact" }), filter);
+  if (search) rowsQuery = rowsQuery.ilike(search.toUpperCase().startsWith("KV-") ? "order_number" : "customer_name", `%${search}%`);
+  const { data, count, error } = await rowsQuery
     .order("created_at", { ascending: false })
     .range(page * pageSize, page * pageSize + pageSize - 1);
   if (error) return json({ error: "Orders unavailable" }, 503);
-  return json({ orders: data || [], total: count ?? 0, page, pageSize });
+  const filters = ["all", "unpaid", "paid_online", "cod", "fulfillment", "tracking_missing"];
+  const counts = await Promise.all(filters.map(async (key) => {
+    const result = await applyFilter(db.from("orders").select("id", { count: "exact", head: true }), key);
+    return result.error ? null : result.count;
+  }));
+  if (counts.some((value) => value === null)) return json({ error: "Order summaries unavailable" }, 503);
+  const summary = Object.fromEntries(filters.map((key, index) => [key, counts[index]]));
+  return json({ orders: data || [], total: count ?? 0, page, pageSize, filter, search, summary, syncedAt: new Date().toISOString() });
 });
