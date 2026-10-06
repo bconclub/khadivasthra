@@ -7,10 +7,12 @@ import { useRazorpay } from "@/hooks/useRazorpay";
 import { Button } from "@/components/ui/button";
 import { createOrder, createRazorpayOrder, verifyRazorpayPayment, checkShippingServiceability } from "@/lib/services/orders";
 import { getSettings } from "@/lib/services/settings";
+import { evaluateCoupon } from "@/lib/services/coupons";
+import { clearAppliedCoupon, normaliseCode, readAppliedCoupon, saveAppliedCoupon } from "@/lib/referral";
 import { CheckoutMusic } from "@/components/CheckoutMusic";
 import Link from "next/link";
-import { ChevronLeft, Loader2, ShoppingBag, CheckCircle2, XCircle, Truck, CreditCard, Banknote } from "lucide-react";
-import type { CheckoutFormData, Order, ServiceabilityResult, PaymentMethod, ShippingTier } from "@/types";
+import { ChevronLeft, Loader2, ShoppingBag, CheckCircle2, XCircle, Truck, CreditCard, Banknote, BadgePercent, X } from "lucide-react";
+import type { CheckoutFormData, Order, ServiceabilityResult, PaymentMethod, ShippingTier, AppliedCoupon, CouponEvaluation } from "@/types";
 import { trackInitiateCheckout } from "@/lib/fbq";
 
 type PaymentStep = "form" | "creating" | "paying";
@@ -55,6 +57,59 @@ export default function CheckoutPage() {
   const [paymentStep, setPaymentStep] = useState<PaymentStep>("form");
   const [pendingOrder, setPendingOrder] = useState<Order | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("online");
+
+  // Coupon / referral. `applied` is the code the shopper is carrying (typed, or
+  // remembered from a ?ref= link); `evaluation` is what the database says it
+  // is worth right now against this cart.
+  const [couponInput, setCouponInput] = useState("");
+  const [applied, setApplied] = useState<AppliedCoupon | null>(null);
+  const [evaluation, setEvaluation] = useState<CouponEvaluation | null>(null);
+  const [couponBusy, setCouponBusy] = useState(false);
+
+  useEffect(() => {
+    const stored = readAppliedCoupon();
+    if (stored) setApplied(stored);
+  }, []);
+
+  useEffect(() => {
+    if (!applied) {
+      setEvaluation(null);
+      return;
+    }
+    let cancelled = false;
+    evaluateCoupon(applied.code, cartTotal)
+      .then((r) => { if (!cancelled) setEvaluation(r); })
+      .catch(() => { if (!cancelled) setEvaluation(null); });
+    return () => { cancelled = true; };
+  }, [applied, cartTotal]);
+
+  const applyCoupon = async () => {
+    const code = normaliseCode(couponInput);
+    if (!code) return;
+    setCouponBusy(true);
+    try {
+      const r = await evaluateCoupon(code, cartTotal);
+      setEvaluation(r);
+      if (r.valid || r.message?.startsWith("Add")) {
+        const next: AppliedCoupon = { code, source: "code" };
+        setApplied(next);
+        saveAppliedCoupon(next);
+        setCouponInput("");
+      } else {
+        setApplied(null);
+      }
+    } catch {
+      setEvaluation({ valid: false, code, owner_name: null, kind: null, value: null, discount: 0, message: "Could not check that code. Try again." });
+    } finally {
+      setCouponBusy(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setApplied(null);
+    setEvaluation(null);
+    clearAppliedCoupon();
+  };
 
   // Address fields (split)
   const [name, setName] = useState("");
@@ -104,8 +159,11 @@ export default function CheckoutPage() {
   const shippingCost = shippingInfo?.available
     ? (tierRate ?? (isCod ? shippingInfo.cod_cheapest_rate : shippingInfo.cheapest_rate))
     : 0;
-  const codCharges = isCod ? Math.round((cartTotal + shippingCost) * 0.016) : 0;
-  const orderTotal = cartTotal + shippingCost + codCharges;
+  const discount = evaluation?.valid ? Number(evaluation.discount) : 0;
+  const discountedSubtotal = Math.max(0, cartTotal - discount);
+  const codCharges = isCod ? Math.round((discountedSubtotal + shippingCost) * 0.016) : 0;
+  const orderTotal = discountedSubtotal + shippingCost + codCharges;
+  const activeCoupon: AppliedCoupon | null = evaluation?.valid && applied ? applied : null;
 
   // COD availability: pincode must support COD and cart total must be ≥ ₹1000
   const COD_MINIMUM = 1000;
@@ -260,9 +318,10 @@ export default function CheckoutPage() {
     trackInitiateCheckout(items.map((i) => ({ id: i.id, price: i.price, quantity: i.quantity })), orderTotal);
 
     try {
-      const order = await createOrder(formData, items, cartTotal, shippingCost, "cod");
+      const order = await createOrder(formData, items, cartTotal, shippingCost, "cod", activeCoupon);
 
       clearCart();
+      clearAppliedCoupon();
       router.push(`/order-success?order=${order.order_number}&paid=false&total=${order.total}`);
     } catch (err) {
       console.error("COD order error:", err);
@@ -323,7 +382,7 @@ export default function CheckoutPage() {
     trackInitiateCheckout(items.map((i) => ({ id: i.id, price: i.price, quantity: i.quantity })), orderTotal);
 
     try {
-      const order = pendingOrder || await createOrder(formData, items, cartTotal, shippingCost, "online");
+      const order = pendingOrder || await createOrder(formData, items, cartTotal, shippingCost, "online", activeCoupon);
       if (!pendingOrder) setPendingOrder(order);
 
       await initiatePayment(order);
@@ -633,11 +692,60 @@ export default function CheckoutPage() {
                   ))}
                 </div>
 
+                {/* Coupon / referral */}
+                <div className="border-t border-cream/30 pt-4 mb-4">
+                  {activeCoupon && evaluation ? (
+                    <div className="flex items-start gap-2 rounded-lg bg-green-50 border border-green-200 px-3 py-2.5">
+                      <BadgePercent className="w-4 h-4 text-green-600 flex-shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0 text-sm">
+                        <p className="font-medium text-green-800">
+                          {evaluation.kind === "percent" ? `${Number(evaluation.value)}% off` : `${formatRupees(Number(evaluation.value))} off`}
+                          {evaluation.owner_name ? ` via ${evaluation.owner_name}` : ""}
+                        </p>
+                        <p className="text-xs text-green-700">
+                          Code <span className="font-mono">{evaluation.code}</span>
+                          {applied?.source === "link" ? " from your referral link" : ""}
+                        </p>
+                      </div>
+                      <button type="button" onClick={removeCoupon} className="text-green-700/60 hover:text-red-500" aria-label="Remove coupon">
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={couponInput}
+                          onChange={(e) => setCouponInput(e.target.value.toUpperCase())}
+                          onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); applyCoupon(); } }}
+                          placeholder="Coupon or influencer code"
+                          className="flex-1 min-w-0 px-3 py-2 rounded-lg border border-cream/60 text-sm font-mono uppercase focus:ring-2 focus:ring-coral focus:border-transparent"
+                        />
+                        <Button type="button" variant="outline" size="sm" onClick={applyCoupon} disabled={couponBusy || !couponInput.trim()}>
+                          {couponBusy ? <Loader2 className="w-4 h-4 animate-spin" /> : "Apply"}
+                        </Button>
+                      </div>
+                      {evaluation && !evaluation.valid && evaluation.message && (
+                        <p className="text-xs text-red-600 mt-1.5">{evaluation.message}</p>
+                      )}
+                    </div>
+                  )}
+                </div>
+
                 <div className="border-t border-cream/30 pt-4 space-y-2 mb-6">
                   <div className="flex justify-between text-sm text-text-muted">
                     <span>Subtotal</span>
                     <span>{formatRupees(cartTotal)}</span>
                   </div>
+                  {discount > 0 && (
+                    <div className="flex justify-between text-sm text-green-700">
+                      <span className="flex items-center gap-1">
+                        <BadgePercent className="w-3.5 h-3.5" /> Discount{evaluation?.owner_name ? ` (${evaluation.owner_name})` : ""}
+                      </span>
+                      <span>-{formatRupees(discount)}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between text-sm text-text-muted">
                     <span className="flex items-center gap-1">
                       <Truck className="w-3.5 h-3.5" /> Shipping

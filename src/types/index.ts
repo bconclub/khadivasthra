@@ -14,6 +14,7 @@ export const ADMIN_SECTIONS = [
   'looks',
   'wholesale',
   'combos',
+  'offers',
 ] as const;
 
 export type AdminSection = (typeof ADMIN_SECTIONS)[number];
@@ -196,6 +197,11 @@ export interface Order {
   tracking_url: string | null;
   charged_weight: number | null;
   shipping_metadata: Record<string, unknown>;
+  // Coupon / influencer attribution. Enforced by a DB trigger on insert.
+  coupon_code: string | null;
+  discount: number;
+  referrer_name: string | null;
+  referral_source: 'code' | 'link' | null;
   created_at: string;
   updated_at: string;
 }
@@ -582,3 +588,47 @@ export type ComboFormData = Omit<
   Combo,
   'id' | 'created_at' | 'updated_at' | 'products' | 'product_count'
 >;
+
+// Coupons / influencer referrals ---------------------------------------------
+
+export type CouponKind = 'percent' | 'flat';
+export type CouponSource = 'influencer' | 'campaign' | 'partner' | 'other';
+
+export interface Coupon {
+  id: string;
+  code: string;
+  owner_name: string;
+  owner_handle: string | null;
+  source: CouponSource;
+  kind: CouponKind;
+  value: number;
+  min_subtotal: number;
+  max_discount: number | null;
+  starts_at: string | null;
+  ends_at: string | null;
+  usage_limit: number | null;
+  used_count: number;
+  is_active: boolean;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export type CouponFormData = Omit<Coupon, 'id' | 'used_count' | 'created_at' | 'updated_at'>;
+
+/** What evaluate_coupon() says about a code against a subtotal. */
+export interface CouponEvaluation {
+  valid: boolean;
+  code: string | null;
+  owner_name: string | null;
+  kind: CouponKind | null;
+  value: number | null;
+  discount: number;
+  message: string | null;
+}
+
+/** The coupon the shopper is carrying into checkout, and how they got it. */
+export interface AppliedCoupon {
+  code: string;
+  source: 'code' | 'link';
+}

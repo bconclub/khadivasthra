@@ -7,6 +7,7 @@ import { CartDrawer } from "./CartDrawer";
 import { BottomBar } from "./BottomBar";
 import { SearchOverlay } from "./SearchOverlay";
 import { ScrollToTop } from "@/components/ScrollToTop";
+import { ReferralCapture } from "@/components/ReferralCapture";
 import { useSearch } from "@/context/SearchContext";
 
 export function LayoutWrapper({ children }: { children: React.ReactNode }) {
@@ -29,6 +30,7 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
   return (
     <>
       <ScrollToTop />
+      <ReferralCapture />
       <Header />
       {/* Shop/product pages sit under a fixed header (h-16 mobile, h-20 desktop),
           so they need matching top padding or the content slides underneath. */}

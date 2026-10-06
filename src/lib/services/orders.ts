@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import type { Order, OrderItem, CheckoutFormData, CartItem, ServiceabilityResult, TrackingResult, PaymentMethod } from '@/types';
+import type { Order, OrderItem, CheckoutFormData, CartItem, ServiceabilityResult, TrackingResult, PaymentMethod, AppliedCoupon } from '@/types';
 
 function generateOrderNumber(): string {
   const date = new Date();
@@ -65,7 +65,8 @@ export async function createOrder(
   cartItems: CartItem[],
   subtotal: number,
   shippingCost: number = 0,
-  paymentMethod: PaymentMethod = 'online'
+  paymentMethod: PaymentMethod = 'online',
+  coupon: AppliedCoupon | null = null
 ): Promise<Order> {
   // COD is only allowed at/above the minimum — enforce here too so the rule
   // can't be bypassed if the client guard is skipped.
@@ -121,6 +122,12 @@ export async function createOrder(
     payment_status: isCod ? 'cod' as const : 'pending' as const,
     payment_method: paymentMethod,
     notes: null,
+    // The trigger validates the code, sets discount, recomputes cod_charges and
+    // total, and records who referred the sale. Only the code is trusted from
+    // here, and only as a claim.
+    // Only written when a code is in play, so checkout keeps working on a
+    // database where the coupons migration has not been run yet.
+    ...(coupon ? { coupon_code: coupon.code, referral_source: coupon.source } : {}),
   };
 
   const { data, error } = await supabase

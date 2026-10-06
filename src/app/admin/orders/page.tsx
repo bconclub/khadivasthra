@@ -56,7 +56,7 @@ function ordersToCsvBlob(orders: Order[]): Blob {
   const headers = [
     "Order Number", "Date", "Customer Name", "Phone", "Email",
     "Address", "City", "State", "Pincode",
-    "Items", "Subtotal", "Shipping", "COD Charges", "Total",
+    "Items", "Subtotal", "Coupon", "Referrer", "Discount", "Shipping", "COD Charges", "Total",
     "Status", "Payment Status", "Payment Method",
     "Invoice Number", "Tracking ID", "Article Number", "AWB", "Settlement Status", "Amount Received", "Settlement Date",
     "Razorpay Order ID", "Razorpay Payment ID", "Notes",
@@ -66,7 +66,7 @@ function ordersToCsvBlob(orders: Order[]): Blob {
     o.customer_name, o.customer_phone, o.customer_email || "",
     o.customer_address, o.customer_city, o.customer_state, o.customer_pincode,
     (o.items || []).map(itemSummaryWithCombo).join("; "),
-    Number(o.subtotal), Number(o.shipping), Number(o.cod_charges || 0), Number(o.total),
+    Number(o.subtotal), o.coupon_code || "", o.referrer_name || "", Number(o.discount || 0), Number(o.shipping), Number(o.cod_charges || 0), Number(o.total),
     o.status, o.payment_status, o.payment_method,
     o.invoice_number || o.order_number, o.awb_code || o.article_number || "", o.article_number || "", o.awb_code || "", o.settlement_status || "",
     o.amount_received != null ? Number(o.amount_received) : "",
@@ -2046,6 +2046,11 @@ export default function AdminOrdersPage() {
                   {/* Amount + badges (right side — guaranteed slot via grid auto column) */}
                   <div className="flex items-center gap-1.5">
                     <span className="text-sm font-semibold text-gray-900 dark:text-white whitespace-nowrap">₹{Number(order.total).toLocaleString()}</span>
+                    {order.coupon_code && (
+                      <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap bg-purple-50 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300" title={`Coupon ${order.coupon_code}${order.referrer_name ? ` via ${order.referrer_name}` : ""}`}>
+                        {order.referrer_name || order.coupon_code} -₹{Number(order.discount || 0).toLocaleString()}
+                      </span>
+                    )}
                     <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium whitespace-nowrap bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" title="Shipping charges">
                       Ship ₹{Number(order.shipping || 0).toLocaleString()}
                     </span>
@@ -2104,6 +2109,13 @@ export default function AdminOrdersPage() {
                           )}
                           <p><span className="text-gray-500 dark:text-gray-400">Address:</span> {order.customer_address}</p>
                           <p><span className="text-gray-500 dark:text-gray-400">City:</span> {order.customer_city}, {order.customer_state} - {order.customer_pincode}</p>
+                          {order.coupon_code && (
+                            <p className="pt-1">
+                              <span className="text-gray-500 dark:text-gray-400">Came via:</span>{" "}
+                              <span className="font-medium text-purple-700 dark:text-purple-300">{order.referrer_name || order.coupon_code}</span>
+                              <span className="text-gray-400"> · code {order.coupon_code} · {order.referral_source === "link" ? "referral link" : "typed at checkout"} · saved ₹{Number(order.discount || 0).toLocaleString()}</span>
+                            </p>
+                          )}
                           {order.notes && (
                             <p><span className="text-gray-500 dark:text-gray-400">Remark:</span> {order.notes}</p>
                           )}
