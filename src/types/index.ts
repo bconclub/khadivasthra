@@ -154,6 +154,8 @@ export interface OrderItem {
 export type OrderStatus = 'pending' | 'confirmed' | 'billed' | 'shipped' | 'delivered' | 'cancelled';
 export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'cod';
 export type PaymentMethod = 'online' | 'cod';
+/** Which gateway takes online payments; switched in Admin → Settings. */
+export type PaymentGateway = 'razorpay' | 'easebuzz';
 
 export interface Order {
   id: string;
@@ -174,6 +176,10 @@ export interface Order {
   razorpay_order_id: string | null;
   razorpay_payment_id: string | null;
   razorpay_signature: string | null;
+  /** NULL on Razorpay and COD orders placed before Easebuzz was added. */
+  payment_gateway?: PaymentGateway | null;
+  gateway_txn_id?: string | null;
+  gateway_payment_id?: string | null;
   payment_status: PaymentStatus;
   payment_method: PaymentMethod;
   article_number: string | null;
@@ -253,6 +259,8 @@ export interface SiteSettings {
   return_policy: string | null;
   announcement_text: string | null;
   cod_enabled: boolean;
+  /** Missing until the payment-gateway migration runs; treat as Razorpay. */
+  payment_gateway?: PaymentGateway;
   is_store_open: boolean;
   shipping_tiers: ShippingTier[] | null;
   /** Master switch for the Shop the Look section and its pages. */

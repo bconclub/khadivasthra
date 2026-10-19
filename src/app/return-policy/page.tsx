@@ -1,7 +1,72 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { getSettings } from "@/lib/services/settings";
+
+type Block =
+  | { type: "heading"; text: string }
+  | { type: "note"; text: string }
+  | { type: "list"; items: string[] };
+
+// Admin edits these policies as plain text, one point per line. Short lines
+// without closing punctuation are section headings, lines ending in ":" are
+// notes, and everything else is grouped into bullet lists.
+function parsePolicy(text: string): Block[] {
+  const blocks: Block[] = [];
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line) continue;
+    if (line.endsWith(":")) {
+      blocks.push({ type: "note", text: line });
+    } else if (line.length <= 60 && !/[.!?]$/.test(line)) {
+      blocks.push({ type: "heading", text: line });
+    } else {
+      const last = blocks[blocks.length - 1];
+      if (last?.type === "list") last.items.push(line);
+      else blocks.push({ type: "list", items: [line] });
+    }
+  }
+  return blocks;
+}
+
+function PolicySection({ id, text }: { id: string; text: string }) {
+  return (
+    <section id={id} className="space-y-3 scroll-mt-24">
+      {parsePolicy(text).map((block, i) => {
+        if (block.type === "heading") {
+          return (
+            <h2 key={i} className="text-xl font-semibold text-gray-900 pt-4 first:pt-0">
+              {block.text}
+            </h2>
+          );
+        }
+        if (block.type === "note") {
+          return <p key={i} className="font-semibold text-gray-900">{block.text}</p>;
+        }
+        return (
+          <ul key={i} className="list-disc pl-5 space-y-2">
+            {block.items.map((item, j) => <li key={j}>{item}</li>)}
+          </ul>
+        );
+      })}
+    </section>
+  );
+}
 
 export default function TermsPage() {
+  const [policies, setPolicies] = useState<{ shipping: string; returns: string } | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  useEffect(() => {
+    getSettings()
+      .then((s) => setPolicies({ shipping: s?.shipping_info?.trim() || "", returns: s?.return_policy?.trim() || "" }))
+      .catch(() => setFailed(true));
+  }, []);
+
+  const empty = policies && !policies.shipping && !policies.returns;
+
   return (
     <div className="min-h-screen bg-white">
       <div className="container mx-auto px-4 max-w-3xl py-12">
@@ -17,78 +82,21 @@ export default function TermsPage() {
           conditions regarding purchases, delivery, returns, and refunds.
         </p>
 
-        <div className="space-y-8 text-gray-700 leading-relaxed">
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">1. Order Confirmation</h2>
-            <p>
-              Once an order is placed, customers will receive an order confirmation message or email.
-              Orders will be processed based on product availability.
-            </p>
-          </section>
+        <div className="space-y-10 text-gray-700 leading-relaxed">
+          {!policies && !failed && (
+            <div className="space-y-3 animate-pulse">
+              <div className="h-6 bg-gray-100 rounded w-1/3" />
+              <div className="h-4 bg-gray-100 rounded" />
+              <div className="h-4 bg-gray-100 rounded w-5/6" />
+            </div>
+          )}
 
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">2. Shipping & Delivery</h2>
-            <p>
-              Khadi Vasthra ships products through trusted courier partners. Delivery timelines may
-              vary depending on the destination and courier service.
-            </p>
-          </section>
+          {(failed || empty) && (
+            <p>Our policies could not be loaded right now. Please contact us for details.</p>
+          )}
 
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">3. Returns for Damaged Products</h2>
-            <p className="mb-3">
-              We accept returns only if the product is damaged during transit. To claim a return,
-              customers must follow these conditions:
-            </p>
-            <ul className="list-disc pl-5 space-y-2">
-              <li>Customers must record a <strong>clear opening/unboxing video</strong> while opening the parcel.</li>
-              <li>If any damage or defect is found, customers must capture <strong>clear photos or videos</strong> showing the defect.</li>
-              <li>The opening video and defect proof must be shared <strong>within 1 hour</strong> of receiving the parcel.</li>
-              <li>Claims without a valid opening video or submitted after 1 hour of delivery will <strong>not be accepted</strong>.</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">4. Verification Process</h2>
-            <p>
-              After receiving the proof, our team will review the submitted images or videos. If the claim
-              is approved, Khadi Vasthra will proceed with a replacement or refund process.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">5. Replacement Timeline</h2>
-            <p>
-              Approved replacement requests will be processed, and the replacement product will be shipped
-              within <strong>7 working days</strong>.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">6. Refund Policy</h2>
-            <p>
-              If a refund is approved instead of a replacement, the refund amount will be processed
-              within <strong>7 working days</strong> to the original payment method.
-            </p>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">7. Non-Returnable Conditions</h2>
-            <p className="mb-3">Returns or replacements will not be accepted if:</p>
-            <ul className="list-disc pl-5 space-y-2">
-              <li>No opening/unboxing video is provided.</li>
-              <li>The complaint is reported after 1 hour of delivery.</li>
-              <li>The product damage appears to have occurred after delivery.</li>
-            </ul>
-          </section>
-
-          <section>
-            <h2 className="text-xl font-semibold text-gray-900 mb-3">8. Policy Updates</h2>
-            <p>
-              Khadi Vasthra reserves the right to update or modify these terms and conditions at any time
-              without prior notice.
-            </p>
-          </section>
+          {policies?.shipping && <PolicySection id="shipping" text={policies.shipping} />}
+          {policies?.returns && <PolicySection id="returns" text={policies.returns} />}
 
           <section className="border-t border-gray-200 pt-6">
             <p className="text-sm text-gray-500">

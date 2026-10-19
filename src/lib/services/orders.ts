@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import type { Order, OrderItem, CheckoutFormData, CartItem, ServiceabilityResult, TrackingResult, PaymentMethod, AppliedCoupon } from '@/types';
+import type { Order, OrderItem, CheckoutFormData, CartItem, ServiceabilityResult, TrackingResult, PaymentMethod, PaymentGateway, AppliedCoupon } from '@/types';
 
 function generateOrderNumber(): string {
   const date = new Date();
@@ -256,6 +256,13 @@ export async function verifyRazorpayPayment(
   });
 }
 
+/** Starts an Easebuzz hosted-checkout payment; the shopper is sent to `checkout_url`. */
+export async function initiateEasebuzzPayment(
+  orderId: string
+): Promise<{ checkout_url: string; txnid: string }> {
+  return invokeEdgeFunction('easebuzz-initiate', { order_id: orderId });
+}
+
 export async function trackShipment(
   orderNumber: string
 ): Promise<TrackingResult> {
@@ -278,7 +285,10 @@ export async function checkShippingServiceability(
 }
 
 export async function checkPaymentStatus(
-  orderId: string
-): Promise<{ payment_status: string; reconciled: boolean; message: string; razorpay_payment_id?: string }> {
-  return invokeEdgeFunction('check-payment-status', { order_id: orderId });
+  orderId: string,
+  gateway: PaymentGateway | null = null
+): Promise<{ payment_status: string; reconciled: boolean; message: string; razorpay_payment_id?: string; gateway_payment_id?: string }> {
+  // Orders without a gateway recorded predate Easebuzz and are Razorpay's.
+  const fn = gateway === 'easebuzz' ? 'easebuzz-check-status' : 'check-payment-status';
+  return invokeEdgeFunction(fn, { order_id: orderId });
 }

@@ -114,7 +114,7 @@ function CheckPendingModal({ orders, onClose, onComplete }: { orders: Order[]; o
     let confirmed = 0, errors = 0;
     for (let i = 0; i < matching.length; i++) {
       try {
-        const r = await checkPaymentStatus(matching[i].id);
+        const r = await checkPaymentStatus(matching[i].id, matching[i].payment_gateway);
         if (r.reconciled) confirmed++;
       } catch { errors++; }
       setProgress({ done: i + 1, total: matching.length });
@@ -1683,7 +1683,8 @@ export default function AdminOrdersPage() {
   const handleCheckPayment = async (orderId: string) => {
     setCheckingPayment(orderId);
     try {
-      const result = await checkPaymentStatus(orderId);
+      const gateway = orders?.find((o) => o.id === orderId)?.payment_gateway ?? null;
+      const result = await checkPaymentStatus(orderId, gateway);
       if (result.reconciled) {
         toast.success(`Payment confirmed! ${result.message}`);
         refetch();
@@ -2140,6 +2141,12 @@ export default function AdminOrdersPage() {
                           )}
                           {order.razorpay_payment_id && (
                             <p><span className="text-gray-500 dark:text-gray-400">Payment ID:</span> {order.razorpay_payment_id}</p>
+                          )}
+                          {order.payment_gateway === "easebuzz" && order.gateway_txn_id && (
+                            <p><span className="text-gray-500 dark:text-gray-400">Easebuzz Txn:</span> {order.gateway_txn_id}</p>
+                          )}
+                          {order.payment_gateway === "easebuzz" && order.gateway_payment_id && (
+                            <p><span className="text-gray-500 dark:text-gray-400">Easepay ID:</span> {order.gateway_payment_id}</p>
                           )}
                         </div>
                         {order.payment_status === "pending" && (

@@ -5,14 +5,14 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { useRazorpay } from "@/hooks/useRazorpay";
 import { Button } from "@/components/ui/button";
-import { createOrder, createRazorpayOrder, verifyRazorpayPayment, checkShippingServiceability } from "@/lib/services/orders";
+import { createOrder, createRazorpayOrder, verifyRazorpayPayment, initiateEasebuzzPayment, checkShippingServiceability } from "@/lib/services/orders";
 import { getSettings } from "@/lib/services/settings";
 import { evaluateCoupon } from "@/lib/services/coupons";
 import { clearAppliedCoupon, normaliseCode, readAppliedCoupon, saveAppliedCoupon } from "@/lib/referral";
 import { CheckoutMusic } from "@/components/CheckoutMusic";
 import Link from "next/link";
 import { ChevronLeft, Loader2, ShoppingBag, CheckCircle2, XCircle, Truck, CreditCard, Banknote, BadgePercent, X } from "lucide-react";
-import type { CheckoutFormData, Order, ServiceabilityResult, PaymentMethod, ShippingTier, AppliedCoupon, CouponEvaluation } from "@/types";
+import type { CheckoutFormData, Order, ServiceabilityResult, PaymentMethod, PaymentGateway, ShippingTier, AppliedCoupon, CouponEvaluation } from "@/types";
 import { trackInitiateCheckout } from "@/lib/fbq";
 
 type PaymentStep = "form" | "creating" | "paying";
@@ -134,19 +134,30 @@ export default function CheckoutPage() {
   const pincodeDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [codEnabledGlobal, setCodEnabledGlobal] = useState(true);
   const [shippingTiers, setShippingTiers] = useState<ShippingTier[] | null>(null);
+  const [gateway, setGateway] = useState<PaymentGateway>("razorpay");
 
-  // Fetch COD setting + shipping tiers
+  // Fetch COD setting + shipping tiers + which gateway takes online payments
   useEffect(() => {
     getSettings().then((s) => {
       if (s) {
         setCodEnabledGlobal(s.cod_enabled ?? true);
         setShippingTiers(s.shipping_tiers || null);
+        setGateway(s.payment_gateway === "easebuzz" ? "easebuzz" : "razorpay");
       }
     });
   }, []);
 
+  // Easebuzz sends a failed or cancelled payment back here.
+  useEffect(() => {
+    const result = new URLSearchParams(window.location.search).get("payment");
+    if (result === "failed") setError("Payment was not completed. You can try again below.");
+    else if (result === "error") setError("We could not confirm your payment. If money was debited, please contact support with your order number.");
+  }, []);
+
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const isCod = paymentMethod === "cod";
+  // Easebuzz will not start a payment without an email address.
+  const emailRequired = !isCod && gateway === "easebuzz";
   // Customer pays a flat tier rate by item count (brand absorbs the
   // difference vs the real courier bill). The Shiprocket quote is only used
   // for availability/ETA/COD — and as a fallback if tiers aren't configured.
@@ -259,6 +270,16 @@ export default function CheckoutPage() {
   };
 
   const initiatePayment = async (order: Order) => {
+    if (gateway === "easebuzz") {
+      // Hosted checkout: Easebuzz takes over the page and posts the result to
+      // the easebuzz-callback function, which sends the shopper on to
+      // /order-success (cart is cleared there) or back here on failure.
+      const { checkout_url } = await initiateEasebuzzPayment(order.id);
+      setPaymentStep("paying");
+      window.location.assign(checkout_url);
+      return;
+    }
+
     const razorpayOrder = await createRazorpayOrder(order.id, order.total);
 
     setPaymentStep("paying");
@@ -371,7 +392,12 @@ export default function CheckoutPage() {
     }
 
     // Online payment flow
-    if (!razorpayLoaded) {
+    if (emailRequired && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError("Please enter a valid email address for online payment.");
+      return;
+    }
+
+    if (gateway === "razorpay" && !razorpayLoaded) {
       setError("Payment system is loading. Please wait a moment and try again.");
       return;
     }
@@ -602,7 +628,10 @@ export default function CheckoutPage() {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-text mb-1">
-                      Email <span className="text-text-muted font-normal">(optional)</span>
+                      Email{" "}
+                      <span className="text-text-muted font-normal">
+                        {emailRequired ? "(required for online payment)" : "(optional)"}
+                      </span>
                     </label>
                     <input
                       type="email"
@@ -820,7 +849,7 @@ export default function CheckoutPage() {
                 )}
 
                 <p className="text-xs text-text-muted text-center mt-3">
-                  {isCod ? "Pay cash when your order is delivered." : "Secure payment powered by Razorpay."}{" "}
+                  {isCod ? "Pay cash when your order is delivered." : `Secure payment powered by ${gateway === "easebuzz" ? "Easebuzz" : "Razorpay"}.`}{" "}
                   Having trouble?{" "}
                   <a
                     href="https://wa.me/918714090510"

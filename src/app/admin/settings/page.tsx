@@ -8,7 +8,7 @@ import { getShipwaySetupStatus, type ShipwaySetupStatus } from "@/lib/services/s
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, CircleAlert, Loader2, RefreshCw, Save } from "lucide-react";
 import toast from "react-hot-toast";
-import type { SiteSettings, ShippingTier } from "@/types";
+import type { SiteSettings, ShippingTier, PaymentGateway } from "@/types";
 
 const DEFAULT_TIERS: ShippingTier[] = [
   { max_items: 1, rate: 89 },
@@ -34,6 +34,8 @@ export default function AdminSettingsPage() {
   const [returnPolicy, setReturnPolicy] = useState("");
   const [announcement, setAnnouncement] = useState("");
   const [codEnabled, setCodEnabled] = useState(true);
+  const [gateway, setGateway] = useState<PaymentGateway>("razorpay");
+  const [savingGateway, setSavingGateway] = useState(false);
   const [looksEnabled, setLooksEnabled] = useState(false);
   const [savingLooks, setSavingLooks] = useState(false);
   const [wholesaleEnabled, setWholesaleEnabled] = useState(false);
@@ -66,6 +68,7 @@ export default function AdminSettingsPage() {
       setReturnPolicy(settings.return_policy || "");
       setAnnouncement(settings.announcement_text || "");
       setCodEnabled(settings.cod_enabled ?? true);
+      setGateway(settings.payment_gateway === "easebuzz" ? "easebuzz" : "razorpay");
       setLooksEnabled(settings.looks_enabled ?? false);
       setWholesaleEnabled(settings.wholesale_enabled ?? false);
       setCombosEnabled(settings.combos_enabled ?? false);
@@ -89,6 +92,26 @@ export default function AdminSettingsPage() {
       toast.error(err instanceof Error ? err.message : "Could not update Shop the Look");
     } finally {
       setSavingLooks(false);
+    }
+  };
+
+  // Only one gateway takes online payments at a time. Saved on its own (not
+  // with the form) because it changes live checkout the moment it lands.
+  const switchGateway = async (next: PaymentGateway) => {
+    if (next === gateway || savingGateway) return;
+    const label = next === "easebuzz" ? "Easebuzz (Federal Bank)" : "Razorpay";
+    if (!window.confirm(`Switch online payments to ${label}? Customers checking out from now on will pay through ${label}.`)) return;
+    const prev = gateway;
+    setGateway(next);
+    setSavingGateway(true);
+    try {
+      await updateSettings({ payment_gateway: next } as Partial<SiteSettings>);
+      toast.success(`Online payments now go through ${label}`);
+    } catch (err) {
+      setGateway(prev);
+      toast.error(err instanceof Error ? err.message : "Could not switch payment gateway");
+    } finally {
+      setSavingGateway(false);
     }
   };
 
@@ -171,6 +194,39 @@ export default function AdminSettingsPage() {
           {/* Payment Options */}
           <div className={cardClass}>
             <h2 className={cardTitleClass}>Payment Options</h2>
+            <div>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Online payment gateway</p>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">Only one is live at a time. Switching applies immediately to new checkouts.</p>
+              <div role="radiogroup" className="mt-3 grid grid-cols-2 gap-2">
+                {([
+                  { key: "razorpay", name: "Razorpay", note: "Current" },
+                  { key: "easebuzz", name: "Easebuzz", note: "Federal Bank" },
+                ] as const).map((g) => {
+                  const active = gateway === g.key;
+                  return (
+                    <button
+                      key={g.key}
+                      type="button"
+                      role="radio"
+                      aria-checked={active}
+                      disabled={savingGateway}
+                      onClick={() => switchGateway(g.key)}
+                      className={`flex items-center justify-between rounded-lg border px-3 py-2 text-left transition-colors disabled:opacity-60 ${
+                        active
+                          ? "border-coral bg-coral/5 ring-1 ring-coral"
+                          : "border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600"
+                      }`}
+                    >
+                      <span>
+                        <span className="block text-sm font-medium text-gray-900 dark:text-white">{g.name}</span>
+                        <span className="block text-xs text-gray-400 dark:text-gray-500">{g.note}</span>
+                      </span>
+                      {active && (savingGateway ? <Loader2 className="w-4 h-4 animate-spin text-coral" /> : <CheckCircle2 className="w-4 h-4 text-coral" />)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Cash on Delivery (COD)</p>
@@ -432,13 +488,16 @@ export default function AdminSettingsPage() {
           {/* Policies */}
           <div className={cardClass}>
             <h2 className={cardTitleClass}>Policies & Info</h2>
+            <p className="text-xs text-gray-400 dark:text-gray-500 -mt-2">
+              Shown on the Terms &amp; Conditions page (/return-policy). One point per line; short lines without a full stop become headings.
+            </p>
             <div>
               <label className={labelClass}>Shipping Information</label>
-              <textarea rows={3} value={shippingInfo} onChange={(e) => setShippingInfo(e.target.value)} className={`${inputClass} resize-none`} />
+              <textarea rows={8} value={shippingInfo} onChange={(e) => setShippingInfo(e.target.value)} className={`${inputClass} resize-y`} />
             </div>
             <div>
               <label className={labelClass}>Return Policy</label>
-              <textarea rows={3} value={returnPolicy} onChange={(e) => setReturnPolicy(e.target.value)} className={`${inputClass} resize-none`} />
+              <textarea rows={8} value={returnPolicy} onChange={(e) => setReturnPolicy(e.target.value)} className={`${inputClass} resize-y`} />
             </div>
           </div>
 

@@ -3,3 +3,11 @@ verify_jwt = false
 
 [functions.proxe-catalog]
 verify_jwt = false
+
+# Easebuzz posts to these directly (no Supabase JWT); both verify the
+# Easebuzz response hash instead.
+[functions.easebuzz-callback]
+verify_jwt = false
+
+[functions.easebuzz-webhook]
+verify_jwt = false

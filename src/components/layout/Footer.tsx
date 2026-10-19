@@ -55,10 +55,13 @@ export function Footer() {
                         <h4 className="footer__section-title text-lg font-semibold mb-4 text-white font-serif">Customer Service</h4>
                         <ul className="footer__links space-y-2 text-sm text-white/80">
                             <li className="footer__link-item">
-                                <Link href="/contact" className="footer__link hover:text-white transition-colors">Shipping Info</Link>
+                                <Link href="/return-policy#shipping" className="footer__link hover:text-white transition-colors">Shipping Info</Link>
                             </li>
                             <li className="footer__link-item">
-                                <Link href="/contact" className="footer__link hover:text-white transition-colors">Returns</Link>
+                                <Link href="/return-policy#returns" className="footer__link hover:text-white transition-colors">Returns</Link>
+                            </li>
+                            <li className="footer__link-item">
+                                <Link href="/return-policy" className="footer__link hover:text-white transition-colors">Terms & Conditions</Link>
                             </li>
                             <li className="footer__link-item">
                                 <Link href="/contact" className="footer__link hover:text-white transition-colors">FAQ</Link>
