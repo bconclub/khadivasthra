@@ -13,6 +13,7 @@ import { SiteBanner } from "@/components/SiteBanner";
 import { storageImage, IMG } from "@/lib/image";
 import { LookCard } from "@/components/shop/LookBrowser";
 import { ComboCard } from "@/app/combos/CombosIndexClient";
+import { DiwaliExclusive } from "@/components/home/DiwaliExclusive";
 import type { Banner, Category, Combo, Look, ProductWithCategory } from "@/types";
 import { ArrowRight, ChevronLeft, ChevronRight, Loader2, ImageOff } from "lucide-react";
 import { useState, useCallback, useEffect } from "react";
@@ -56,6 +57,7 @@ export default function HomeClient({
   const { data: siteSettings } = useSupabaseQuery(getSettings);
   const showLooks =
     siteSettings?.looks_enabled === true;
+  const showFestive = siteSettings?.festive_enabled === true;
   const showCombos =
     siteSettings != null ? siteSettings.combos_enabled === true : initialFeaturedCombos.length > 0;
   // Admin-managed hero cover (separate mobile/desktop images); falls back to
@@ -259,6 +261,11 @@ export default function HomeClient({
           <SiteBanner placement="homepage_hero" />
         </div>
       </section>
+
+      {/* 1.6. FESTIVE (DIWALI) SECTION — switched on in Admin → Settings */}
+      {showFestive && allProducts && (
+        <DiwaliExclusive products={allProducts} categories={categories || []} />
+      )}
 
       {/* 2. DYNAMIC BANNERS (admin-managed; nothing renders when none are set) */}
       {activeBanners && activeBanners.length > 0 && (

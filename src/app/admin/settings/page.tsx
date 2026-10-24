@@ -38,6 +38,8 @@ export default function AdminSettingsPage() {
   const [gateway, setGateway] = useState<PaymentGateway>("razorpay");
   const [savingGateway, setSavingGateway] = useState(false);
   const [looksEnabled, setLooksEnabled] = useState(false);
+  const [festiveEnabled, setFestiveEnabled] = useState(false);
+  const [savingFestive, setSavingFestive] = useState(false);
   const [savingLooks, setSavingLooks] = useState(false);
   const [wholesaleEnabled, setWholesaleEnabled] = useState(false);
   const [savingWholesale, setSavingWholesale] = useState(false);
@@ -72,6 +74,7 @@ export default function AdminSettingsPage() {
       setCodEnabled(settings.cod_enabled ?? true);
       setGateway(settings.payment_gateway === "easebuzz" ? "easebuzz" : "razorpay");
       setLooksEnabled(settings.looks_enabled ?? false);
+      setFestiveEnabled(settings.festive_enabled ?? false);
       setWholesaleEnabled(settings.wholesale_enabled ?? false);
       setCombosEnabled(settings.combos_enabled ?? false);
       if (settings.shipping_tiers && settings.shipping_tiers.length > 0) {
@@ -114,6 +117,24 @@ export default function AdminSettingsPage() {
       toast.error(err instanceof Error ? err.message : "Could not switch payment gateway");
     } finally {
       setSavingGateway(false);
+    }
+  };
+
+  // Column arrives with a migration; until then the switch is disabled.
+  const hasFestiveColumn = !!settings && "festive_enabled" in settings;
+
+  const toggleFestive = async () => {
+    const next = !festiveEnabled;
+    setFestiveEnabled(next);
+    setSavingFestive(true);
+    try {
+      await updateSettings({ festive_enabled: next } as Partial<SiteSettings>);
+      toast.success(next ? "Diwali section is on" : "Diwali section is off");
+    } catch (err) {
+      setFestiveEnabled(!next);
+      toast.error(err instanceof Error ? err.message : "Could not update the Diwali section");
+    } finally {
+      setSavingFestive(false);
     }
   };
 
@@ -250,6 +271,43 @@ export default function AdminSettingsPage() {
                 <span
                   className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
                     codEnabled ? "translate-x-5" : "translate-x-0"
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+
+          {/* Festive section */}
+          <div className={cardClass}>
+            <h2 className={cardTitleClass}>Diwali Section</h2>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Show &ldquo;Diwali Exclusive&rdquo; on the homepage
+                </p>
+                <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
+                  Festive block with the best-discounted products and a Guest List of categories.
+                  Products are picked automatically from those with an MRP set. Saves the moment you flip it.
+                </p>
+                {!hasFestiveColumn && (
+                  <p className="text-xs text-amber-600 mt-1">
+                    Run the migration 20261024010000_festive_section.sql in Supabase to enable this switch.
+                  </p>
+                )}
+              </div>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={festiveEnabled}
+                onClick={toggleFestive}
+                disabled={savingFestive || !hasFestiveColumn}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-coral focus:ring-offset-2 disabled:opacity-60 ${
+                  festiveEnabled ? "bg-coral" : "bg-gray-200 dark:bg-gray-600"
+                }`}
+              >
+                <span
+                  className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                    festiveEnabled ? "translate-x-5" : "translate-x-0"
                   }`}
                 />
               </button>

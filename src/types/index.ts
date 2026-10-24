@@ -267,6 +267,8 @@ export interface SiteSettings {
   shipping_tiers: ShippingTier[] | null;
   /** Master switch for the Shop the Look section and its pages. */
   looks_enabled: boolean;
+  /** Festive (Diwali) homepage section. Missing until its migration runs. */
+  festive_enabled?: boolean;
   /** Master switch for the wholesale channel and its pages. */
   wholesale_enabled: boolean;
   /** Master switch for combo offers and their pages. */
