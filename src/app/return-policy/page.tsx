@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getSettings } from "@/lib/services/settings";
+import { DEFAULT_CANCELLATION_POLICY, GOVERNING_LAW } from "@/lib/policies";
 
 type Block =
   | { type: "heading"; text: string }
@@ -55,21 +56,63 @@ function PolicySection({ id, text }: { id: string; text: string }) {
   );
 }
 
+type Business = { name: string; gstin: string; address: string; email: string; phone: string };
+
+function BusinessSection({ business }: { business: Business }) {
+  const rows: [string, string][] = [
+    ["Legal name", business.name],
+    ["GSTIN", business.gstin],
+    ["Registered address", business.address],
+    ["Email", business.email],
+    ["Phone", business.phone],
+  ];
+  return (
+    <section id="business" className="space-y-3 scroll-mt-24">
+      <h2 className="text-xl font-semibold text-gray-900">Business Information</h2>
+      <p>This website is owned and operated by:</p>
+      <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-sm">
+        {rows.filter(([, v]) => v).map(([k, v]) => (
+          <div key={k} className="contents">
+            <dt className="text-gray-500">{k}</dt>
+            <dd className="text-gray-900 whitespace-pre-line">
+              {k === "Email" ? <a href={`mailto:${v}`} className="text-coral hover:underline">{v}</a>
+                : k === "Phone" ? <a href={`tel:${v.replace(/\s/g, "")}`} className="text-coral hover:underline">{v}</a>
+                : v}
+            </dd>
+          </div>
+        ))}
+      </dl>
+    </section>
+  );
+}
+
 export default function TermsPage() {
   const [policies, setPolicies] = useState<{ shipping: string; returns: string; cancellation: string } | null>(null);
+  const [business, setBusiness] = useState<Business | null>(null);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     getSettings()
-      .then((s) => setPolicies({
-        shipping: s?.shipping_info?.trim() || "",
-        returns: s?.return_policy?.trim() || "",
-        cancellation: s?.cancellation_policy?.trim() || "",
-      }))
+      .then((s) => {
+        setPolicies({
+          shipping: s?.shipping_info?.trim() || "",
+          returns: s?.return_policy?.trim() || "",
+          // Fall back to the default only if no box already carries a
+          // cancellation policy (it was first pasted into Return Policy).
+          cancellation:
+            s?.cancellation_policy?.trim() ||
+            (/cancellation policy/i.test(`${s?.return_policy ?? ""} ${s?.shipping_info ?? ""}`) ? "" : DEFAULT_CANCELLATION_POLICY),
+        });
+        setBusiness({
+          name: s?.legal_name?.trim() || s?.store_name || "Khadi Vasthra",
+          gstin: s?.gstin?.trim() || "",
+          address: s?.registered_address?.trim() || s?.store_address || "",
+          email: s?.store_email || "",
+          phone: s?.store_phone || "",
+        });
+      })
       .catch(() => setFailed(true));
   }, []);
-
-  const empty = policies && !policies.shipping && !policies.returns && !policies.cancellation;
 
   return (
     <div className="min-h-screen bg-white">
@@ -79,11 +122,11 @@ export default function TermsPage() {
         </Link>
 
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Terms & Conditions</h1>
-        <p className="text-gray-500 mb-8">Khadi Vasthra</p>
+        <p className="text-gray-500 mb-8">{business?.name || "Khadi Vasthra"}</p>
 
         <p className="text-gray-700 leading-relaxed mb-8">
           By placing an order on the Khadi Vasthra website, customers agree to the following terms and
-          conditions regarding purchases, delivery, returns, and refunds.
+          conditions regarding purchases, delivery, cancellations, returns, and refunds.
         </p>
 
         <div className="space-y-10 text-gray-700 leading-relaxed">
@@ -95,26 +138,15 @@ export default function TermsPage() {
             </div>
           )}
 
-          {(failed || empty) && (
-            <p>Our policies could not be loaded right now. Please contact us for details.</p>
+          {failed && (
+            <p>Some of our policies could not be loaded right now. Please refresh, or contact us for details.</p>
           )}
 
           {policies?.shipping && <PolicySection id="shipping" text={policies.shipping} />}
           {policies?.returns && <PolicySection id="returns" text={policies.returns} />}
           {policies?.cancellation && <PolicySection id="cancellation" text={policies.cancellation} />}
-
-          <section className="border-t border-gray-200 pt-6">
-            <p className="text-sm text-gray-500">
-              For any questions, please contact us at{" "}
-              <a href="mailto:khadivastra1510@gmail.com" className="text-coral hover:underline">
-                khadivastra1510@gmail.com
-              </a>{" "}
-              or call{" "}
-              <a href="tel:+919847231512" className="text-coral hover:underline">
-                +91 98472 31512
-              </a>
-            </p>
-          </section>
+          <PolicySection id="governing-law" text={GOVERNING_LAW} />
+          {business && <BusinessSection business={business} />}
         </div>
       </div>
     </div>

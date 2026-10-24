@@ -9,6 +9,17 @@ const STORE = {
   phone: '+91 8714090510',
 };
 
+/** Legal name and GSTIN from Admin → Settings; set by the orders page. */
+let business: { legalName: string; gstin: string; address: string } = { legalName: '', gstin: '', address: '' };
+
+export function setInvoiceBusiness(details: { legal_name?: string | null; gstin?: string | null; registered_address?: string | null } | null) {
+  business = {
+    legalName: details?.legal_name?.trim() || '',
+    gstin: details?.gstin?.trim() || '',
+    address: details?.registered_address?.trim() || '',
+  };
+}
+
 function fmt(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString('en-IN', {
     day: '2-digit',
@@ -111,9 +122,13 @@ function generateInvoiceHTML(order: Order): string {
   <!-- Store Info -->
   <div class="section store-info">
     <div class="store-name">${STORE.name}</div>
-    <div>${STORE.address1}</div>
+    ${business.legalName && business.legalName.toUpperCase() !== STORE.name ? `<div>${esc(business.legalName)}</div>` : ''}
+    ${business.address
+      ? `<div style="white-space:pre-line">${esc(business.address)}</div><div>Ph: ${STORE.phone}</div>`
+      : `<div>${STORE.address1}</div>
     <div>${STORE.address2}</div>
-    <div>Pin: ${STORE.pincode} &nbsp;|&nbsp; Ph: ${STORE.phone}</div>
+    <div>Pin: ${STORE.pincode} &nbsp;|&nbsp; Ph: ${STORE.phone}</div>`}
+    ${business.gstin ? `<div><b>GSTIN:</b> ${esc(business.gstin)}</div>` : ''}
   </div>
 
   <!-- Invoice Meta -->

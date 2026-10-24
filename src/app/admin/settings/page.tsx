@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle2, CircleAlert, Loader2, RefreshCw, Save } from "lucide-react";
 import toast from "react-hot-toast";
 import type { SiteSettings, ShippingTier, PaymentGateway } from "@/types";
+import { DEFAULT_CANCELLATION_POLICY } from "@/lib/policies";
 
 const DEFAULT_TIERS: ShippingTier[] = [
   { max_items: 1, rate: 89 },
@@ -33,6 +34,9 @@ export default function AdminSettingsPage() {
   const [shippingInfo, setShippingInfo] = useState("");
   const [returnPolicy, setReturnPolicy] = useState("");
   const [cancellationPolicy, setCancellationPolicy] = useState("");
+  const [legalName, setLegalName] = useState("");
+  const [gstin, setGstin] = useState("");
+  const [registeredAddress, setRegisteredAddress] = useState("");
   const [announcement, setAnnouncement] = useState("");
   const [codEnabled, setCodEnabled] = useState(true);
   const [gateway, setGateway] = useState<PaymentGateway>("razorpay");
@@ -69,7 +73,10 @@ export default function AdminSettingsPage() {
       setStoreAddress(settings.store_address || "");
       setShippingInfo(settings.shipping_info || "");
       setReturnPolicy(settings.return_policy || "");
-      setCancellationPolicy(settings.cancellation_policy || "");
+      setCancellationPolicy(settings.cancellation_policy || DEFAULT_CANCELLATION_POLICY);
+      setLegalName(settings.legal_name || "");
+      setGstin(settings.gstin || "");
+      setRegisteredAddress(settings.registered_address || "");
       setAnnouncement(settings.announcement_text || "");
       setCodEnabled(settings.cod_enabled ?? true);
       setGateway(settings.payment_gateway === "easebuzz" ? "easebuzz" : "razorpay");
@@ -170,6 +177,7 @@ export default function AdminSettingsPage() {
 
   // The column arrives with a migration; until then the box is read-only.
   const hasCancellationColumn = !!settings && "cancellation_policy" in settings;
+  const hasBusinessColumns = !!settings && "gstin" in settings;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -184,6 +192,9 @@ export default function AdminSettingsPage() {
         shipping_info: shippingInfo,
         return_policy: returnPolicy,
         ...(hasCancellationColumn ? { cancellation_policy: cancellationPolicy } : {}),
+        ...(hasBusinessColumns
+          ? { legal_name: legalName.trim(), gstin: gstin.trim().toUpperCase(), registered_address: registeredAddress.trim() }
+          : {}),
         announcement_text: announcement,
         cod_enabled: codEnabled,
         looks_enabled: looksEnabled,
@@ -546,6 +557,32 @@ export default function AdminSettingsPage() {
                 className={inputClass} placeholder="918714090510"
               />
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Include country code without + (e.g., 918714090510)</p>
+            </div>
+          </div>
+
+          {/* Business details (as per GST) */}
+          <div className={cardClass}>
+            <h2 className={cardTitleClass}>Business Details (as per GST)</h2>
+            <p className="text-xs text-gray-400 dark:text-gray-500 -mt-2">
+              Shown under Business Information on the Terms &amp; Conditions page and on printed tax invoices.
+              Enter them exactly as on the GST certificate.
+            </p>
+            {!hasBusinessColumns && (
+              <p className="text-xs text-amber-600">
+                Run the migration 20261024020000_business_details.sql in Supabase to enable these fields.
+              </p>
+            )}
+            <div>
+              <label className={labelClass}>Legal business name</label>
+              <input type="text" value={legalName} onChange={(e) => setLegalName(e.target.value)} disabled={!hasBusinessColumns} className={`${inputClass} disabled:opacity-60`} placeholder="As on GST certificate" />
+            </div>
+            <div>
+              <label className={labelClass}>GSTIN</label>
+              <input type="text" value={gstin} onChange={(e) => setGstin(e.target.value.toUpperCase())} disabled={!hasBusinessColumns} maxLength={15} className={`${inputClass} font-mono uppercase disabled:opacity-60`} placeholder="15-character GSTIN" />
+            </div>
+            <div>
+              <label className={labelClass}>Registered address</label>
+              <textarea rows={3} value={registeredAddress} onChange={(e) => setRegisteredAddress(e.target.value)} disabled={!hasBusinessColumns} className={`${inputClass} resize-y disabled:opacity-60`} placeholder="Principal place of business as on GST certificate" />
             </div>
           </div>
 

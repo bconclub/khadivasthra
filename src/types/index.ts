@@ -259,6 +259,10 @@ export interface SiteSettings {
   return_policy: string | null;
   /** Missing until the cancellation-policy migration runs. */
   cancellation_policy?: string | null;
+  /** Business details as per GST. Missing until their migration runs. */
+  legal_name?: string | null;
+  gstin?: string | null;
+  registered_address?: string | null;
   announcement_text: string | null;
   cod_enabled: boolean;
   /** Missing until the payment-gateway migration runs; treat as Razorpay. */

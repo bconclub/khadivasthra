@@ -10,7 +10,8 @@ import { supabase } from "@/lib/supabase";
 import type { Order, OrderStatus, Product, PaymentMethod, PaymentStatus } from "@/types";
 import { variantLabel, itemSummary, itemSummaryWithCombo, comboLabel } from "@/lib/order-item";
 import { Loader2, ChevronDown, ChevronUp, Trash2, CreditCard, Package, Plus, Search, X, Minus, Pencil, Printer, FileText, Tag, CheckSquare, Download, Check, ExternalLink, Truck, Ban } from "lucide-react";
-import { printOrder, printOrders } from "@/lib/print-order";
+import { printOrder, printOrders, setInvoiceBusiness } from "@/lib/print-order";
+import { getSettings } from "@/lib/services/settings";
 import Image from "next/image";
 import toast from "react-hot-toast";
 
@@ -1562,6 +1563,10 @@ function CodSaveField({
 
 export default function AdminOrdersPage() {
   const { data: orders, loading, refetch } = useSupabaseQuery(getOrders);
+  // Invoices print the GST details from Settings.
+  useEffect(() => {
+    getSettings().then(setInvoiceBusiness).catch(() => {});
+  }, []);
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [dateRange, setDateRange] = useState<"all" | "this_month" | "last_month" | "custom">("all");
   const [customStart, setCustomStart] = useState("");
