@@ -7,12 +7,13 @@ import { useRazorpay } from "@/hooks/useRazorpay";
 import { Button } from "@/components/ui/button";
 import { createOrder, createRazorpayOrder, verifyRazorpayPayment, initiateEasebuzzPayment, checkShippingServiceability } from "@/lib/services/orders";
 import { getSettings } from "@/lib/services/settings";
+import { supabase } from "@/lib/supabase";
 import { evaluateCoupon } from "@/lib/services/coupons";
 import { clearAppliedCoupon, normaliseCode, readAppliedCoupon, saveAppliedCoupon } from "@/lib/referral";
 import { CheckoutMusic } from "@/components/CheckoutMusic";
 import Link from "next/link";
 import { ChevronLeft, Loader2, ShoppingBag, CheckCircle2, XCircle, Truck, CreditCard, Banknote, BadgePercent, X } from "lucide-react";
-import type { CheckoutFormData, Order, ServiceabilityResult, PaymentMethod, PaymentGateway, ShippingTier, AppliedCoupon, CouponEvaluation } from "@/types";
+import type { CartItem, CheckoutFormData, Order, ServiceabilityResult, PaymentMethod, PaymentGateway, ShippingTier, AppliedCoupon, CouponEvaluation } from "@/types";
 import { trackInitiateCheckout } from "@/lib/fbq";
 
 type PaymentStep = "form" | "creating" | "paying";
@@ -21,6 +22,9 @@ const PINCODE_DETAIL_FALLBACKS: Record<string, { city: string; state: string }> 
   // Keep checkout usable when the public postal API is unavailable or misses a valid serviceable pincode.
   "560016": { city: "Bengaluru", state: "Karnataka" },
 };
+
+/** Prices are GST-inclusive; this is the rate shown as "GST included". */
+const GST_RATE = 0.05;
 
 function formatRupees(amount: number): string {
   return new Intl.NumberFormat("en-IN", {
@@ -175,6 +179,31 @@ export default function CheckoutPage() {
   const codCharges = isCod ? Math.round((discountedSubtotal + shippingCost) * 0.016) : 0;
   const orderTotal = discountedSubtotal + shippingCost + codCharges;
   const activeCoupon: AppliedCoupon | null = evaluation?.valid && applied ? applied : null;
+
+  // MRP (compare_price) for the summary table. The cart only stores the
+  // selling price, so look it up; combo lines carry a combo price and have no MRP.
+  const [mrpById, setMrpById] = useState<Record<string, number>>({});
+  useEffect(() => {
+    const ids = [...new Set(items.filter((i) => !i.combo).map((i) => i.id))];
+    if (ids.length === 0) return;
+    let cancelled = false;
+    supabase.from("products").select("id, compare_price").in("id", ids).then(({ data }) => {
+      if (cancelled) return;
+      const next: Record<string, number> = {};
+      (data || []).forEach((p) => { if (p.compare_price) next[p.id] = Number(p.compare_price); });
+      setMrpById(next);
+    });
+    return () => { cancelled = true; };
+  }, [items]);
+  const mrpOf = (item: CartItem) => {
+    const mrp = item.combo ? 0 : mrpById[item.id] ?? 0;
+    return mrp > item.price ? mrp : item.price;
+  };
+  const mrpTotal = items.reduce((sum, i) => sum + mrpOf(i) * i.quantity, 0);
+  const productSavings = Math.max(0, mrpTotal - cartTotal);
+  const totalSavings = productSavings + discount;
+  const savingsPercent = mrpTotal > 0 ? Math.round((totalSavings / mrpTotal) * 100) : 0;
+  const gstIncluded = discountedSubtotal - discountedSubtotal / (1 + GST_RATE);
 
   // COD availability: pincode must support COD and cart total must be ≥ ₹1000
   const COD_MINIMUM = 1000;
@@ -700,25 +729,43 @@ export default function CheckoutPage() {
               <div className="bg-white rounded-xl p-6 shadow-sm border border-cream/30 sticky top-24">
                 <h2 className="text-lg font-bold text-text mb-4">Order Summary</h2>
 
-                <div className="space-y-3 mb-4">
-                  {items.map((item) => (
-                    <div key={`${item.id}${item.variant_id ? `-${item.variant_id}` : ''}`} className="flex justify-between text-sm">
-                      <span className="text-text-muted line-clamp-1 flex-1 mr-2">
-                        {item.name} 
-                        {(item.color_name || item.size) && (
-                          <span className="text-xs text-text-muted block">
-                            {item.color_name && `Color: ${item.color_name}`}
-                            {item.color_name && item.size && " / "}
-                            {item.size && `Size: ${item.size}`}
-                          </span>
-                        )}
-                        x {item.quantity}
-                      </span>
-                      <span className="font-medium text-text whitespace-nowrap">
-                        {formatRupees(item.price * item.quantity)}
-                      </span>
-                    </div>
-                  ))}
+                <div className="divide-y divide-cream/40 border-y border-cream/40 mb-4">
+                  {items.map((item) => {
+                    const mrp = mrpOf(item);
+                    const off = mrp > item.price ? Math.round((1 - item.price / mrp) * 100) : 0;
+                    return (
+                      <div key={`${item.id}${item.variant_id ? `-${item.variant_id}` : ''}`} className="flex gap-3 py-3">
+                        <div className="w-16 h-16 rounded-lg overflow-hidden bg-cream/50 flex-shrink-0 flex items-center justify-center">
+                          {item.image ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                          ) : (
+                            <ShoppingBag className="w-6 h-6 text-coral/30" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0 text-sm">
+                          <p className="font-semibold text-text line-clamp-2">{item.name}</p>
+                          {(item.color_name || item.size) && (
+                            <p className="text-xs text-text-muted">
+                              {item.color_name && `Color: ${item.color_name}`}
+                              {item.color_name && item.size && " / "}
+                              {item.size && `Size: ${item.size}`}
+                            </p>
+                          )}
+                          <p className="text-text-muted">Quantity: {item.quantity}</p>
+                          {off > 0 && (
+                            <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                              <span className="text-text-muted">MRP: <span className="line-through">{formatRupees(mrp)}</span></span>
+                              <span className="text-[11px] font-semibold text-green-700 bg-green-50 rounded-full px-2 py-0.5">{off}% OFF</span>
+                            </div>
+                          )}
+                        </div>
+                        <span className="font-semibold text-text whitespace-nowrap text-sm">
+                          {formatRupees(item.price * item.quantity)}
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
 
                 {/* Coupon / referral */}
@@ -762,35 +809,45 @@ export default function CheckoutPage() {
                   )}
                 </div>
 
-                <div className="border-t border-cream/30 pt-4 space-y-2 mb-6">
-                  <div className="flex justify-between text-sm text-text-muted">
-                    <span>Subtotal</span>
-                    <span>{formatRupees(cartTotal)}</span>
+                <div className="border-t border-cream/30 pt-4 space-y-2.5 mb-6 text-sm">
+                  <div className="flex justify-between text-text-muted">
+                    <span>Product price</span>
+                    <span>{formatRupees(mrpTotal)}</span>
                   </div>
-                  {discount > 0 && (
-                    <div className="flex justify-between text-sm text-green-700">
-                      <span className="flex items-center gap-1">
-                        <BadgePercent className="w-3.5 h-3.5" /> Discount{evaluation?.owner_name ? ` (${evaluation.owner_name})` : ""}
-                      </span>
-                      <span>-{formatRupees(discount)}</span>
+                  {productSavings > 0 && (
+                    <div className="flex justify-between text-green-700">
+                      <span>Discount ({Math.round((productSavings / mrpTotal) * 100)}%)</span>
+                      <span>&minus;{formatRupees(productSavings)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-sm text-text-muted">
+                  {discount > 0 && (
+                    <div className="flex justify-between text-green-700">
+                      <span className="flex items-center gap-1">
+                        <BadgePercent className="w-3.5 h-3.5" /> Coupon{evaluation?.code ? ` (${evaluation.code})` : ""}
+                      </span>
+                      <span>&minus;{formatRupees(discount)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-text-muted">
+                    <span>GST included ({Math.round(GST_RATE * 100)}%)</span>
+                    <span>{formatRupees(Math.round(gstIncluded * 100) / 100)}</span>
+                  </div>
+                  <div className="flex justify-between text-text-muted">
                     <span className="flex items-center gap-1">
-                      <Truck className="w-3.5 h-3.5" /> Shipping
+                      <Truck className="w-3.5 h-3.5" /> Courier charges
                     </span>
                     {checkingPincode ? (
-                      <span className="text-text-muted">Calculating...</span>
+                      <span>Calculating...</span>
                     ) : shippingInfo?.available ? (
-                      <span>{shippingCost > 0 ? formatRupees(shippingCost) : "Free"}</span>
+                      <span className="text-text">{shippingCost > 0 ? formatRupees(shippingCost) : "Free"}</span>
                     ) : (
-                      <span className="text-text-muted">Enter pincode</span>
+                      <span className="text-text">Extra</span>
                     )}
                   </div>
                   {isCod && shippingInfo?.available && (
-                    <div className="flex justify-between text-sm text-text-muted">
+                    <div className="flex justify-between text-text-muted">
                       <span className="flex items-center gap-1">
-                        <Banknote className="w-3.5 h-3.5" /> COD Charges (1.6%)
+                        <Banknote className="w-3.5 h-3.5" /> COD charges (1.6%)
                       </span>
                       <span>{formatRupees(codCharges)}</span>
                     </div>
@@ -800,10 +857,20 @@ export default function CheckoutPage() {
                       <CheckCircle2 className="w-3 h-3" /> Est. delivery: {shippingInfo.fastest_etd}
                     </p>
                   )}
-                  <div className="flex justify-between font-bold text-lg text-orange border-t border-cream/30 pt-3">
-                    <span>Total</span>
-                    <span>{formatRupees(orderTotal)}</span>
+                  <div className="flex justify-between items-baseline border-t border-cream/30 pt-3">
+                    <span className="font-bold text-base text-text">{shippingInfo?.available ? "Total" : "Product total"}</span>
+                    <span className="font-bold text-xl text-green-700">{formatRupees(orderTotal)}</span>
                   </div>
+                  {totalSavings > 0 && (
+                    <p className="text-xs font-medium text-green-700">
+                      You save {formatRupees(totalSavings)} ({savingsPercent}%) on this order
+                    </p>
+                  )}
+                  {!shippingInfo?.available && (
+                    <p className="text-xs text-text-muted">
+                      Courier charges are added once you enter your delivery pincode.
+                    </p>
+                  )}
                   {isCod && (
                     <p className="text-xs text-text-muted flex items-center gap-1">
                       <Banknote className="w-3 h-3" /> Pay {formatRupees(orderTotal)} at delivery
@@ -834,13 +901,13 @@ export default function CheckoutPage() {
                     size="lg"
                     variant="primary"
                     className="w-full h-14 text-lg font-semibold"
-                    disabled={submitting || (!isCod && !razorpayLoaded) || (!shippingInfo?.available && !pendingOrder)}
+                    disabled={submitting || (!isCod && gateway === "razorpay" && !razorpayLoaded) || (!shippingInfo?.available && !pendingOrder)}
                   >
                     {submitting ? (
                       <>
                         <Loader2 className="w-5 h-5 animate-spin mr-2" /> {buttonText}
                       </>
-                    ) : !isCod && !razorpayLoaded ? (
+                    ) : !isCod && gateway === "razorpay" && !razorpayLoaded ? (
                       "Loading payment..."
                     ) : (
                       buttonText

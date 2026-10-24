@@ -32,6 +32,7 @@ export default function AdminSettingsPage() {
   const [storeAddress, setStoreAddress] = useState("");
   const [shippingInfo, setShippingInfo] = useState("");
   const [returnPolicy, setReturnPolicy] = useState("");
+  const [cancellationPolicy, setCancellationPolicy] = useState("");
   const [announcement, setAnnouncement] = useState("");
   const [codEnabled, setCodEnabled] = useState(true);
   const [gateway, setGateway] = useState<PaymentGateway>("razorpay");
@@ -66,6 +67,7 @@ export default function AdminSettingsPage() {
       setStoreAddress(settings.store_address || "");
       setShippingInfo(settings.shipping_info || "");
       setReturnPolicy(settings.return_policy || "");
+      setCancellationPolicy(settings.cancellation_policy || "");
       setAnnouncement(settings.announcement_text || "");
       setCodEnabled(settings.cod_enabled ?? true);
       setGateway(settings.payment_gateway === "easebuzz" ? "easebuzz" : "razorpay");
@@ -145,6 +147,9 @@ export default function AdminSettingsPage() {
     }
   };
 
+  // The column arrives with a migration; until then the box is read-only.
+  const hasCancellationColumn = !!settings && "cancellation_policy" in settings;
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -157,6 +162,7 @@ export default function AdminSettingsPage() {
         store_address: storeAddress,
         shipping_info: shippingInfo,
         return_policy: returnPolicy,
+        ...(hasCancellationColumn ? { cancellation_policy: cancellationPolicy } : {}),
         announcement_text: announcement,
         cod_enabled: codEnabled,
         looks_enabled: looksEnabled,
@@ -498,6 +504,21 @@ export default function AdminSettingsPage() {
             <div>
               <label className={labelClass}>Return Policy</label>
               <textarea rows={8} value={returnPolicy} onChange={(e) => setReturnPolicy(e.target.value)} className={`${inputClass} resize-y`} />
+            </div>
+            <div>
+              <label className={labelClass}>Cancellation Policy</label>
+              <textarea
+                rows={8}
+                value={cancellationPolicy}
+                onChange={(e) => setCancellationPolicy(e.target.value)}
+                disabled={!hasCancellationColumn}
+                className={`${inputClass} resize-y disabled:opacity-60`}
+              />
+              {!hasCancellationColumn && (
+                <p className="text-xs text-amber-600 mt-1">
+                  Run the migration 20261024000000_cancellation_policy.sql in Supabase to enable this field.
+                </p>
+              )}
             </div>
           </div>
 

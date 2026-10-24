@@ -257,6 +257,8 @@ export interface SiteSettings {
   store_address: string;
   shipping_info: string | null;
   return_policy: string | null;
+  /** Missing until the cancellation-policy migration runs. */
+  cancellation_policy?: string | null;
   announcement_text: string | null;
   cod_enabled: boolean;
   /** Missing until the payment-gateway migration runs; treat as Razorpay. */

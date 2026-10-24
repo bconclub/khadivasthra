@@ -61,6 +61,9 @@ export function Footer() {
                                 <Link href="/return-policy#returns" className="footer__link hover:text-white transition-colors">Returns</Link>
                             </li>
                             <li className="footer__link-item">
+                                <Link href="/return-policy#cancellation" className="footer__link hover:text-white transition-colors">Cancellation Policy</Link>
+                            </li>
+                            <li className="footer__link-item">
                                 <Link href="/return-policy" className="footer__link hover:text-white transition-colors">Terms & Conditions</Link>
                             </li>
                             <li className="footer__link-item">

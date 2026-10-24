@@ -56,16 +56,20 @@ function PolicySection({ id, text }: { id: string; text: string }) {
 }
 
 export default function TermsPage() {
-  const [policies, setPolicies] = useState<{ shipping: string; returns: string } | null>(null);
+  const [policies, setPolicies] = useState<{ shipping: string; returns: string; cancellation: string } | null>(null);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     getSettings()
-      .then((s) => setPolicies({ shipping: s?.shipping_info?.trim() || "", returns: s?.return_policy?.trim() || "" }))
+      .then((s) => setPolicies({
+        shipping: s?.shipping_info?.trim() || "",
+        returns: s?.return_policy?.trim() || "",
+        cancellation: s?.cancellation_policy?.trim() || "",
+      }))
       .catch(() => setFailed(true));
   }, []);
 
-  const empty = policies && !policies.shipping && !policies.returns;
+  const empty = policies && !policies.shipping && !policies.returns && !policies.cancellation;
 
   return (
     <div className="min-h-screen bg-white">
@@ -97,6 +101,7 @@ export default function TermsPage() {
 
           {policies?.shipping && <PolicySection id="shipping" text={policies.shipping} />}
           {policies?.returns && <PolicySection id="returns" text={policies.returns} />}
+          {policies?.cancellation && <PolicySection id="cancellation" text={policies.cancellation} />}
 
           <section className="border-t border-gray-200 pt-6">
             <p className="text-sm text-gray-500">
