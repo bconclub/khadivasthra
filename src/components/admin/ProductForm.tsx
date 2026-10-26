@@ -6,6 +6,7 @@ import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getCategories } from "@/lib/services/categories";
 import { listInvestors, listInvestmentsForProduct } from "@/lib/services/investors";
 import { getWholesalePrice } from "@/lib/services/wholesale";
+import { supabase } from "@/lib/supabase";
 import type { ProductWithCategory, ProductColor, ProductVariant, Investor, Investment } from "@/types";
 import { Loader2, X, Plus, Camera, Package, Trash2, RefreshCw, Palette, GripVertical } from "lucide-react";
 import Image from "next/image";
@@ -79,6 +80,14 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
     product?.care_instructions || ["Hand wash cold", "Dry in shade"]
   );
   const [weight, setWeight] = useState(product?.weight?.toString() || "0.2");
+  const [hsnCode, setHsnCode] = useState(product?.hsn_code || "");
+  // hsn_code arrives with a migration; only send it once the column exists so
+  // saving products keeps working before then.
+  const [hasHsnColumn, setHasHsnColumn] = useState(!!product && "hsn_code" in product);
+  useEffect(() => {
+    if (product) return;
+    supabase.from("products").select("hsn_code").limit(1).then(({ error }) => setHasHsnColumn(!error));
+  }, [product]);
   const [length, setLength] = useState(product?.length?.toString() || "13");
   const [breadth, setBreadth] = useState(product?.breadth?.toString() || "7");
   const [height, setHeight] = useState(product?.height?.toString() || "3");
@@ -496,6 +505,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         colours: hasVariants ? colors.map(c => c.name) : [],
         sizes: hasVariants ? [...new Set(colors.flatMap(c => c.sizes.map(s => s.size)))] : [],
         weight: parseFloat(weight) || 0.2,
+        ...(hasHsnColumn ? { hsn_code: hsnCode.trim() || null } : {}),
         length: parseFloat(length) || 13,
         breadth: parseFloat(breadth) || 7,
         height: parseFloat(height) || 3,
@@ -1198,6 +1208,23 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
                 onChange={(e) => setLongDescription(e.target.value)}
                 className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent resize-none text-sm"
               />
+            </div>
+
+            {/* === GST === */}
+            <div>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">HSN code (GST)</label>
+              <input
+                type="text"
+                value={hsnCode}
+                onChange={(e) => setHsnCode(e.target.value.replace(/[^0-9]/g, ""))}
+                disabled={!hasHsnColumn}
+                maxLength={8}
+                placeholder="Leave empty to use the default from Settings"
+                className="w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm font-mono disabled:opacity-60"
+              />
+              {!hasHsnColumn && (
+                <p className="text-[10px] text-amber-600 mt-1">Run the migration 20261026000000_gst_hsn.sql in Supabase to enable HSN codes.</p>
+              )}
             </div>
 
             {/* === SHIPPING === */}

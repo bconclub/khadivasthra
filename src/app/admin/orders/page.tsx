@@ -10,7 +10,7 @@ import { supabase } from "@/lib/supabase";
 import type { Order, OrderStatus, Product, PaymentMethod, PaymentStatus } from "@/types";
 import { variantLabel, itemSummary, itemSummaryWithCombo, comboLabel } from "@/lib/order-item";
 import { Loader2, ChevronDown, ChevronUp, Trash2, CreditCard, Package, Plus, Search, X, Minus, Pencil, Printer, FileText, Tag, CheckSquare, Download, Check, ExternalLink, Truck, Ban } from "lucide-react";
-import { printOrder, printOrders, setInvoiceBusiness } from "@/lib/print-order";
+import { printOrder, printOrders, setInvoiceBusiness, setInvoiceHsnCodes } from "@/lib/print-order";
 import { getSettings } from "@/lib/services/settings";
 import Image from "next/image";
 import toast from "react-hot-toast";
@@ -1566,6 +1566,13 @@ export default function AdminOrdersPage() {
   // Invoices print the GST details from Settings.
   useEffect(() => {
     getSettings().then(setInvoiceBusiness).catch(() => {});
+    // Errors (e.g. before the HSN migration runs) just leave HSN off invoices.
+    supabase.from("products").select("id, hsn_code").then(({ data, error }) => {
+      if (error || !data) return;
+      const codes: Record<string, string> = {};
+      (data as { id: string; hsn_code: string | null }[]).forEach((p) => { if (p.hsn_code) codes[p.id] = p.hsn_code; });
+      setInvoiceHsnCodes(codes);
+    });
   }, []);
   const [statusFilter, setStatusFilter] = useState<string>("");
   const [dateRange, setDateRange] = useState<"all" | "this_month" | "last_month" | "custom">("all");

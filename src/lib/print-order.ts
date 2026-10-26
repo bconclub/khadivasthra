@@ -9,15 +9,34 @@ const STORE = {
   phone: '+91 8714090510',
 };
 
-/** Legal name and GSTIN from Admin → Settings; set by the orders page. */
-let business: { legalName: string; gstin: string; address: string } = { legalName: '', gstin: '', address: '' };
+/** Legal name, GSTIN and HSN codes from Admin; set by the orders page. */
+let business: { legalName: string; gstin: string; address: string; defaultHsn: string } = { legalName: '', gstin: '', address: '', defaultHsn: '' };
+let hsnByProduct: Record<string, string> = {};
 
-export function setInvoiceBusiness(details: { legal_name?: string | null; gstin?: string | null; registered_address?: string | null } | null) {
+export function setInvoiceBusiness(details: { legal_name?: string | null; gstin?: string | null; registered_address?: string | null; default_hsn?: string | null } | null) {
   business = {
     legalName: details?.legal_name?.trim() || '',
     gstin: details?.gstin?.trim() || '',
     address: details?.registered_address?.trim() || '',
+    defaultHsn: details?.default_hsn?.trim() || '',
   };
+}
+
+export function setInvoiceHsnCodes(codes: Record<string, string>) {
+  hsnByProduct = codes;
+}
+
+/** Selling prices are GST-inclusive at this rate. */
+const GST_RATE = 0.05;
+/** The business is registered in Kerala: intra-state sales split CGST + SGST. */
+const SELLER_STATE = 'kerala';
+
+function hsnFor(productId: string): string {
+  return hsnByProduct[productId] || business.defaultHsn;
+}
+
+function money(n: number): string {
+  return '₹' + n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function fmt(dateStr: string): string {
@@ -44,6 +63,21 @@ function generateInvoiceHTML(order: Order): string {
   const isCod = order.payment_method === 'cod';
   const codCharges = Number(order.cod_charges) || 0;
 
+  const showHsn = order.items.some((item) => hsnFor(item.product_id));
+  const discount = Number(order.discount) || 0;
+  // Everything charged is GST-inclusive (shipping follows the goods' rate),
+  // so tax is backed out of the grand total.
+  const grandTotal = Number(order.total) || 0;
+  const taxable = Math.round((grandTotal / (1 + GST_RATE)) * 100) / 100;
+  const gst = Math.round((grandTotal - taxable) * 100) / 100;
+  const intraState = (order.customer_state || '').trim().toLowerCase() === SELLER_STATE;
+  const halfRate = `${(GST_RATE * 100) / 2}%`;
+  const cgst = Math.round((gst / 2) * 100) / 100;
+  const gstRows = intraState
+    ? `<div class="row"><span>CGST @ ${halfRate}</span><span>${money(cgst)}</span></div>
+      <div class="row"><span>SGST @ ${halfRate}</span><span>${money(gst - cgst)}</span></div>`
+    : `<div class="row"><span>IGST @ ${GST_RATE * 100}%</span><span>${money(gst)}</span></div>`;
+
   const itemRows = order.items.map((item, i) => `
     <tr>
       <td class="cell cell-num">${i + 1}</td>
@@ -52,6 +86,7 @@ function generateInvoiceHTML(order: Order): string {
       }${
         comboLabel(item) ? `<br><span class="variant">Combo: ${esc(comboLabel(item))}</span>` : ""
       }</td>
+      ${showHsn ? `<td class="cell cell-center">${esc(hsnFor(item.product_id))}</td>` : ''}
       <td class="cell cell-center">${item.quantity}</td>
       <td class="cell cell-right">${inr(item.price)}</td>
       <td class="cell cell-right">${inr(item.subtotal)}</td>
@@ -106,6 +141,9 @@ function generateInvoiceHTML(order: Order): string {
   .totals .row { display:flex; gap:20px; min-width:240px; justify-content:space-between; }
   .totals .row.grand { border-top:2px solid #222; padding-top:8px; margin-top:4px; font-size:16px; font-weight:700; }
 
+  .gst-box { border:1px solid #ddd; border-radius:4px; padding:6px 10px; margin-top:8px; min-width:240px; display:flex; flex-direction:column; gap:2px; font-size:12px; }
+  .gst-note { font-size:11px; color:#666; margin-top:4px; }
+
   .terms { font-size:11px; color:#666; line-height:1.6; }
   .terms-label { font-size:11px; font-weight:700; letter-spacing:1px; color:#666; margin-bottom:4px; }
 
@@ -136,6 +174,7 @@ function generateInvoiceHTML(order: Order): string {
     <div><b>Invoice No:</b> ${esc(order.order_number)}</div>
     <div><b>Date:</b> ${fmt(order.created_at)}</div>
     <div><b>Payment:</b> ${isCod ? 'COD' : 'PREPAID'}</div>
+    <div><b>Place of supply:</b> ${esc(order.customer_state || '')}</div>
     ${order.article_number ? `<div><b>Article No:</b> ${esc(order.article_number)}</div>` : ''}
   </div>
 
@@ -158,6 +197,7 @@ function generateInvoiceHTML(order: Order): string {
         <tr>
           <th class="c">#</th>
           <th>Product</th>
+          ${showHsn ? '<th class="c">HSN</th>' : ''}
           <th class="c">Qty</th>
           <th class="r">Rate</th>
           <th class="r">Amount</th>
@@ -173,9 +213,16 @@ function generateInvoiceHTML(order: Order): string {
   <div class="section">
     <div class="totals">
       <div class="row"><span>Subtotal</span><span>${inr(order.subtotal)}</span></div>
+      ${discount > 0 ? `<div class="row"><span>Discount${order.coupon_code ? ` (${esc(order.coupon_code)})` : ''}</span><span>&minus;${inr(discount)}</span></div>` : ''}
       <div class="row"><span>Shipping</span><span>${inr(order.shipping || 0)}</span></div>
       ${codCharges > 0 ? `<div class="row"><span>COD Charges (1.6%)</span><span>${inr(codCharges)}</span></div>` : ''}
       <div class="row grand"><span>GRAND TOTAL</span><span>${inr(order.total)}</span></div>
+      <div class="gst-box">
+        <div class="row"><span>Taxable value</span><span>${money(taxable)}</span></div>
+        ${gstRows}
+        <div class="row"><b>Total GST (${GST_RATE * 100}%)</b><b>${money(gst)}</b></div>
+      </div>
+      <div class="gst-note">All prices are inclusive of ${GST_RATE * 100}% GST.</div>
     </div>
     ${isCod ? `<div style="margin-top:8px;font-size:12px;color:#666;">COD Settlement: ${(order.settlement_status || 'pending').toUpperCase()}</div>` : ''}
   </div>

@@ -23,9 +23,6 @@ const PINCODE_DETAIL_FALLBACKS: Record<string, { city: string; state: string }> 
   "560016": { city: "Bengaluru", state: "Karnataka" },
 };
 
-/** Prices are GST-inclusive; this is the rate shown as "GST included". */
-const GST_RATE = 0.05;
-
 function formatRupees(amount: number): string {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -203,7 +200,6 @@ export default function CheckoutPage() {
   const productSavings = Math.max(0, mrpTotal - cartTotal);
   const totalSavings = productSavings + discount;
   const savingsPercent = mrpTotal > 0 ? Math.round((totalSavings / mrpTotal) * 100) : 0;
-  const gstIncluded = discountedSubtotal - discountedSubtotal / (1 + GST_RATE);
 
   // COD availability: pincode must support COD and cart total must be ≥ ₹1000
   const COD_MINIMUM = 1000;
@@ -828,10 +824,6 @@ export default function CheckoutPage() {
                       <span>&minus;{formatRupees(discount)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between text-text-muted">
-                    <span>GST included ({Math.round(GST_RATE * 100)}%)</span>
-                    <span>{formatRupees(Math.round(gstIncluded * 100) / 100)}</span>
-                  </div>
                   <div className="flex justify-between text-text-muted">
                     <span className="flex items-center gap-1">
                       <Truck className="w-3.5 h-3.5" /> Courier charges

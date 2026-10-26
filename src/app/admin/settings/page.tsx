@@ -37,6 +37,7 @@ export default function AdminSettingsPage() {
   const [legalName, setLegalName] = useState("");
   const [gstin, setGstin] = useState("");
   const [registeredAddress, setRegisteredAddress] = useState("");
+  const [defaultHsn, setDefaultHsn] = useState("");
   const [announcement, setAnnouncement] = useState("");
   const [codEnabled, setCodEnabled] = useState(true);
   const [gateway, setGateway] = useState<PaymentGateway>("razorpay");
@@ -77,6 +78,7 @@ export default function AdminSettingsPage() {
       setLegalName(settings.legal_name || "");
       setGstin(settings.gstin || "");
       setRegisteredAddress(settings.registered_address || "");
+      setDefaultHsn(settings.default_hsn || "");
       setAnnouncement(settings.announcement_text || "");
       setCodEnabled(settings.cod_enabled ?? true);
       setGateway(settings.payment_gateway === "easebuzz" ? "easebuzz" : "razorpay");
@@ -178,6 +180,7 @@ export default function AdminSettingsPage() {
   // The column arrives with a migration; until then the box is read-only.
   const hasCancellationColumn = !!settings && "cancellation_policy" in settings;
   const hasBusinessColumns = !!settings && "gstin" in settings;
+  const hasHsnColumn = !!settings && "default_hsn" in settings;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -192,6 +195,7 @@ export default function AdminSettingsPage() {
         shipping_info: shippingInfo,
         return_policy: returnPolicy,
         ...(hasCancellationColumn ? { cancellation_policy: cancellationPolicy } : {}),
+        ...(hasHsnColumn ? { default_hsn: defaultHsn.trim() } : {}),
         ...(hasBusinessColumns
           ? { legal_name: legalName.trim(), gstin: gstin.trim().toUpperCase(), registered_address: registeredAddress.trim() }
           : {}),
@@ -583,6 +587,13 @@ export default function AdminSettingsPage() {
             <div>
               <label className={labelClass}>Registered address</label>
               <textarea rows={3} value={registeredAddress} onChange={(e) => setRegisteredAddress(e.target.value)} disabled={!hasBusinessColumns} className={`${inputClass} resize-y disabled:opacity-60`} placeholder="Principal place of business as on GST certificate" />
+            </div>
+            <div>
+              <label className={labelClass}>Default HSN code</label>
+              <input type="text" value={defaultHsn} onChange={(e) => setDefaultHsn(e.target.value.replace(/[^0-9]/g, ""))} disabled={!hasHsnColumn} maxLength={8} className={`${inputClass} font-mono disabled:opacity-60`} placeholder="e.g. 6211" />
+              <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                Printed on invoices for products that don&apos;t have their own HSN code. Prices are taken as inclusive of 5% GST.
+              </p>
             </div>
           </div>
 

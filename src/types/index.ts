@@ -90,6 +90,8 @@ export interface Product {
   category_id: string;
   price: number;
   compare_price: number | null;
+  /** HSN code for GST invoices; missing until its migration runs. */
+  hsn_code?: string | null;
   description: string;
   long_description: string | null;
   image_url: string | null;
@@ -263,6 +265,8 @@ export interface SiteSettings {
   legal_name?: string | null;
   gstin?: string | null;
   registered_address?: string | null;
+  /** HSN used on invoices for products without their own. */
+  default_hsn?: string | null;
   announcement_text: string | null;
   cod_enabled: boolean;
   /** Missing until the payment-gateway migration runs; treat as Razorpay. */
