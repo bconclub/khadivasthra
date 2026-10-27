@@ -5,7 +5,7 @@
 set -euo pipefail  # run with bash: Lightsail runs launch scripts with sh, so copy it over and `sudo bash setup.sh`
 
 RELAY_SECRET="__RELAY_SECRET__"
-RELAY_DOMAIN="__RELAY_DOMAIN__"  # e.g. 16-178-82-51.sslip.io (no DNS needed) or relay.example.com
+RELAY_DOMAIN="__RELAY_DOMAIN__"  # e.g. 3-110-0-199.sslip.io (no DNS needed) or relay.example.com
 
 export DEBIAN_FRONTEND=noninteractive
 apt-get update -y
