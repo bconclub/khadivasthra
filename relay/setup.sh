@@ -49,9 +49,35 @@ ProtectHome=true
 WantedBy=multi-user.target
 EOF
 
+# Only /relay and /health reach the relay; any browser visit (bare IP or
+# this hostname) is sent to the store.
 cat > /etc/caddy/Caddyfile <<EOF
+{
+  auto_https disable_redirects
+}
+
 ${RELAY_DOMAIN} {
-  reverse_proxy 127.0.0.1:8080
+  @relay path /relay /health
+  handle @relay {
+    reverse_proxy 127.0.0.1:8080
+  }
+  handle {
+    redir https://www.khadivasthra.com{uri} 302
+  }
+}
+
+http://${RELAY_DOMAIN} {
+  @relay path /relay /health
+  handle @relay {
+    redir https://${RELAY_DOMAIN}{uri} 308
+  }
+  handle {
+    redir https://www.khadivasthra.com{uri} 302
+  }
+}
+
+:80 {
+  redir https://www.khadivasthra.com{uri} 302
 }
 EOF
 
