@@ -3,6 +3,7 @@
 // order row, never from the browser.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, json } from "../_shared/shipway.ts";
+import { relayFetch } from "../_shared/relay.ts";
 import {
   adminClient, clean, EASEBUZZ_KEY, formatAmount, isConfigured, PAY_BASE, requestHash,
 } from "../_shared/easebuzz.ts";
@@ -58,7 +59,7 @@ serve(async (req) => {
     params.country = "India";
     params.hash = await requestHash(params);
 
-    const res = await fetch(`${PAY_BASE}/payment/initiateLink`, {
+    const res = await relayFetch(`${PAY_BASE}/payment/initiateLink`, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
       body: new URLSearchParams(params).toString(),

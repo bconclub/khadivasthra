@@ -3,6 +3,7 @@
 // paid through Easebuzz; Razorpay orders keep using check-payment-status.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders, json } from "../_shared/shipway.ts";
+import { relayFetch } from "../_shared/relay.ts";
 import {
   adminClient, applyTransaction, DASHBOARD_BASE, EASEBUZZ_KEY, EASEBUZZ_SALT, isConfigured, sha512, verifyResponseHash,
 } from "../_shared/easebuzz.ts";
@@ -32,7 +33,7 @@ serve(async (req) => {
     }
 
     const txnid = order.gateway_txn_id;
-    const res = await fetch(`${DASHBOARD_BASE}/transaction/v2.1/retrieve`, {
+    const res = await relayFetch(`${DASHBOARD_BASE}/transaction/v2.1/retrieve`, {
       method: "POST",
       headers: { "Content-Type": "application/x-www-form-urlencoded", Accept: "application/json" },
       body: new URLSearchParams({ key: EASEBUZZ_KEY, txnid, hash: await sha512(`${EASEBUZZ_KEY}|${txnid}|${EASEBUZZ_SALT}`) }).toString(),

@@ -192,7 +192,7 @@ export interface Order {
   settlement_date: string | null;
   is_billed: boolean;
   billed_at: string | null;
-  shipping_provider: 'shipway' | 'shiprocket' | null;
+  shipping_provider: 'shipway' | 'shiprocket' | 'indiapost' | null;
   shiprocket_order_id: string | null;
   shipment_id: string | null;
   shipping_provider_order_id: string | null;

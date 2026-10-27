@@ -5,6 +5,7 @@ import { AdminShell } from "@/components/admin/AdminShell";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getOrders, updateOrderStatus, updateOrder, checkPaymentStatus, bookShiprocketShipment } from "@/lib/services/orders";
 import { bookShipwayShipment, cancelShipwayShipment } from "@/lib/services/shipway";
+import { bookIndiaPostShipment, openIndiaPostLabel, trackIndiaPostShipment } from "@/lib/services/indiapost";
 import { deleteOrder } from "@/lib/services/admin";
 import { supabase } from "@/lib/supabase";
 import type { Order, OrderStatus, Product, PaymentMethod, PaymentStatus } from "@/types";
@@ -1727,6 +1728,48 @@ export default function AdminOrdersPage() {
     }
   };
 
+  const handleBookIndiaPost = async (order: Order) => {
+    // A pre-allotted article number (Bulk Customer → Barcode) is optional.
+    const barcode = window.prompt("India Post article number (leave empty if India Post assigns one):", "") ?? null;
+    if (barcode === null) return;
+    const actionKey = `indiapost:${order.id}`;
+    setShippingAction(actionKey);
+    try {
+      const result = await bookIndiaPostShipment(order.id, barcode.trim() || undefined);
+      const tariff = result?.tariff != null ? `, tariff ₹${result.tariff}` : "";
+      toast.success(`India Post booked${result?.awb_code ? `: ${result.awb_code}` : ""}${tariff}`);
+      await refetch();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "India Post booking failed");
+    } finally {
+      setShippingAction(null);
+    }
+  };
+
+  const handleIndiaPostLabel = async (order: Order) => {
+    setShippingAction(`iplabel:${order.id}`);
+    try {
+      await openIndiaPostLabel(order.id);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not get the India Post label");
+    } finally {
+      setShippingAction(null);
+    }
+  };
+
+  const handleIndiaPostTrack = async (order: Order) => {
+    setShippingAction(`iptrack:${order.id}`);
+    try {
+      const r = await trackIndiaPostShipment(order.id);
+      toast.success(`India Post: ${r.status || "no update yet"}`);
+      await refetch();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not refresh India Post tracking");
+    } finally {
+      setShippingAction(null);
+    }
+  };
+
   const handleCancelShipway = async (order: Order) => {
     if (!confirm(`Cancel Shipway shipment ${order.awb_code || ""}?`)) return;
     const actionKey = `cancel:${order.id}`;
@@ -2206,6 +2249,16 @@ export default function AdminOrdersPage() {
                                   Track <ExternalLink className="w-3 h-3" />
                                 </a>
                               )}
+                              {order.shipping_provider === "indiapost" && order.awb_code && (
+                                <>
+                                  <button onClick={() => handleIndiaPostLabel(order)} disabled={shippingAction !== null} className="px-3 py-2 rounded-lg bg-coral/10 text-coral text-sm font-medium flex items-center gap-1.5 disabled:opacity-50">
+                                    {shippingAction === `iplabel:${order.id}` ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />} India Post label
+                                  </button>
+                                  <button onClick={() => handleIndiaPostTrack(order)} disabled={shippingAction !== null} className="px-3 py-2 rounded-lg bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-sm font-medium flex items-center gap-1.5 disabled:opacity-50">
+                                    {shippingAction === `iptrack:${order.id}` ? <Loader2 className="w-4 h-4 animate-spin" /> : <Truck className="w-4 h-4" />} Refresh tracking
+                                  </button>
+                                </>
+                              )}
                               {order.shipping_provider === "shipway" && order.awb_code && order.shipping_status !== "cancelled" && (
                                 <button onClick={() => handleCancelShipway(order)} disabled={shippingAction === `cancel:${order.id}`} className="px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-sm font-medium flex items-center gap-1.5 disabled:opacity-50">
                                   {shippingAction === `cancel:${order.id}` ? <Loader2 className="w-4 h-4 animate-spin" /> : <Ban className="w-4 h-4" />} Cancel shipment
@@ -2222,6 +2275,9 @@ export default function AdminOrdersPage() {
                               </button>
                               <button onClick={() => handleBookShipment(order, "shipway")} disabled={shippingAction !== null} className="px-3 py-2 rounded-lg bg-coral/10 text-coral text-sm font-medium flex items-center gap-2 disabled:opacity-50">
                                 {shippingAction === `shipway:${order.id}` ? <Loader2 className="w-4 h-4 animate-spin" /> : <Truck className="w-4 h-4" />} Book with Shipway
+                              </button>
+                              <button onClick={() => handleBookIndiaPost(order)} disabled={shippingAction !== null} className="px-3 py-2 rounded-lg bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300 text-sm font-medium flex items-center gap-2 disabled:opacity-50">
+                                {shippingAction === `indiapost:${order.id}` ? <Loader2 className="w-4 h-4 animate-spin" /> : <Package className="w-4 h-4" />} Book with India Post
                               </button>
                             </div>
                           </div>
