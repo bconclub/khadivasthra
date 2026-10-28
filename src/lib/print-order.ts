@@ -74,9 +74,9 @@ function generateInvoiceHTML(order: Order): string {
   const halfRate = `${(GST_RATE * 100) / 2}%`;
   const cgst = Math.round((gst / 2) * 100) / 100;
   const gstRows = intraState
-    ? `<div class="row"><span>CGST @ ${halfRate}</span><span>${money(cgst)}</span></div>
-      <div class="row"><span>SGST @ ${halfRate}</span><span>${money(gst - cgst)}</span></div>`
-    : `<div class="row"><span>IGST @ ${GST_RATE * 100}%</span><span>${money(gst)}</span></div>`;
+    ? `<tr><td>CGST (${halfRate})</td><td class="r">${money(cgst)}</td></tr>
+        <tr><td>SGST (${halfRate})</td><td class="r">${money(gst - cgst)}</td></tr>`
+    : `<tr><td>IGST (${GST_RATE * 100}%)</td><td class="r">${money(gst)}</td></tr>`;
 
   const itemRows = order.items.map((item, i) => `
     <tr>
@@ -141,8 +141,11 @@ function generateInvoiceHTML(order: Order): string {
   .totals .row { display:flex; gap:20px; min-width:240px; justify-content:space-between; }
   .totals .row.grand { border-top:2px solid #222; padding-top:8px; margin-top:4px; font-size:16px; font-weight:700; }
 
-  .gst-box { border:1px solid #ddd; border-radius:4px; padding:6px 10px; margin-top:8px; min-width:240px; display:flex; flex-direction:column; gap:2px; font-size:12px; }
-  .gst-note { font-size:11px; color:#666; margin-top:4px; }
+  .gst-table { margin-bottom:10px; }
+  .gst-table td { padding:6px 10px; border-bottom:1px solid #eee; }
+  .gst-table td.r, .gst-table th.r { text-align:right; }
+  .gst-table tr.total td { font-weight:700; border-top:2px solid #222; border-bottom:none; }
+  .gst-note { font-size:11px; color:#666; margin-top:2px; }
 
   .terms { font-size:11px; color:#666; line-height:1.6; }
   .terms-label { font-size:11px; font-weight:700; letter-spacing:1px; color:#666; margin-bottom:4px; }
@@ -217,14 +220,31 @@ function generateInvoiceHTML(order: Order): string {
       <div class="row"><span>Shipping</span><span>${inr(order.shipping || 0)}</span></div>
       ${codCharges > 0 ? `<div class="row"><span>COD Charges (1.6%)</span><span>${inr(codCharges)}</span></div>` : ''}
       <div class="row grand"><span>GRAND TOTAL</span><span>${inr(order.total)}</span></div>
-      <div class="gst-box">
-        <div class="row"><span>Taxable value</span><span>${money(taxable)}</span></div>
-        ${gstRows}
-        <div class="row"><b>Total GST (${GST_RATE * 100}%)</b><b>${money(gst)}</b></div>
-      </div>
-      <div class="gst-note">All prices are inclusive of ${GST_RATE * 100}% GST.</div>
     </div>
     ${isCod ? `<div style="margin-top:8px;font-size:12px;color:#666;">COD Settlement: ${(order.settlement_status || 'pending').toUpperCase()}</div>` : ''}
+  </div>
+
+  <!-- GST -->
+  <div class="section">
+    <div class="items-label">GST SUMMARY</div>
+    <table class="gst-table">
+      <thead><tr><th>Description</th><th class="r">Amount</th></tr></thead>
+      <tbody>
+        <tr><td>Price before GST</td><td class="r">${money(taxable)}</td></tr>
+        <tr><td>GST (${GST_RATE * 100}%)</td><td class="r">${money(gst)}</td></tr>
+        <tr class="total"><td>Total price including GST</td><td class="r">${money(grandTotal)}</td></tr>
+      </tbody>
+    </table>
+    <table class="gst-table">
+      <thead><tr><th>GST component</th><th class="r">Amount</th></tr></thead>
+      <tbody>
+        ${gstRows}
+        <tr class="total"><td>Total GST (${GST_RATE * 100}%)</td><td class="r">${money(gst)}</td></tr>
+      </tbody>
+    </table>
+    <div class="gst-note">All prices are inclusive of ${GST_RATE * 100}% GST. ${intraState
+      ? 'Intra-state supply (Kerala): CGST + SGST.'
+      : `Inter-state supply to ${esc(order.customer_state || '')}: IGST.`}</div>
   </div>
 
   <!-- Terms -->
