@@ -64,8 +64,8 @@ export function CheckoutMusic() {
       <button
         type="button"
         onClick={toggle}
-        aria-label={playing ? "Turn music off" : "Play Onam music"}
-        title={playing ? "Turn music off" : "Play a little Onam tune"}
+        aria-label={playing ? "Turn music off" : "Play music"}
+        title={playing ? "Turn music off" : "Play music"}
         className={`checkout-music inline-flex items-center gap-1.5 rounded-full pl-2.5 pr-3 py-1.5 text-xs font-semibold transition-all flex-shrink-0 ${
           playing
             ? "bg-orange text-white shadow-sm shadow-orange/30"
@@ -73,7 +73,7 @@ export function CheckoutMusic() {
         }`}
       >
         {playing ? <Pause className="w-3.5 h-3.5" /> : <Music className="w-3.5 h-3.5 text-orange" />}
-        <span className="whitespace-nowrap">{playing ? "Onam vibes on" : "Play Onam tune"}</span>
+        <span className="whitespace-nowrap">{playing ? "No music" : "Vibe"}</span>
       </button>
     </>
   );

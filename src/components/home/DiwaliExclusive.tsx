@@ -106,8 +106,8 @@ function GuestCard({ category, tagline, fallbackImage }: { category: Category; t
   const [coverFailed, setCoverFailed] = useState(false);
   const cover = coverFailed ? fallbackImage : category.image_url || fallbackImage;
   return (
-    <Link href={`/shop/${category.slug}`} className="group block">
-      <div className="rounded-t-[999px] rounded-b-xl p-1.5 md:p-2 shadow-xl shadow-black/30" style={{ background: GOLD }}>
+    <Link href={`/shop/${category.slug}`} className="group block h-full">
+      <div className="h-full flex flex-col rounded-t-[999px] rounded-b-xl p-1.5 md:p-2 shadow-xl shadow-black/30" style={{ background: GOLD }}>
         <div className="relative aspect-[3/4] rounded-t-[999px] rounded-b-lg overflow-hidden bg-cream">
           {cover ? (
             <Image
@@ -129,8 +129,9 @@ function GuestCard({ category, tagline, fallbackImage }: { category: Category; t
             </div>
           )}
         </div>
-        <div className="py-2 text-center">
-          <p className="font-serif font-bold text-sm md:text-base leading-tight" style={{ color: MAROON }}>{category.name}</p>
+        {/* Fills the card, so long names keep the whole row the same height. */}
+        <div className="flex-1 flex flex-col justify-center px-1 py-2 text-center">
+          <p className="font-serif font-bold text-[13px] md:text-base leading-tight break-words" style={{ color: MAROON }}>{category.name}</p>
           <p className="text-[11px] md:text-xs" style={{ color: `${MAROON}cc` }}>{tagline}</p>
         </div>
       </div>
