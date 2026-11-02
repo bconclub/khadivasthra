@@ -7,6 +7,7 @@ import { getCategories } from "@/lib/services/categories";
 import { listInvestors, listInvestmentsForProduct } from "@/lib/services/investors";
 import { getWholesalePrice } from "@/lib/services/wholesale";
 import { supabase } from "@/lib/supabase";
+import { PriceCalculator } from "@/components/admin/PriceCalculator";
 import type { ProductWithCategory, ProductColor, ProductVariant, Investor, Investment } from "@/types";
 import { Loader2, X, Plus, Camera, Package, Trash2, RefreshCw, Palette, GripVertical } from "lucide-react";
 import Image from "next/image";
@@ -1024,6 +1025,8 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
                   )}
                 </div>
               </div>
+
+              <PriceCalculator offerPercent={discountPct} onApply={(mrp) => setComparePrice(String(mrp))} />
 
               {/* Stock Quantity (for non-variant products) */}
               {!hasVariants && (

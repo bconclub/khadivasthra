@@ -179,7 +179,8 @@ function GuestList({ categories, products }: { categories: Category[]; products:
 export function DiwaliExclusive({ products, categories }: { products: ProductWithCategory[]; categories: Category[] }) {
   const picks = pickProducts(products);
   const bestOff = picks.reduce((m, p) => Math.max(m, discountOf(p)), 0);
-  const guests = categories.filter((c) => c.is_active !== false);
+  // A category with nothing on sale has nothing to show on the guest list.
+  const guests = categories.filter((c) => c.is_active !== false && products.some((p) => p.category_id === c.id));
   if (picks.length === 0 && guests.length === 0) return null;
 
   return (
