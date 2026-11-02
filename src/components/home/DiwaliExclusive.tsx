@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import useEmblaCarousel from "embla-carousel-react";
@@ -11,7 +12,7 @@ import type { Category, ProductWithCategory } from "@/types";
 // its coral and cream.
 const MAROON = "#5A0E1E";
 const MAROON_LIGHT = "#7D1A2E";
-const GOLD = "#E9C46A";
+const GOLD = "#FA9E1C"; // the yellow from the hero logo
 
 const PICK_COUNT = 8;
 const TAGLINES = ["The festive classic", "Life of the party", "The showstopper", "The minimalist", "Light it up", "Pooja-ready", "Family favourite", "Effortless ethnic"];
@@ -100,17 +101,25 @@ function ExclusiveTile({ product }: { product: ProductWithCategory }) {
   );
 }
 
-function GuestCard({ category, tagline }: { category: Category; tagline: string }) {
+function GuestCard({ category, tagline, fallbackImage }: { category: Category; tagline: string; fallbackImage?: string | null }) {
+  // A cover that won't load falls back to a product photo from the category.
+  const [coverFailed, setCoverFailed] = useState(false);
+  const cover = coverFailed ? fallbackImage : category.image_url || fallbackImage;
   return (
     <Link href={`/shop/${category.slug}`} className="group block">
       <div className="rounded-t-[999px] rounded-b-xl p-1.5 md:p-2 shadow-xl shadow-black/30" style={{ background: GOLD }}>
         <div className="relative aspect-[3/4] rounded-t-[999px] rounded-b-lg overflow-hidden bg-cream">
-          {category.image_url ? (
+          {cover ? (
             <Image
-              src={storageImage(category.image_url, IMG.card)}
+              key={cover}
+              src={storageImage(cover, IMG.card)}
               alt={category.name}
               fill
               sizes="(max-width: 768px) 45vw, 20vw"
+              // Eager: the carousel slides sit off-screen until dragged, and
+              // lazy loading left them blank while they scrolled into view.
+              loading="eager"
+              onError={() => setCoverFailed(true)}
               className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
               unoptimized
             />
@@ -129,7 +138,7 @@ function GuestCard({ category, tagline }: { category: Category; tagline: string 
   );
 }
 
-function GuestList({ categories }: { categories: Category[] }) {
+function GuestList({ categories, products }: { categories: Category[]; products: ProductWithCategory[] }) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ align: "start", dragFree: true });
   return (
     <div className="relative">
@@ -137,7 +146,11 @@ function GuestList({ categories }: { categories: Category[] }) {
         <div className="flex gap-4 md:gap-6">
           {categories.map((c, i) => (
             <div key={c.id} className="flex-[0_0_44%] sm:flex-[0_0_30%] lg:flex-[0_0_20%] min-w-0">
-              <GuestCard category={c} tagline={TAGLINES[i % TAGLINES.length]} />
+              <GuestCard
+                category={c}
+                tagline={TAGLINES[i % TAGLINES.length]}
+                fallbackImage={products.find((p) => p.category_id === c.id && p.image_url)?.image_url}
+              />
             </div>
           ))}
         </div>
@@ -199,7 +212,7 @@ export function DiwaliExclusive({ products, categories }: { products: ProductWit
         {guests.length > 0 && (
           <div className={picks.length > 0 ? "mt-14 md:mt-16" : ""}>
             <SectionTitle title="THE DIWALI GUEST LIST" subtitle="Meet the looks making the guest list" />
-            <GuestList categories={guests} />
+            <GuestList categories={guests} products={products} />
           </div>
         )}
       </div>

@@ -13,6 +13,7 @@ import { SiteBanner } from "@/components/SiteBanner";
 import { storageImage, IMG } from "@/lib/image";
 import { LookCard } from "@/components/shop/LookBrowser";
 import { ComboCard } from "@/app/combos/CombosIndexClient";
+import { getFeaturedCombos } from "@/lib/services/combos";
 import { DiwaliExclusive } from "@/components/home/DiwaliExclusive";
 import type { Banner, Category, Combo, Look, ProductWithCategory } from "@/types";
 import { ArrowRight, ChevronLeft, ChevronRight, Loader2, ImageOff } from "lucide-react";
@@ -60,6 +61,9 @@ export default function HomeClient({
   const showFestive = siteSettings?.festive_enabled === true;
   const showCombos =
     siteSettings != null ? siteSettings.combos_enabled === true : initialFeaturedCombos.length > 0;
+  // Build-time combos paint first; the live query picks up any added since.
+  const { data: liveCombos } = useSupabaseQuery(getFeaturedCombos);
+  const featuredCombos = liveCombos ?? initialFeaturedCombos;
   // Admin-managed hero cover (separate mobile/desktop images); falls back to
   // the packaged cover when no hero_background banner is set.
   // Hold the packaged cover back until the banner query settles — rendering it
@@ -298,7 +302,7 @@ export default function HomeClient({
       )}
 
       {/* 3b. COMBOS — build your own set for one price */}
-      {showCombos && initialFeaturedCombos.length > 0 && (
+      {showCombos && featuredCombos.length > 0 && (
         <section className="combos-section bg-cream pt-10 md:pt-12">
           <div className="container mx-auto px-4 max-w-7xl">
             <div className="flex items-end justify-between mb-6">
@@ -310,7 +314,7 @@ export default function HomeClient({
               </Link>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-              {initialFeaturedCombos.map((combo) => (
+              {featuredCombos.map((combo) => (
                 <ComboCard key={combo.id} combo={combo} />
               ))}
             </div>
