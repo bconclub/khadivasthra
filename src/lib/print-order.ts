@@ -1,5 +1,6 @@
 import type { Order } from '@/types';
 import { variantLabel, comboLabel } from "./order-item";
+import { COD_RATE, COD_GST_RATE } from "./pricing";
 
 const STORE = {
   name: 'KHADI VASTHRA',
@@ -65,18 +66,28 @@ function generateInvoiceHTML(order: Order): string {
 
   const showHsn = order.items.some((item) => hsnFor(item.product_id));
   const discount = Number(order.discount) || 0;
-  // Everything charged is GST-inclusive (shipping follows the goods' rate),
-  // so tax is backed out of the grand total.
+  // Everything charged is GST-inclusive, so tax is backed out of the amounts.
+  // Goods and shipping carry the goods' rate; the COD fee carries its own.
   const grandTotal = Number(order.total) || 0;
-  const taxable = Math.round((grandTotal / (1 + GST_RATE)) * 100) / 100;
-  const gst = Math.round((grandTotal - taxable) * 100) / 100;
+  const round2 = (n: number) => Math.round(n * 100) / 100;
+  // Orders from before the fee carried 18% GST were charged a flat 1.6%, and
+  // stay taxed at the goods' rate.
+  const codBase = grandTotal - codCharges;
+  const codTaxed = codCharges > 0 && codCharges !== Math.round(codBase * COD_RATE);
+  const goodsAmount = codTaxed ? codBase : grandTotal;
+  const goodsGst = round2(goodsAmount - goodsAmount / (1 + GST_RATE));
+  const codGst = codTaxed ? round2(codCharges - codCharges / (1 + COD_GST_RATE)) : 0;
+  const gst = round2(goodsGst + codGst);
+  const taxable = round2(grandTotal - gst);
   const intraState = (order.customer_state || '').trim().toLowerCase() === SELLER_STATE;
-  const halfRate = `${(GST_RATE * 100) / 2}%`;
-  const cgst = Math.round((gst / 2) * 100) / 100;
-  const gstRows = intraState
-    ? `<tr><td>CGST (${halfRate})</td><td class="r">${money(cgst)}</td></tr>
-        <tr><td>SGST (${halfRate})</td><td class="r">${money(gst - cgst)}</td></tr>`
-    : `<tr><td>IGST (${GST_RATE * 100}%)</td><td class="r">${money(gst)}</td></tr>`;
+  const gstRow = (rate: number, amount: number) => {
+    if (!intraState) return `<tr><td>IGST (${rate * 100}%)</td><td class="r">${money(amount)}</td></tr>`;
+    const half = round2(amount / 2);
+    return `<tr><td>CGST (${(rate * 100) / 2}%)</td><td class="r">${money(half)}</td></tr>
+        <tr><td>SGST (${(rate * 100) / 2}%)</td><td class="r">${money(round2(amount - half))}</td></tr>`;
+  };
+  const gstRows = gstRow(GST_RATE, goodsGst) + (codGst > 0 ? gstRow(COD_GST_RATE, codGst) : '');
+  const gstLabel = codGst > 0 ? 'GST' : `GST (${GST_RATE * 100}%)`;
 
   const itemRows = order.items.map((item, i) => `
     <tr>
@@ -218,7 +229,7 @@ function generateInvoiceHTML(order: Order): string {
       <div class="row"><span>Subtotal</span><span>${inr(order.subtotal)}</span></div>
       ${discount > 0 ? `<div class="row"><span>Discount${order.coupon_code ? ` (${esc(order.coupon_code)})` : ''}</span><span>&minus;${inr(discount)}</span></div>` : ''}
       <div class="row"><span>Shipping</span><span>${inr(order.shipping || 0)}</span></div>
-      ${codCharges > 0 ? `<div class="row"><span>COD Charges (1.6%)</span><span>${inr(codCharges)}</span></div>` : ''}
+      ${codCharges > 0 ? `<div class="row"><span>COD Charges</span><span>${inr(codCharges)}</span></div>` : ''}
       <div class="row grand"><span>GRAND TOTAL</span><span>${inr(order.total)}</span></div>
     </div>
     ${isCod ? `<div style="margin-top:8px;font-size:12px;color:#666;">COD Settlement: ${(order.settlement_status || 'pending').toUpperCase()}</div>` : ''}
@@ -231,7 +242,7 @@ function generateInvoiceHTML(order: Order): string {
       <thead><tr><th>Description</th><th class="r">Amount</th></tr></thead>
       <tbody>
         <tr><td>Price before GST</td><td class="r">${money(taxable)}</td></tr>
-        <tr><td>GST (${GST_RATE * 100}%)</td><td class="r">${money(gst)}</td></tr>
+        <tr><td>${gstLabel}</td><td class="r">${money(gst)}</td></tr>
         <tr class="total"><td>Total price including GST</td><td class="r">${money(grandTotal)}</td></tr>
       </tbody>
     </table>
@@ -239,10 +250,10 @@ function generateInvoiceHTML(order: Order): string {
       <thead><tr><th>GST component</th><th class="r">Amount</th></tr></thead>
       <tbody>
         ${gstRows}
-        <tr class="total"><td>Total GST (${GST_RATE * 100}%)</td><td class="r">${money(gst)}</td></tr>
+        <tr class="total"><td>Total ${gstLabel}</td><td class="r">${money(gst)}</td></tr>
       </tbody>
     </table>
-    <div class="gst-note">All prices are inclusive of ${GST_RATE * 100}% GST. ${intraState
+    <div class="gst-note">All prices are inclusive of ${GST_RATE * 100}% GST${codGst > 0 ? `; the COD fee includes ${COD_GST_RATE * 100}% GST` : ''}. ${intraState
       ? 'Intra-state supply (Kerala): CGST + SGST.'
       : `Inter-state supply to ${esc(order.customer_state || '')}: IGST.`}</div>
   </div>
@@ -375,7 +386,7 @@ function generateStickerHTML(order: Order): string {
   <div class="row-section items-section">
     <div class="items-heading">${totalPcs} ITEM${totalPcs !== 1 ? 'S' : ''}</div>
     ${itemLines}
-    ${codCharges > 0 ? `<div class="item-row"><span>COD Charges (1.6%)</span><span>${inr(codCharges)}</span></div>` : ''}
+    ${codCharges > 0 ? `<div class="item-row"><span>COD Charges</span><span>${inr(codCharges)}</span></div>` : ''}
     <div class="items-total"><span>Total</span><span>${inr(order.total)}</span></div>
   </div>
 
@@ -506,6 +517,28 @@ export function printOrder(order: Order, type: 'invoice' | 'sticker') {
   if (!printWindow) return;
   printWindow.document.write(html);
   printWindow.document.close();
+}
+
+/** A sample invoice for Admin → Settings, to see the GST layout before any order. */
+export function previewInvoice(state: 'Kerala' | 'Karnataka') {
+  const sample = {
+    order_number: 'SAMPLE-0001',
+    created_at: new Date().toISOString(),
+    customer_name: 'Sample Customer',
+    customer_phone: '9999999999',
+    customer_address: 'Sample address',
+    customer_city: state === 'Kerala' ? 'Kochi' : 'Bengaluru',
+    customer_state: state,
+    customer_pincode: state === 'Kerala' ? '682001' : '560001',
+    items: [{ product_id: 'sample', product_name: 'Sample Mundu', price: 1000, quantity: 1 }],
+    subtotal: 1000,
+    discount: 0,
+    shipping: 49,
+    cod_charges: 0,
+    total: 1049,
+    payment_method: 'online',
+  } as unknown as Order;
+  printOrder(sample, 'invoice');
 }
 
 export function printOrders(orders: Order[], type: 'invoice' | 'sticker') {

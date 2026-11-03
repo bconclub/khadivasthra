@@ -10,6 +10,7 @@ import { CheckCircle2, CircleAlert, Loader2, RefreshCw, Save } from "lucide-reac
 import toast from "react-hot-toast";
 import type { SiteSettings, ShippingTier, PaymentGateway } from "@/types";
 import { DEFAULT_CANCELLATION_POLICY } from "@/lib/policies";
+import { previewInvoice, setInvoiceBusiness } from "@/lib/print-order";
 
 const DEFAULT_TIERS: ShippingTier[] = [
   { max_items: 1, rate: 89 },
@@ -181,6 +182,11 @@ export default function AdminSettingsPage() {
   const hasCancellationColumn = !!settings && "cancellation_policy" in settings;
   const hasBusinessColumns = !!settings && "gstin" in settings;
   const hasHsnColumn = !!settings && "default_hsn" in settings;
+
+  const showInvoicePreview = (state: "Kerala" | "Karnataka") => {
+    setInvoiceBusiness({ legal_name: legalName, gstin, registered_address: registeredAddress, default_hsn: defaultHsn });
+    previewInvoice(state);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -594,6 +600,19 @@ export default function AdminSettingsPage() {
               <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                 Printed on invoices for products that don&apos;t have their own HSN code. Prices are taken as inclusive of 5% GST.
               </p>
+            </div>
+            <div>
+              <label className={labelClass}>Invoice preview</label>
+              <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">
+                Opens a sample invoice using the details above, saved or not, with the GST split for each case.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {([["Kerala", "Inside Kerala (CGST + SGST)"], ["Karnataka", "Outside Kerala (IGST)"]] as const).map(([state, label]) => (
+                  <Button key={state} type="button" variant="outline" size="sm" onClick={() => showInvoicePreview(state)}>
+                    {label}
+                  </Button>
+                ))}
+              </div>
             </div>
           </div>
 
