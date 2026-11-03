@@ -9,29 +9,37 @@ export function codCharge(amount: number): number {
 
 /** Defaults for the price calculator on the admin product form. */
 export const DEFAULT_COURIER_CHARGE = 49;
+export const DEFAULT_MARGIN_PERCENT = 45;
 export const DEFAULT_GST_PERCENT = 5;
 
 export interface PriceBreakdown {
+  totalCost: number;
+  profit: number;
+  beforeGst: number;
   gst: number;
-  courierGst: number;
-  /** What the shopper pays: everything above, inclusive, rounded to the rupee. */
-  sellingPrice: number;
-  /** The MRP that lands on sellingPrice once the offer is taken off. */
-  mrp: number;
+  /** Regular selling price including GST; this becomes the MRP. */
+  regular: number;
+  offerDiscount: number;
+  offerPrice: number;
 }
 
+/**
+ * The owner's price chart: cost plus a margin that is a share of the price
+ * before GST, then GST on top, then the offer taken off the regular price.
+ */
 export function buildPrice(input: {
-  productPrice: number;
-  gstPercent: number;
+  productionCost: number;
+  landingCost: number;
   courierCharge: number;
-  courierGstPercent: number;
+  marginPercent: number;
+  gstPercent: number;
   offerPercent: number;
 }): PriceBreakdown {
-  const gst = input.productPrice * (input.gstPercent / 100);
-  const courierGst = input.courierCharge * (input.courierGstPercent / 100);
-  const sellingPrice = Math.round(input.productPrice + gst + input.courierCharge + courierGst);
-  const mrp = input.offerPercent > 0 && input.offerPercent < 100
-    ? Math.round(sellingPrice / (1 - input.offerPercent / 100))
-    : sellingPrice;
-  return { gst, courierGst, sellingPrice, mrp };
+  const totalCost = input.productionCost + input.landingCost + input.courierCharge;
+  const margin = Math.min(Math.max(input.marginPercent, 0), 99) / 100;
+  const beforeGst = totalCost / (1 - margin);
+  const gst = beforeGst * (input.gstPercent / 100);
+  const regular = beforeGst + gst;
+  const offerDiscount = regular * (Math.max(input.offerPercent, 0) / 100);
+  return { totalCost, profit: beforeGst - totalCost, beforeGst, gst, regular, offerDiscount, offerPrice: regular - offerDiscount };
 }

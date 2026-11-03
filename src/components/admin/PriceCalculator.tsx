@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { buildPrice, DEFAULT_COURIER_CHARGE, DEFAULT_GST_PERCENT } from "@/lib/pricing";
+import { buildPrice, DEFAULT_COURIER_CHARGE, DEFAULT_GST_PERCENT, DEFAULT_MARGIN_PERCENT } from "@/lib/pricing";
 
 const inputCls = "w-full px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white text-sm";
 
@@ -14,62 +14,68 @@ function Field({ label, value, onChange }: { label: string; value: string; onCha
   );
 }
 
-function Row({ label, value }: { label: string; value: number }) {
+function Row({ label, value, bold }: { label: string; value: number; bold?: boolean }) {
   return (
-    <div className="flex justify-between">
+    <div className={`flex justify-between ${bold ? "font-bold" : ""}`}>
       <span>{label}</span>
-      <span>₹{value.toLocaleString("en-IN", { maximumFractionDigits: 2 })}</span>
+      <span>₹{value.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
     </div>
   );
 }
 
 /**
- * Works out an inclusive price from its parts: product, GST, courier and courier
- * GST, with the form's discount as the offer. Only fills in the MRP when asked.
+ * Follows the price chart: costs plus a margin on the price before GST, GST
+ * on top, and the form's discount as the offer. Only fills in the MRP when asked.
  */
 export function PriceCalculator({ offerPercent, onApply }: { offerPercent: number; onApply: (mrp: number) => void }) {
-  const [productPrice, setProductPrice] = useState("");
-  const [gstPercent, setGstPercent] = useState(String(DEFAULT_GST_PERCENT));
+  const [production, setProduction] = useState("");
+  const [landing, setLanding] = useState("");
   const [courier, setCourier] = useState(String(DEFAULT_COURIER_CHARGE));
-  const [courierGstPercent, setCourierGstPercent] = useState(String(DEFAULT_GST_PERCENT));
+  const [margin, setMargin] = useState(String(DEFAULT_MARGIN_PERCENT));
+  const [gstPercent, setGstPercent] = useState(String(DEFAULT_GST_PERCENT));
 
-  const product = parseFloat(productPrice) || 0;
+  const productionCost = parseFloat(production) || 0;
+  const landingCost = parseFloat(landing) || 0;
   const courierCharge = parseFloat(courier) || 0;
-  const price = buildPrice({
-    productPrice: product,
-    gstPercent: parseFloat(gstPercent) || 0,
-    courierCharge,
-    courierGstPercent: parseFloat(courierGstPercent) || 0,
-    offerPercent,
-  });
+  const marginPercent = parseFloat(margin) || 0;
+  const gst = parseFloat(gstPercent) || 0;
+  const price = buildPrice({ productionCost, landingCost, courierCharge, marginPercent, gstPercent: gst, offerPercent });
+  const mrp = Math.round(price.regular);
 
   return (
     <details className="pt-3 border-t border-gray-200 dark:border-gray-700">
       <summary className="text-xs font-medium text-gray-500 dark:text-gray-400 cursor-pointer">Price calculator</summary>
       <div className="mt-3 space-y-3">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <Field label="Product price (₹)" value={productPrice} onChange={setProductPrice} />
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <Field label="Production cost (₹)" value={production} onChange={setProduction} />
+          <Field label="Store landing cost (₹)" value={landing} onChange={setLanding} />
+          <Field label="Courier / postal (₹)" value={courier} onChange={setCourier} />
+          <Field label="Margin (%)" value={margin} onChange={setMargin} />
           <Field label="GST (%)" value={gstPercent} onChange={setGstPercent} />
-          <Field label="Courier charge (₹)" value={courier} onChange={setCourier} />
-          <Field label="Courier GST (%)" value={courierGstPercent} onChange={setCourierGstPercent} />
         </div>
-        {product > 0 && (
+        {productionCost > 0 && (
           <div className="text-xs text-gray-600 dark:text-gray-300 space-y-1">
-            <Row label="Product price" value={product} />
-            <Row label="GST" value={price.gst} />
-            <Row label="Courier charge" value={courierCharge} />
-            <Row label="Courier GST" value={price.courierGst} />
-            <div className="font-bold pt-1 border-t border-gray-200 dark:border-gray-700">
-              <Row label="Selling price (inclusive)" value={price.sellingPrice} />
+            <Row label="Total cost" value={price.totalCost} bold />
+            <Row label={`Profit for ${marginPercent}% margin`} value={price.profit} />
+            <Row label="Selling price before GST" value={price.beforeGst} />
+            <Row label={`GST at ${gst}%`} value={price.gst} />
+            <div className="pt-1 border-t border-gray-200 dark:border-gray-700">
+              <Row label="Regular selling price" value={price.regular} bold />
             </div>
-            {offerPercent > 0 && <Row label={`MRP with ${offerPercent}% offer`} value={price.mrp} />}
+            {offerPercent > 0 && (
+              <>
+                <Row label={`${offerPercent}% offer discount`} value={-price.offerDiscount} />
+                <Row label="Final offer price" value={price.offerPrice} bold />
+              </>
+            )}
             <button
               type="button"
-              onClick={() => onApply(price.mrp)}
+              onClick={() => onApply(mrp)}
               className="mt-2 px-3 py-1.5 rounded-lg bg-coral text-white text-xs font-semibold hover:bg-coral/90"
             >
-              Use ₹{price.mrp.toLocaleString("en-IN")} as Base MRP
+              Use ₹{mrp.toLocaleString("en-IN")} as Base MRP
             </button>
+            <p className="text-[10px] text-gray-400">The discount above is the offer. COD commission is charged separately at checkout.</p>
           </div>
         )}
       </div>
