@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { codCharge } from '@/lib/pricing';
 import type { Order, OrderItem, CheckoutFormData, CartItem, ServiceabilityResult, TrackingResult, PaymentMethod, PaymentGateway, AppliedCoupon } from '@/types';
 
 function generateOrderNumber(): string {
@@ -101,7 +102,7 @@ export async function createOrder(
   }));
 
   const isCod = paymentMethod === 'cod';
-  const codCharges = isCod ? Math.round((subtotal + shippingCost) * 0.016) : 0;
+  const codCharges = isCod ? codCharge(subtotal + shippingCost) : 0;
   const total = subtotal + shippingCost + codCharges;
 
   const order = {

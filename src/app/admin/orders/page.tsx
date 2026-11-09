@@ -10,6 +10,7 @@ import { deleteOrder } from "@/lib/services/admin";
 import { supabase } from "@/lib/supabase";
 import type { Order, OrderStatus, Product, PaymentMethod, PaymentStatus } from "@/types";
 import { variantLabel, itemSummary, itemSummaryWithCombo, comboLabel } from "@/lib/order-item";
+import { codCharge } from "@/lib/pricing";
 import { Loader2, ChevronDown, ChevronUp, Trash2, CreditCard, Package, Plus, Search, X, Minus, Pencil, Printer, FileText, Tag, CheckSquare, Download, Check, ExternalLink, Truck, Ban } from "lucide-react";
 import { printOrder, printOrders, setInvoiceBusiness, setInvoiceHsnCodes } from "@/lib/print-order";
 import { getSettings } from "@/lib/services/settings";
@@ -499,7 +500,7 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
   const subtotal = lineItems.reduce((sum, li) => sum + li.unitPrice * li.quantity, 0);
   const isCodCreate = paymentMethod === "cod";
   const shippingAmount = shipping === "" ? 0 : shipping;
-  const codCharges = isCodCreate ? Math.round((subtotal + shippingAmount) * 0.016) : 0;
+  const codCharges = isCodCreate ? codCharge(subtotal + shippingAmount) : 0;
   const total = subtotal + shippingAmount + codCharges;
 
   const handlePaymentMethodChange = (method: PaymentMethod) => {
@@ -897,7 +898,7 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
             <div className="mt-3 text-sm space-y-1">
               <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Subtotal</span><span>₹{subtotal.toLocaleString()}</span></div>
               <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Shipping</span><span>₹{shippingAmount.toLocaleString()}</span></div>
-              {isCodCreate && <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>COD Charges (1.6%)</span><span>₹{codCharges.toLocaleString()}</span></div>}
+              {isCodCreate && <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>COD Charges</span><span>₹{codCharges.toLocaleString()}</span></div>}
               <div className="flex justify-between font-bold text-gray-900 dark:text-white border-t border-gray-200 dark:border-gray-600 pt-1"><span>Total</span><span>₹{total.toLocaleString()}</span></div>
             </div>
           </div>
@@ -1101,7 +1102,7 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
   const subtotal = lineItems.reduce((sum, li) => sum + li.price * li.quantity, 0);
   const isCodEdit = paymentMethod === "cod";
   const shippingAmount = shipping === "" ? 0 : shipping;
-  const codCharges = isCodEdit ? Math.round((subtotal + shippingAmount) * 0.016) : 0;
+  const codCharges = isCodEdit ? codCharge(subtotal + shippingAmount) : 0;
   const total = subtotal + shippingAmount + codCharges;
 
   const handleSubmit = async () => {
@@ -1384,7 +1385,7 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
             <div className="mt-3 text-sm space-y-1">
               <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Subtotal</span><span>₹{subtotal.toLocaleString()}</span></div>
               <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Shipping</span><span>₹{shippingAmount.toLocaleString()}</span></div>
-              {isCodEdit && <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>COD Charges (1.6%)</span><span>₹{codCharges.toLocaleString()}</span></div>}
+              {isCodEdit && <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>COD Charges</span><span>₹{codCharges.toLocaleString()}</span></div>}
               <div className="flex justify-between font-bold text-gray-900 dark:text-white border-t border-gray-200 dark:border-gray-600 pt-1"><span>Total</span><span>₹{total.toLocaleString()}</span></div>
             </div>
           </div>
@@ -2374,7 +2375,7 @@ export default function AdminOrdersPage() {
                           <div className="border-t border-gray-200 dark:border-gray-600 pt-2 space-y-1 text-sm">
                             <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Subtotal</span><span>₹{Number(order.subtotal).toLocaleString()}</span></div>
                             {Number(order.shipping) > 0 && <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Shipping</span><span>₹{Number(order.shipping).toLocaleString()}</span></div>}
-                            {Number(order.cod_charges) > 0 && <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>COD Charges (1.6%)</span><span>₹{Number(order.cod_charges).toLocaleString()}</span></div>}
+                            {Number(order.cod_charges) > 0 && <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>COD Charges</span><span>₹{Number(order.cod_charges).toLocaleString()}</span></div>}
                             <div className="flex justify-between font-bold text-gray-900 dark:text-white"><span>Total</span><span>₹{Number(order.total).toLocaleString()}</span></div>
                           </div>
                         </div>

@@ -11,6 +11,7 @@ import { supabase } from "@/lib/supabase";
 import { evaluateCoupon } from "@/lib/services/coupons";
 import { clearAppliedCoupon, normaliseCode, readAppliedCoupon, saveAppliedCoupon } from "@/lib/referral";
 import { CheckoutMusic } from "@/components/CheckoutMusic";
+import { codCharge } from "@/lib/pricing";
 import Link from "next/link";
 import { ChevronLeft, Loader2, ShoppingBag, CheckCircle2, XCircle, Truck, CreditCard, Banknote, BadgePercent, X } from "lucide-react";
 import type { CartItem, CheckoutFormData, Order, ServiceabilityResult, PaymentMethod, PaymentGateway, ShippingTier, AppliedCoupon, CouponEvaluation } from "@/types";
@@ -173,7 +174,7 @@ export default function CheckoutPage() {
     : 0;
   const discount = evaluation?.valid ? Number(evaluation.discount) : 0;
   const discountedSubtotal = Math.max(0, cartTotal - discount);
-  const codCharges = isCod ? Math.round((discountedSubtotal + shippingCost) * 0.016) : 0;
+  const codCharges = isCod ? codCharge(discountedSubtotal + shippingCost) : 0;
   const orderTotal = discountedSubtotal + shippingCost + codCharges;
   const activeCoupon: AppliedCoupon | null = evaluation?.valid && applied ? applied : null;
 
@@ -839,7 +840,7 @@ export default function CheckoutPage() {
                   {isCod && shippingInfo?.available && (
                     <div className="flex justify-between text-text-muted">
                       <span className="flex items-center gap-1">
-                        <Banknote className="w-3.5 h-3.5" /> COD charges (1.6%)
+                        <Banknote className="w-3.5 h-3.5" /> COD charges (1.6% + GST)
                       </span>
                       <span>{formatRupees(codCharges)}</span>
                     </div>
