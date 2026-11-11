@@ -14,6 +14,11 @@ export function storageImage(
   quality = 82
 ): string {
   if (!url) return "";
+  // Resizing is a paid Supabase feature (Pro plan). While the project is on the
+  // free plan /render/image answers 403 "FeatureNotEnabled" and every photo
+  // breaks, so serve the original file. Set NEXT_PUBLIC_SUPABASE_IMAGE_RESIZE=1
+  // to turn resizing back on after upgrading.
+  if (process.env.NEXT_PUBLIC_SUPABASE_IMAGE_RESIZE !== "1") return url;
   if (!url.includes("/storage/v1/object/public/")) return url;
   const base = url.replace("/storage/v1/object/public/", "/storage/v1/render/image/public/");
   const sep = base.includes("?") ? "&" : "?";
