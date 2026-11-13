@@ -1,6 +1,8 @@
 import { supabase } from '@/lib/supabase';
+import { compressImage } from '@/lib/compress-image';
 
-export async function uploadProductImage(file: File, productSlug: string): Promise<string> {
+export async function uploadProductImage(original: File, productSlug: string): Promise<string> {
+  const file = await compressImage(original);
   const ext = file.name.split('.').pop();
   const fileName = `${productSlug}/${Date.now()}.${ext}`;
 
@@ -16,7 +18,8 @@ export async function uploadProductImage(file: File, productSlug: string): Promi
   return data.publicUrl;
 }
 
-export async function uploadCategoryImage(file: File, categorySlug: string): Promise<string> {
+export async function uploadCategoryImage(original: File, categorySlug: string): Promise<string> {
+  const file = await compressImage(original);
   const ext = file.name.split('.').pop();
   const fileName = `${categorySlug}/${Date.now()}.${ext}`;
 
@@ -32,7 +35,9 @@ export async function uploadCategoryImage(file: File, categorySlug: string): Pro
   return data.publicUrl;
 }
 
-export async function uploadBannerImage(file: File): Promise<string> {
+export async function uploadBannerImage(original: File): Promise<string> {
+  // Banners run full width, so they keep more pixels.
+  const file = await compressImage(original, 2400, 0.82);
   const ext = file.name.split('.').pop();
   const fileName = `banners/${Date.now()}.${ext}`;
 
