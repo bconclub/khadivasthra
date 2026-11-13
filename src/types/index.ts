@@ -92,6 +92,12 @@ export interface Product {
   compare_price: number | null;
   /** HSN code for GST invoices; missing until its migration runs. */
   hsn_code?: string | null;
+  /** The brand's price before the offer and GST; arrives with a migration. */
+  base_price?: number | null;
+  production_cost?: number | null;
+  landing_cost?: number | null;
+  margin_percent?: number | null;
+  gst_rate?: number | null;
   description: string;
   long_description: string | null;
   image_url: string | null;

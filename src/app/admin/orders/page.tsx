@@ -12,7 +12,7 @@ import type { Order, OrderStatus, Product, PaymentMethod, PaymentStatus } from "
 import { variantLabel, itemSummary, itemSummaryWithCombo, comboLabel } from "@/lib/order-item";
 import { codCharge } from "@/lib/pricing";
 import { Loader2, ChevronDown, ChevronUp, Trash2, CreditCard, Package, Plus, Search, X, Minus, Pencil, Printer, FileText, Tag, CheckSquare, Download, Check, ExternalLink, Truck, Ban } from "lucide-react";
-import { printOrder, printOrders, setInvoiceBusiness, setInvoiceHsnCodes } from "@/lib/print-order";
+import { printOrder, printOrders, setInvoiceBusiness, setInvoiceHsnCodes, setInvoiceGstRates } from "@/lib/print-order";
 import { getSettings } from "@/lib/services/settings";
 import Image from "next/image";
 import toast from "react-hot-toast";
@@ -1574,6 +1574,15 @@ export default function AdminOrdersPage() {
       const codes: Record<string, string> = {};
       (data as { id: string; hsn_code: string | null }[]).forEach((p) => { if (p.hsn_code) codes[p.id] = p.hsn_code; });
       setInvoiceHsnCodes(codes);
+    });
+    // Per-product GST rates; before the pricing migration runs every product stays at 5%.
+    supabase.from("products").select("id, gst_rate").then(({ data, error }) => {
+      if (error || !data) return;
+      const rates: Record<string, number> = {};
+      (data as { id: string; gst_rate: number | null }[]).forEach((p) => {
+        if (p.gst_rate != null) rates[p.id] = Number(p.gst_rate) / 100;
+      });
+      setInvoiceGstRates(rates);
     });
   }, []);
   const [statusFilter, setStatusFilter] = useState<string>("");

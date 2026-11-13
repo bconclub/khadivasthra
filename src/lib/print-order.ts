@@ -27,8 +27,18 @@ export function setInvoiceHsnCodes(codes: Record<string, string>) {
   hsnByProduct = codes;
 }
 
-/** Selling prices are GST-inclusive at this rate. */
+/** Each product's GST rate as a fraction (0 = GST off); unset products use GST_RATE. */
+let gstRateByProduct: Record<string, number> = {};
+export function setInvoiceGstRates(rates: Record<string, number>) {
+  gstRateByProduct = rates;
+}
+
+/** Default rate: selling prices are GST-inclusive at this rate. */
 const GST_RATE = 0.05;
+function gstRateFor(productId: string): number {
+  const r = gstRateByProduct[productId];
+  return r == null ? GST_RATE : r;
+}
 /** The business is registered in Kerala: intra-state sales split CGST + SGST. */
 const SELLER_STATE = 'kerala';
 
@@ -75,7 +85,21 @@ function generateInvoiceHTML(order: Order): string {
   const codBase = grandTotal - codCharges;
   const codTaxed = codCharges > 0 && codCharges !== Math.round(codBase * COD_RATE);
   const goodsAmount = codTaxed ? codBase : grandTotal;
-  const goodsGst = round2(goodsAmount - goodsAmount / (1 + GST_RATE));
+  // Split what was paid for goods (after discount, with shipping) across the
+  // items by value, and back each part's GST out at that product's rate.
+  const itemsValue = order.items.reduce((sum, item) => sum + (Number(item.subtotal) || 0), 0);
+  const byRate = new Map<number, number>();
+  order.items.forEach((item) => {
+    const share = itemsValue > 0 ? (Number(item.subtotal) || 0) / itemsValue : 1 / order.items.length;
+    const rate = gstRateFor(item.product_id);
+    byRate.set(rate, (byRate.get(rate) || 0) + goodsAmount * share);
+  });
+  if (byRate.size === 0) byRate.set(GST_RATE, goodsAmount);
+  const goodsByRate = [...byRate.entries()]
+    .filter(([rate]) => rate > 0)
+    .sort((a, b) => a[0] - b[0])
+    .map(([rate, amount]) => ({ rate, gst: round2(amount - amount / (1 + rate)) }));
+  const goodsGst = round2(goodsByRate.reduce((sum, g) => sum + g.gst, 0));
   const codGst = codTaxed ? round2(codCharges - codCharges / (1 + COD_GST_RATE)) : 0;
   const gst = round2(goodsGst + codGst);
   const taxable = round2(grandTotal - gst);
@@ -86,8 +110,12 @@ function generateInvoiceHTML(order: Order): string {
     return `<tr><td>CGST (${(rate * 100) / 2}%)</td><td class="r">${money(half)}</td></tr>
         <tr><td>SGST (${(rate * 100) / 2}%)</td><td class="r">${money(round2(amount - half))}</td></tr>`;
   };
-  const gstRows = gstRow(GST_RATE, goodsGst) + (codGst > 0 ? gstRow(COD_GST_RATE, codGst) : '');
-  const gstLabel = codGst > 0 ? 'GST' : `GST (${GST_RATE * 100}%)`;
+  const gstRows = goodsByRate.map((g) => gstRow(g.rate, g.gst)).join('') + (codGst > 0 ? gstRow(COD_GST_RATE, codGst) : '');
+  const goodsRates = goodsByRate.map((g) => `${g.rate * 100}%`);
+  const gstLabel = codGst > 0 || goodsRates.length !== 1 ? 'GST' : `GST (${goodsRates[0]})`;
+  const goodsNote = goodsRates.length === 0
+    ? 'No GST is charged on these goods'
+    : `All prices are inclusive of ${goodsRates.join(' / ')} GST`;
 
   const itemRows = order.items.map((item, i) => `
     <tr>
@@ -253,7 +281,7 @@ function generateInvoiceHTML(order: Order): string {
         <tr class="total"><td>Total ${gstLabel}</td><td class="r">${money(gst)}</td></tr>
       </tbody>
     </table>
-    <div class="gst-note">All prices are inclusive of ${GST_RATE * 100}% GST${codGst > 0 ? `; the COD fee includes ${COD_GST_RATE * 100}% GST` : ''}. ${intraState
+    <div class="gst-note">${goodsNote}${codGst > 0 ? `; the COD fee includes ${COD_GST_RATE * 100}% GST` : ''}. ${intraState
       ? 'Intra-state supply (Kerala): CGST + SGST.'
       : `Inter-state supply to ${esc(order.customer_state || '')}: IGST.`}</div>
   </div>

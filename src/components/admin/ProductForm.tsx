@@ -7,7 +7,7 @@ import { getCategories } from "@/lib/services/categories";
 import { listInvestors, listInvestmentsForProduct } from "@/lib/services/investors";
 import { getWholesalePrice } from "@/lib/services/wholesale";
 import { supabase } from "@/lib/supabase";
-import { PriceCalculator } from "@/components/admin/PriceCalculator";
+import { productPrice, basePriceFrom, costPrice, GST_RATES, DEFAULT_GST_RATE, DEFAULT_LANDING_COST } from "@/lib/pricing";
 import type { ProductWithCategory, ProductColor, ProductVariant, Investor, Investment } from "@/types";
 import { Loader2, X, Plus, Camera, Package, Trash2, RefreshCw, Palette, GripVertical } from "lucide-react";
 import Image from "next/image";
@@ -59,7 +59,6 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const [slug, setSlug] = useState(product?.slug || "");
   const [description, setDescription] = useState(product?.description || "");
   const [longDescription, setLongDescription] = useState(product?.long_description || "");
-  const [comparePrice, setComparePrice] = useState(product?.compare_price?.toString() || product?.price?.toString() || "");
   const initialDiscount = (() => {
     if (product?.compare_price && product?.price && Number(product.compare_price) > Number(product.price)) {
       const raw = Math.round(((Number(product.compare_price) - Number(product.price)) / Number(product.compare_price)) * 100);
@@ -68,7 +67,40 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
     }
     return 0;
   })();
-  const [discountPct, setDiscountPct] = useState(initialDiscount);
+  const [discountPct, setDiscountPct] = useState(initialDiscount || 10);
+  const [offerOn, setOfferOn] = useState(product ? initialDiscount > 0 : true);
+  // GST rate; a saved 0 means GST is switched off for this product.
+  const savedGst = product?.gst_rate != null ? Number(product.gst_rate) : DEFAULT_GST_RATE;
+  const [gstOn, setGstOn] = useState(savedGst > 0);
+  const [gstRate, setGstRate] = useState(savedGst > 0 ? savedGst : DEFAULT_GST_RATE);
+  // Price build-up: production + landing, plus profit margin = product price.
+  const [productionCost, setProductionCost] = useState(product?.production_cost != null ? String(product.production_cost) : "");
+  const [landingCost, setLandingCost] = useState(
+    product?.landing_cost != null ? String(product.landing_cost) : product ? "" : String(DEFAULT_LANDING_COST)
+  );
+  const [marginPct, setMarginPct] = useState(product?.margin_percent != null ? String(product.margin_percent) : product ? "" : "45");
+  // The brand's price before the offer and GST. Products saved before it was
+  // stored get it backed out of what the shopper pays.
+  const [basePrice, setBasePrice] = useState(() => {
+    if (product?.base_price != null) return String(product.base_price);
+    if (!product?.price) return "";
+    return String(basePriceFrom(Number(product.price), initialDiscount, savedGst));
+  });
+  // When the costs are filled in, the product price follows them.
+  const updateCost = (production: string, landing: string, margin: string) => {
+    setProductionCost(production);
+    setLandingCost(landing);
+    setMarginPct(margin);
+    const p = parseFloat(production) || 0;
+    const l = parseFloat(landing) || 0;
+    if (p > 0) setBasePrice(String(costPrice(p, l, parseFloat(margin) || 0)));
+  };
+  // base_price arrives with a migration; only send it once the column exists.
+  const [hasBasePriceColumn, setHasBasePriceColumn] = useState(!!product && "gst_rate" in product);
+  useEffect(() => {
+    if (product) return;
+    supabase.from("products").select("base_price,gst_rate").limit(1).then(({ error }) => setHasBasePriceColumn(!error));
+  }, [product]);
   const [categoryId, setCategoryId] = useState(product?.category_id || "");
   const [material, setMaterial] = useState(product?.material || "");
   const [imageUrl, setImageUrl] = useState(product?.image_url || "");
@@ -196,8 +228,14 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       if (d.slug !== undefined) setSlug(d.slug);
       if (d.description !== undefined) setDescription(d.description);
       if (d.longDescription !== undefined) setLongDescription(d.longDescription);
-      if (d.comparePrice !== undefined) setComparePrice(d.comparePrice);
+      if (d.basePrice !== undefined) setBasePrice(d.basePrice);
       if (d.discountPct !== undefined) setDiscountPct(d.discountPct);
+      if (d.offerOn !== undefined) setOfferOn(d.offerOn);
+      if (d.gstOn !== undefined) setGstOn(d.gstOn);
+      if (d.gstRate !== undefined) setGstRate(d.gstRate);
+      if (d.productionCost !== undefined) setProductionCost(d.productionCost);
+      if (d.landingCost !== undefined) setLandingCost(d.landingCost);
+      if (d.marginPct !== undefined) setMarginPct(d.marginPct);
       if (d.categoryId !== undefined) setCategoryId(d.categoryId);
       if (d.material !== undefined) setMaterial(d.material);
       if (d.imageUrl !== undefined) setImageUrl(d.imageUrl);
@@ -232,7 +270,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
     draftTimer.current = setTimeout(() => {
       try {
         localStorage.setItem(draftKey, JSON.stringify({
-          name, slug, description, longDescription, comparePrice, discountPct,
+          name, slug, description, longDescription, basePrice, discountPct, offerOn, gstOn, gstRate, productionCost, landingCost, marginPct,
           categoryId, material, imageUrl, galleryImages, isFeatured, isBestSeller,
           isActive, hasVariants, careInstructions, weight, length, breadth, height,
           stockQuantity, isInvestable, designName, designCode, designPreviewUrl,
@@ -242,7 +280,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       } catch { /* storage full — skip */ }
     }, 400);
     return () => { if (draftTimer.current) clearTimeout(draftTimer.current); };
-  }, [draftKey, name, slug, description, longDescription, comparePrice, discountPct,
+  }, [draftKey, name, slug, description, longDescription, basePrice, discountPct, offerOn, gstOn, gstRate, productionCost, landingCost, marginPct,
       categoryId, material, imageUrl, galleryImages, isFeatured, isBestSeller,
       isActive, hasVariants, careInstructions, weight, length, breadth, height,
       stockQuantity, isInvestable, designName, designCode, designPreviewUrl,
@@ -259,11 +297,15 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const [uploadingColorImage, setUploadingColorImage] = useState(false);
   const colorImageInputRef = useRef<HTMLInputElement>(null);
 
-  const mrpNum = parseFloat(comparePrice) || 0;
-  const calculatedSalePrice = discountPct > 0 && mrpNum > 0
-    ? Math.round(mrpNum * (1 - discountPct / 100))
-    : mrpNum;
-  const hasDiscount = discountPct > 0 && mrpNum > 0;
+  const baseNum = parseFloat(basePrice) || 0;
+  const offerPct = offerOn ? discountPct : 0;
+  const gstPct = gstOn ? gstRate : 0;
+  const pricing = productPrice(baseNum, offerPct, gstPct);
+  const mrpNum = pricing.mrp;
+  const calculatedSalePrice = pricing.price;
+  const hasDiscount = offerPct > 0 && baseNum > 0;
+  const costNum = (parseFloat(productionCost) || 0) + (parseFloat(landingCost) || 0);
+  const profitNum = pricing.afterOffer - costNum;
 
   // Variations (colors + sizes) are available for ALL products. Originally gated
   // to shirts-only — gate removed so mundus, sarees, etc. can also have color
@@ -451,7 +493,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    if (!name || !mrpNum || !categoryId) {
+    if (!name || !baseNum || !categoryId) {
       setError("Name, MRP, and category are required.");
       return;
     }
@@ -495,6 +537,15 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
         long_description: longDescription,
         price: calculatedSalePrice,
         compare_price: hasDiscount ? mrpNum : null,
+        ...(hasBasePriceColumn
+          ? {
+              base_price: baseNum,
+              production_cost: parseFloat(productionCost) || null,
+              landing_cost: landingCost.trim() === "" ? null : parseFloat(landingCost) || 0,
+              margin_percent: marginPct.trim() === "" ? null : parseFloat(marginPct) || 0,
+              gst_rate: gstPct,
+            }
+          : {}),
         category_id: categoryId, material,
         image_url: imageUrl, images: galleryImages,
         is_featured: isFeatured, is_best_seller: isBestSeller, is_active: isActive,
@@ -986,47 +1037,109 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
             {/* === PRICING & STOCK === */}
             <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 space-y-3">
               <label className="block text-xs font-medium text-gray-500 dark:text-gray-400">Pricing</label>
-              <div className="grid grid-cols-3 gap-3 items-end">
+              <div className="grid grid-cols-3 gap-2">
                 <div>
-                  <label className="block text-[10px] text-gray-400 mb-1">Base MRP (₹) *</label>
-                  <input
-                    type="number" required step="1" value={comparePrice}
-                    onChange={(e) => setComparePrice(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-lg font-bold"
-                    placeholder="₹"
-                  />
+                  <label className="block text-[10px] text-gray-400 mb-1">Production cost (₹)</label>
+                  <input type="number" min="0" step="0.01" value={productionCost} placeholder="₹"
+                    onChange={(e) => updateCost(e.target.value, landingCost, marginPct)} className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm" />
                 </div>
                 <div>
-                  <label className="block text-[10px] text-gray-400 mb-1">Discount</label>
+                  <label className="block text-[10px] text-gray-400 mb-1">Landing cost (₹)</label>
+                  <input type="number" min="0" step="0.01" value={landingCost} placeholder="₹"
+                    onChange={(e) => updateCost(productionCost, e.target.value, marginPct)} className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm" />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-gray-400 mb-1">Profit margin (%)</label>
+                  <input type="number" min="0" step="1" value={marginPct} placeholder="%"
+                    onChange={(e) => updateCost(productionCost, landingCost, e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-[10px] text-gray-400 mb-1">Product price (₹) *</label>
+                <input
+                  type="number" required min="0" step="0.01" value={basePrice}
+                  onChange={(e) => setBasePrice(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-lg font-bold"
+                  placeholder="₹"
+                />
+                <p className="text-[10px] text-gray-400 mt-1">
+                  Fills in from production + landing cost plus margin. You can also type it directly.
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[10px] text-gray-400">Offer</label>
+                    <button type="button" role="switch" aria-label="Offer on or off" aria-checked={offerOn} onClick={() => setOfferOn(!offerOn)}
+                      className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors ${offerOn ? "bg-coral" : "bg-gray-300 dark:bg-gray-600"}`}>
+                      <span className={`inline-block h-4 w-4 mt-0.5 rounded-full bg-white shadow transition-transform ${offerOn ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+                    </button>
+                  </div>
                   <select
-                    value={discountPct}
+                    value={discountPct} disabled={!offerOn}
                     onChange={(e) => setDiscountPct(Number(e.target.value))}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm font-medium"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm font-medium disabled:opacity-40"
                   >
-                    {[0, 5, 10, 15, 20, 25, 30].map((pct) => (
-                      <option key={pct} value={pct}>{pct === 0 ? "No discount" : `${pct}% OFF`}</option>
+                    {[5, 10, 15, 20, 25, 30].map((pct) => (
+                      <option key={pct} value={pct}>{pct}% OFF</option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  {mrpNum > 0 ? (
-                    <div className={`${hasDiscount ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800' : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'} border rounded-lg px-3 py-2 text-center`}>
-                      <span className={`font-bold text-xl ${hasDiscount ? 'text-green-700 dark:text-green-400' : 'text-gray-700 dark:text-gray-300'}`}>₹{calculatedSalePrice}</span>
-                      {hasDiscount && (
-                        <p className="text-[10px] text-green-600 dark:text-green-400">
-                          <span className="line-through">₹{mrpNum}</span> → ₹{calculatedSalePrice}
-                        </p>
-                      )}
-                    </div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[10px] text-gray-400">GST</label>
+                    <button type="button" role="switch" aria-label="GST on or off" aria-checked={gstOn} onClick={() => setGstOn(!gstOn)}
+                      className={`relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors ${gstOn ? "bg-coral" : "bg-gray-300 dark:bg-gray-600"}`}>
+                      <span className={`inline-block h-4 w-4 mt-0.5 rounded-full bg-white shadow transition-transform ${gstOn ? "translate-x-[18px]" : "translate-x-0.5"}`} />
+                    </button>
+                  </div>
+                  <select
+                    value={gstRate} disabled={!gstOn}
+                    onChange={(e) => setGstRate(Number(e.target.value))}
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm font-medium disabled:opacity-40"
+                  >
+                    {GST_RATES.map((r) => (
+                      <option key={r} value={r}>{r}%</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              {baseNum > 0 ? (
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-xs text-gray-600 dark:text-gray-300 space-y-1">
+                  {costNum > 0 && (
+                    <div className="flex justify-between text-gray-400"><span>Cost (production + landing)</span><span>₹{costNum.toFixed(2)}</span></div>
+                  )}
+                  <div className="flex justify-between"><span>Product price</span><span>₹{baseNum.toFixed(2)}</span></div>
+                  {hasDiscount && (
+                    <>
+                      <div className="flex justify-between"><span>Offer ({offerPct}%)</span><span>−₹{pricing.offerAmount.toFixed(2)}</span></div>
+                      <div className="flex justify-between"><span>Price after offer</span><span>₹{pricing.afterOffer.toFixed(2)}</span></div>
+                    </>
+                  )}
+                  {gstPct > 0 ? (
+                    <div className="flex justify-between"><span>GST ({gstPct}%)</span><span>+₹{pricing.gst.toFixed(2)}</span></div>
                   ) : (
-                    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2.5 text-center text-xs text-gray-400">
-                      Enter MRP
+                    <div className="flex justify-between text-gray-400"><span>GST</span><span>Off</span></div>
+                  )}
+                  <div className="flex justify-between font-bold text-sm text-gray-900 dark:text-white pt-1 border-t border-gray-200 dark:border-gray-700">
+                    <span>Customer pays</span>
+                    <span>
+                      {hasDiscount && <span className="line-through font-normal text-gray-400 mr-1.5">₹{mrpNum}</span>}
+                      ₹{calculatedSalePrice}
+                    </span>
+                  </div>
+                  {costNum > 0 && (
+                    <div className={`flex justify-between text-[11px] ${profitNum < 0 ? "text-red-600 font-semibold" : "text-green-700 dark:text-green-400"}`}>
+                      <span>Your profit per piece</span>
+                      <span>₹{profitNum.toFixed(2)}</span>
                     </div>
                   )}
                 </div>
-              </div>
-
-              <PriceCalculator offerPercent={discountPct} onApply={(mrp) => setComparePrice(String(mrp))} />
+              ) : (
+                <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2.5 text-center text-xs text-gray-400">
+                  Enter the product price
+                </div>
+              )}
 
               {/* Stock Quantity (for non-variant products) */}
               {!hasVariants && (

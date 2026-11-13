@@ -7,39 +7,49 @@ export function codCharge(amount: number): number {
   return Math.round(amount * COD_RATE * (1 + COD_GST_RATE));
 }
 
-/** Defaults for the price calculator on the admin product form. */
-export const DEFAULT_COURIER_CHARGE = 49;
-export const DEFAULT_MARGIN_PERCENT = 45;
-export const DEFAULT_GST_PERCENT = 5;
+/** GST rates a product can carry. Khadi clothing is normally 5%. */
+export const GST_RATES = [5, 12, 18] as const;
+export const DEFAULT_GST_RATE = 5;
+/** Default store landing cost per product: handling plus delivery and its GST. */
+export const DEFAULT_LANDING_COST = 100;
 
-export interface PriceBreakdown {
-  totalCost: number;
-  profit: number;
-  beforeGst: number;
+/** Production cost + landing cost, plus the profit margin on top. */
+export function costPrice(production: number, landing: number, marginPercent: number): number {
+  const cost = Math.max(production, 0) + Math.max(landing, 0);
+  return Math.round(cost * (1 + Math.max(marginPercent, 0) / 100) * 100) / 100;
+}
+
+export interface ProductPrice {
+  offerAmount: number;
+  afterOffer: number;
   gst: number;
-  /** Regular selling price including GST; this becomes the MRP. */
-  regular: number;
-  offerDiscount: number;
-  offerPrice: number;
+  /** What the shopper pays: price after the offer, plus GST, to the rupee. */
+  price: number;
+  /** Struck-through price: the product price plus GST, before the offer. */
+  mrp: number;
 }
 
 /**
- * The owner's price chart: cost plus a margin that is a share of the price
- * before GST, then GST on top, then the offer taken off the regular price.
+ * The product price covers cost, landing and margin. The site takes the
+ * offer off it, then adds GST (gstPercent 0 when GST is switched off).
  */
-export function buildPrice(input: {
-  productionCost: number;
-  landingCost: number;
-  courierCharge: number;
-  marginPercent: number;
-  gstPercent: number;
-  offerPercent: number;
-}): PriceBreakdown {
-  const totalCost = input.productionCost + input.landingCost + input.courierCharge;
-  const margin = Math.min(Math.max(input.marginPercent, 0), 99) / 100;
-  const beforeGst = totalCost / (1 - margin);
-  const gst = beforeGst * (input.gstPercent / 100);
-  const regular = beforeGst + gst;
-  const offerDiscount = regular * (Math.max(input.offerPercent, 0) / 100);
-  return { totalCost, profit: beforeGst - totalCost, beforeGst, gst, regular, offerDiscount, offerPrice: regular - offerDiscount };
+export function productPrice(basePrice: number, offerPercent: number, gstPercent = DEFAULT_GST_RATE): ProductPrice {
+  const rate = Math.max(gstPercent, 0) / 100;
+  const offerAmount = basePrice * (Math.max(offerPercent, 0) / 100);
+  const afterOffer = basePrice - offerAmount;
+  const gst = afterOffer * rate;
+  return {
+    offerAmount,
+    afterOffer,
+    gst,
+    price: Math.round(afterOffer + gst),
+    mrp: Math.round(basePrice * (1 + rate)),
+  };
+}
+
+/** For products saved before the product price was stored: back it out of what the shopper pays. */
+export function basePriceFrom(price: number, offerPercent: number, gstPercent = DEFAULT_GST_RATE): number {
+  const beforeGst = price / (1 + Math.max(gstPercent, 0) / 100);
+  const base = offerPercent > 0 && offerPercent < 100 ? beforeGst / (1 - offerPercent / 100) : beforeGst;
+  return Math.round(base * 100) / 100;
 }
