@@ -10,13 +10,23 @@ export function codCharge(amount: number): number {
 /** GST rates a product can carry. Khadi clothing is normally 5%. */
 export const GST_RATES = [5, 12, 18] as const;
 export const DEFAULT_GST_RATE = 5;
-/** Default store landing cost per product: handling plus delivery and its GST. */
-export const DEFAULT_LANDING_COST = 100;
+/**
+ * Costs per piece, all before GST. GST paid to the supplier and the courier is
+ * input credit (set off against the GST collected), so it is not a cost.
+ * COD fee is not in here: checkout adds it to COD orders.
+ */
+export const DEFAULT_PACKAGING_COST = 40;
+export const DEFAULT_DELIVERY_COST = 49;
+/** Markups the brand prices with: selling price = cost x markup. */
+export const MARKUPS = [1.5, 1.8] as const;
+export const DEFAULT_MARKUP = 1.8;
 
-/** Production cost + landing cost, plus the profit margin on top. */
-export function costPrice(production: number, landing: number, marginPercent: number): number {
-  const cost = Math.max(production, 0) + Math.max(landing, 0);
-  return Math.round(cost * (1 + Math.max(marginPercent, 0) / 100) * 100) / 100;
+/**
+ * Selling price before GST = total cost x markup.
+ * 259 cost at 1.8x sells at 466.20; GST is added on top of that.
+ */
+export function priceFromCost(cost: number, markup: number): number {
+  return Math.round(Math.max(cost, 0) * Math.max(markup, 0) * 100) / 100;
 }
 
 export interface ProductPrice {

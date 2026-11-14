@@ -95,6 +95,8 @@ export interface Product {
   /** The brand's price before the offer and GST; arrives with a migration. */
   base_price?: number | null;
   production_cost?: number | null;
+  packaging_cost?: number | null;
+  markup?: number | null;
   landing_cost?: number | null;
   margin_percent?: number | null;
   gst_rate?: number | null;

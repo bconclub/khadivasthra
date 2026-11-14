@@ -7,7 +7,7 @@ import { getCategories } from "@/lib/services/categories";
 import { listInvestors, listInvestmentsForProduct } from "@/lib/services/investors";
 import { getWholesalePrice } from "@/lib/services/wholesale";
 import { supabase } from "@/lib/supabase";
-import { productPrice, basePriceFrom, costPrice, GST_RATES, DEFAULT_GST_RATE, DEFAULT_LANDING_COST } from "@/lib/pricing";
+import { productPrice, basePriceFrom, priceFromCost, GST_RATES, DEFAULT_GST_RATE, DEFAULT_PACKAGING_COST, DEFAULT_DELIVERY_COST, MARKUPS, DEFAULT_MARKUP } from "@/lib/pricing";
 import type { ProductWithCategory, ProductColor, ProductVariant, Investor, Investment } from "@/types";
 import { Loader2, X, Plus, Camera, Package, Trash2, RefreshCw, Palette, GripVertical } from "lucide-react";
 import Image from "next/image";
@@ -73,12 +73,16 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const savedGst = product?.gst_rate != null ? Number(product.gst_rate) : DEFAULT_GST_RATE;
   const [gstOn, setGstOn] = useState(savedGst > 0);
   const [gstRate, setGstRate] = useState(savedGst > 0 ? savedGst : DEFAULT_GST_RATE);
-  // Price build-up: production + landing, plus profit margin = product price.
+  // Price build-up, all before GST: purchase + packaging + delivery = cost,
+  // and the selling price is cost x markup. landing_cost holds delivery.
   const [productionCost, setProductionCost] = useState(product?.production_cost != null ? String(product.production_cost) : "");
-  const [landingCost, setLandingCost] = useState(
-    product?.landing_cost != null ? String(product.landing_cost) : product ? "" : String(DEFAULT_LANDING_COST)
+  const [packagingCost, setPackagingCost] = useState(
+    product?.packaging_cost != null ? String(product.packaging_cost) : product ? "" : String(DEFAULT_PACKAGING_COST)
   );
-  const [marginPct, setMarginPct] = useState(product?.margin_percent != null ? String(product.margin_percent) : product ? "" : "45");
+  const [landingCost, setLandingCost] = useState(
+    product?.landing_cost != null ? String(product.landing_cost) : product ? "" : String(DEFAULT_DELIVERY_COST)
+  );
+  const [markup, setMarkup] = useState(product?.markup != null ? String(product.markup) : product ? "" : String(DEFAULT_MARKUP));
   // The brand's price before the offer and GST. Products saved before it was
   // stored get it backed out of what the shopper pays.
   const [basePrice, setBasePrice] = useState(() => {
@@ -87,19 +91,20 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
     return String(basePriceFrom(Number(product.price), initialDiscount, savedGst));
   });
   // When the costs are filled in, the product price follows them.
-  const updateCost = (production: string, landing: string, margin: string) => {
+  const updateCost = (production: string, packaging: string, landing: string, markupValue: string) => {
     setProductionCost(production);
+    setPackagingCost(packaging);
     setLandingCost(landing);
-    setMarginPct(margin);
+    setMarkup(markupValue);
     const p = parseFloat(production) || 0;
-    const l = parseFloat(landing) || 0;
-    if (p > 0) setBasePrice(String(costPrice(p, l, parseFloat(margin) || 0)));
+    const cost = p + (parseFloat(packaging) || 0) + (parseFloat(landing) || 0);
+    if (p > 0) setBasePrice(String(priceFromCost(cost, parseFloat(markupValue) || 0)));
   };
   // base_price arrives with a migration; only send it once the column exists.
-  const [hasBasePriceColumn, setHasBasePriceColumn] = useState(!!product && "gst_rate" in product);
+  const [hasBasePriceColumn, setHasBasePriceColumn] = useState(!!product && "markup" in product);
   useEffect(() => {
     if (product) return;
-    supabase.from("products").select("base_price,gst_rate").limit(1).then(({ error }) => setHasBasePriceColumn(!error));
+    supabase.from("products").select("base_price,gst_rate,packaging_cost,markup").limit(1).then(({ error }) => setHasBasePriceColumn(!error));
   }, [product]);
   const [categoryId, setCategoryId] = useState(product?.category_id || "");
   const [material, setMaterial] = useState(product?.material || "");
@@ -234,8 +239,9 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       if (d.gstOn !== undefined) setGstOn(d.gstOn);
       if (d.gstRate !== undefined) setGstRate(d.gstRate);
       if (d.productionCost !== undefined) setProductionCost(d.productionCost);
+      if (d.packagingCost !== undefined) setPackagingCost(d.packagingCost);
       if (d.landingCost !== undefined) setLandingCost(d.landingCost);
-      if (d.marginPct !== undefined) setMarginPct(d.marginPct);
+      if (d.markup !== undefined) setMarkup(d.markup);
       if (d.categoryId !== undefined) setCategoryId(d.categoryId);
       if (d.material !== undefined) setMaterial(d.material);
       if (d.imageUrl !== undefined) setImageUrl(d.imageUrl);
@@ -270,7 +276,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
     draftTimer.current = setTimeout(() => {
       try {
         localStorage.setItem(draftKey, JSON.stringify({
-          name, slug, description, longDescription, basePrice, discountPct, offerOn, gstOn, gstRate, productionCost, landingCost, marginPct,
+          name, slug, description, longDescription, basePrice, discountPct, offerOn, gstOn, gstRate, productionCost, packagingCost, landingCost, markup,
           categoryId, material, imageUrl, galleryImages, isFeatured, isBestSeller,
           isActive, hasVariants, careInstructions, weight, length, breadth, height,
           stockQuantity, isInvestable, designName, designCode, designPreviewUrl,
@@ -280,7 +286,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
       } catch { /* storage full — skip */ }
     }, 400);
     return () => { if (draftTimer.current) clearTimeout(draftTimer.current); };
-  }, [draftKey, name, slug, description, longDescription, basePrice, discountPct, offerOn, gstOn, gstRate, productionCost, landingCost, marginPct,
+  }, [draftKey, name, slug, description, longDescription, basePrice, discountPct, offerOn, gstOn, gstRate, productionCost, packagingCost, landingCost, markup,
       categoryId, material, imageUrl, galleryImages, isFeatured, isBestSeller,
       isActive, hasVariants, careInstructions, weight, length, breadth, height,
       stockQuantity, isInvestable, designName, designCode, designPreviewUrl,
@@ -304,8 +310,16 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
   const mrpNum = pricing.mrp;
   const calculatedSalePrice = pricing.price;
   const hasDiscount = offerPct > 0 && baseNum > 0;
-  const costNum = (parseFloat(productionCost) || 0) + (parseFloat(landingCost) || 0);
+  const purchaseNum = parseFloat(productionCost) || 0;
+  const packagingNum = parseFloat(packagingCost) || 0;
+  const deliveryNum = parseFloat(landingCost) || 0;
+  const costNum = purchaseNum + packagingNum + deliveryNum;
   const profitNum = pricing.afterOffer - costNum;
+  // Shares of what the customer pays; the GST part goes to the government.
+  const paysNum = pricing.afterOffer + pricing.gst;
+  const pctOfPays = (n: number) => (paysNum > 0 ? `${((n / paysNum) * 100).toFixed(1)}%` : "");
+  // Markup actually earned after any offer: what you sell for over what it costs.
+  const markupEarned = costNum > 0 ? pricing.afterOffer / costNum : 0;
 
   // Variations (colors + sizes) are available for ALL products. Originally gated
   // to shirts-only — gate removed so mundus, sarees, etc. can also have color
@@ -541,8 +555,9 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
           ? {
               base_price: baseNum,
               production_cost: parseFloat(productionCost) || null,
+              packaging_cost: packagingCost.trim() === "" ? null : parseFloat(packagingCost) || 0,
               landing_cost: landingCost.trim() === "" ? null : parseFloat(landingCost) || 0,
-              margin_percent: marginPct.trim() === "" ? null : parseFloat(marginPct) || 0,
+              markup: markup.trim() === "" ? null : parseFloat(markup) || 0,
               gst_rate: gstPct,
             }
           : {}),
@@ -1037,25 +1052,41 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
             {/* === PRICING & STOCK === */}
             <div className="bg-gray-50 dark:bg-gray-800/50 rounded-xl p-4 space-y-3">
               <label className="block text-xs font-medium text-gray-500 dark:text-gray-400">Pricing</label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 <div>
-                  <label className="block text-[10px] text-gray-400 mb-1">Production cost (₹)</label>
+                  <label className="block text-[10px] text-gray-400 mb-1">Purchase cost (₹)</label>
                   <input type="number" min="0" step="0.01" value={productionCost} placeholder="₹"
-                    onChange={(e) => updateCost(e.target.value, landingCost, marginPct)} className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm" />
+                    onChange={(e) => updateCost(e.target.value, packagingCost, landingCost, markup)} className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm" />
                 </div>
                 <div>
-                  <label className="block text-[10px] text-gray-400 mb-1">Landing cost (₹)</label>
+                  <label className="block text-[10px] text-gray-400 mb-1">Packaging &amp; handling (₹)</label>
+                  <input type="number" min="0" step="0.01" value={packagingCost} placeholder="₹"
+                    onChange={(e) => updateCost(productionCost, e.target.value, landingCost, markup)} className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm" />
+                </div>
+                <div>
+                  <label className="block text-[10px] text-gray-400 mb-1">Delivery (₹)</label>
                   <input type="number" min="0" step="0.01" value={landingCost} placeholder="₹"
-                    onChange={(e) => updateCost(productionCost, e.target.value, marginPct)} className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm" />
+                    onChange={(e) => updateCost(productionCost, packagingCost, e.target.value, markup)} className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm" />
                 </div>
                 <div>
-                  <label className="block text-[10px] text-gray-400 mb-1">Profit margin (%)</label>
-                  <input type="number" min="0" step="1" value={marginPct} placeholder="%"
-                    onChange={(e) => updateCost(productionCost, landingCost, e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm" />
+                  <label className="block text-[10px] text-gray-400 mb-1">Markup (× cost)</label>
+                  <input type="number" min="0" step="0.1" value={markup} placeholder="×"
+                    onChange={(e) => updateCost(productionCost, packagingCost, landingCost, e.target.value)} className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-800 dark:text-white focus:ring-2 focus:ring-coral focus:border-transparent text-sm" />
+                  <div className="flex gap-1 mt-1">
+                    {MARKUPS.map((m) => (
+                      <button key={m} type="button" onClick={() => updateCost(productionCost, packagingCost, landingCost, String(m))}
+                        className={`flex-1 rounded-md py-0.5 text-[10px] font-medium border ${parseFloat(markup) === m ? "bg-coral text-white border-coral" : "border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400"}`}>
+                        ×{m}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
+              <p className="text-[10px] text-gray-400 -mt-1">
+                Enter costs without GST. GST paid on purchase and delivery comes back as input credit, so it isn&apos;t a cost.
+              </p>
               <div>
-                <label className="block text-[10px] text-gray-400 mb-1">Product price (₹) *</label>
+                <label className="block text-[10px] text-gray-400 mb-1">Selling price before GST (₹) *</label>
                 <input
                   type="number" required min="0" step="0.01" value={basePrice}
                   onChange={(e) => setBasePrice(e.target.value)}
@@ -1063,7 +1094,7 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
                   placeholder="₹"
                 />
                 <p className="text-[10px] text-gray-400 mt-1">
-                  Fills in from production + landing cost plus margin. You can also type it directly.
+                  Cost × markup. Fills in from the costs; you can also type it directly.
                 </p>
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -1106,18 +1137,19 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
               </div>
               {baseNum > 0 ? (
                 <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-xs text-gray-600 dark:text-gray-300 space-y-1">
-                  {costNum > 0 && (
-                    <div className="flex justify-between text-gray-400"><span>Cost (production + landing)</span><span>₹{costNum.toFixed(2)}</span></div>
-                  )}
-                  <div className="flex justify-between"><span>Product price</span><span>₹{baseNum.toFixed(2)}</span></div>
-                  {hasDiscount && (
+                  <div className="flex justify-between gap-2 text-[10px] text-gray-400"><span className="flex-1">Where the customer&apos;s money goes</span><span className="w-12 text-right">of price</span></div>
+                  {costNum > 0 ? (
                     <>
-                      <div className="flex justify-between"><span>Offer ({offerPct}%)</span><span>−₹{pricing.offerAmount.toFixed(2)}</span></div>
-                      <div className="flex justify-between"><span>Price after offer</span><span>₹{pricing.afterOffer.toFixed(2)}</span></div>
+                  <div className="flex justify-between gap-2"><span className="flex-1">Purchase</span><span className="tabular-nums">₹{purchaseNum.toFixed(2)}</span><span className="w-12 text-right tabular-nums text-gray-400">{pctOfPays(purchaseNum)}</span></div>
+                  <div className="flex justify-between gap-2"><span className="flex-1">Packaging &amp; handling</span><span className="tabular-nums">₹{packagingNum.toFixed(2)}</span><span className="w-12 text-right tabular-nums text-gray-400">{pctOfPays(packagingNum)}</span></div>
+                  <div className="flex justify-between gap-2"><span className="flex-1">Delivery</span><span className="tabular-nums">₹{deliveryNum.toFixed(2)}</span><span className="w-12 text-right tabular-nums text-gray-400">{pctOfPays(deliveryNum)}</span></div>
+                  <div className={`flex justify-between gap-2 ${profitNum < 0 ? "text-red-600 font-semibold" : "text-green-700 dark:text-green-400 font-medium"}`}><span className="flex-1">Your profit</span><span className="tabular-nums">₹{profitNum.toFixed(2)}</span><span className="w-12 text-right tabular-nums text-gray-400">{pctOfPays(profitNum)}</span></div>
                     </>
+                  ) : (
+                  <div className="flex justify-between gap-2"><span className="flex-1">Selling price before GST</span><span className="tabular-nums">₹{pricing.afterOffer.toFixed(2)}</span><span className="w-12 text-right tabular-nums text-gray-400">{pctOfPays(pricing.afterOffer)}</span></div>
                   )}
                   {gstPct > 0 ? (
-                    <div className="flex justify-between"><span>GST ({gstPct}%)</span><span>+₹{pricing.gst.toFixed(2)}</span></div>
+                  <div className="flex justify-between gap-2"><span className="flex-1">GST {gstPct}% (to government)</span><span className="tabular-nums">₹{pricing.gst.toFixed(2)}</span><span className="w-12 text-right tabular-nums text-gray-400">{pctOfPays(pricing.gst)}</span></div>
                   ) : (
                     <div className="flex justify-between text-gray-400"><span>GST</span><span>Off</span></div>
                   )}
@@ -1128,10 +1160,17 @@ export function ProductForm({ product, onSubmit, onCancel }: ProductFormProps) {
                       ₹{calculatedSalePrice}
                     </span>
                   </div>
+                  {hasDiscount && (
+                    <div className="flex justify-between text-[11px] text-gray-400">
+                      <span>Offer {offerPct}% off ₹{baseNum.toFixed(2)}, before GST</span>
+                      <span>−₹{pricing.offerAmount.toFixed(2)}</span>
+                    </div>
+                  )}
                   {costNum > 0 && (
-                    <div className={`flex justify-between text-[11px] ${profitNum < 0 ? "text-red-600 font-semibold" : "text-green-700 dark:text-green-400"}`}>
-                      <span>Your profit per piece</span>
-                      <span>₹{profitNum.toFixed(2)}</span>
+                    <div className="text-[11px] text-gray-500 dark:text-gray-400 pt-1 border-t border-gray-100 dark:border-gray-700 space-y-0.5">
+                      <div className="flex justify-between"><span>Cost (purchase + packaging + delivery)</span><span>₹{costNum.toFixed(2)}</span></div>
+                      <div className="flex justify-between"><span>Markup earned{hasDiscount ? " after offer" : ""}</span><span>×{markupEarned.toFixed(2)}</span></div>
+                      <p className="text-gray-400">COD orders also pay a 1.6% + GST fee at checkout.</p>
                     </div>
                   )}
                 </div>
