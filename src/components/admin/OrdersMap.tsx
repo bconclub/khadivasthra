@@ -96,10 +96,13 @@ export function OrdersMap({ orders, loading }: { orders: Order[]; loading: boole
       const L = (await import("leaflet")).default;
       if (cancelled || !mapEl.current || mapRef.current) return;
       const map = L.map(mapEl.current, { scrollWheelZoom: false, zoomSnap: 0.5 }).setView([20.6, 79], 4.5);
+      // OpenStreetMap's own tiles: free, no API key (light admin use only).
+      // Dark mode dims them with a CSS filter instead of a second tile set.
       const dark = document.documentElement.classList.contains("dark");
-      L.tileLayer(`https://{s}.basemaps.cartocdn.com/${dark ? "dark_all" : "light_all"}/{z}/{x}/{y}{r}.png`, {
-        maxZoom: 18,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 19,
+        className: dark ? "[filter:invert(1)_hue-rotate(180deg)_brightness(0.9)]" : "",
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       }).addTo(map);
       layerRef.current = L.layerGroup().addTo(map);
       mapRef.current = map;
