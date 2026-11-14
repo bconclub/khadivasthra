@@ -1,6 +1,7 @@
 "use client";
 
 import { AdminShell } from "@/components/admin/AdminShell";
+import { OrdersMap } from "@/components/admin/OrdersMap";
 import { useSupabaseQuery } from "@/hooks/useSupabase";
 import { getDashboardStats } from "@/lib/services/admin";
 import { getOrders } from "@/lib/services/orders";
@@ -209,6 +210,9 @@ export default function AdminDashboardPage() {
             </div>
           </div>
         )}
+
+        {/* Orders by pincode */}
+        <OrdersMap orders={ordersInRange} loading={loadingOrders} />
 
         {/* Search Bar */}
         <div className="relative">
