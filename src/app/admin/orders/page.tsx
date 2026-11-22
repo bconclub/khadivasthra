@@ -346,6 +346,8 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
   const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("cod");
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cod");
   const [shipping, setShipping] = useState<number | "">("");
+  // COD fee: worked out automatically ("") unless typed in by hand.
+  const [codOverride, setCodOverride] = useState<number | "">("");
   const [articleNumber, setArticleNumber] = useState("");
   const [settlementStatus, setSettlementStatus] = useState<string>("pending");
   const [amountReceived, setAmountReceived] = useState<number | "">("");
@@ -500,7 +502,8 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
   const subtotal = lineItems.reduce((sum, li) => sum + li.unitPrice * li.quantity, 0);
   const isCodCreate = paymentMethod === "cod";
   const shippingAmount = shipping === "" ? 0 : shipping;
-  const codCharges = isCodCreate ? codCharge(subtotal + shippingAmount) : 0;
+  const autoCod = codCharge(subtotal + shippingAmount);
+  const codCharges = isCodCreate ? (codOverride === "" ? autoCod : codOverride) : 0;
   const total = subtotal + shippingAmount + codCharges;
 
   const handlePaymentMethodChange = (method: PaymentMethod) => {
@@ -898,7 +901,23 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
             <div className="mt-3 text-sm space-y-1">
               <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Subtotal</span><span>₹{subtotal.toLocaleString()}</span></div>
               <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Shipping</span><span>₹{shippingAmount.toLocaleString()}</span></div>
-              {isCodCreate && <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>COD Charges</span><span>₹{codCharges.toLocaleString()}</span></div>}
+              {isCodCreate && (
+                <div className="flex justify-between items-center gap-2 text-gray-500 dark:text-gray-400">
+                  <span>COD Charges</span>
+                  <span className="flex items-center gap-1.5">
+                    {codOverride !== "" && (
+                      <button type="button" onClick={() => setCodOverride("")} className="text-[11px] text-coral hover:underline">Auto ₹{autoCod}</button>
+                    )}
+                    <span>₹</span>
+                    <input
+                      type="number" min="0" step="1" value={codOverride === "" ? autoCod : codOverride}
+                      onChange={(e) => setCodOverride(e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
+                      className="w-20 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-right text-gray-900 dark:text-white"
+                      aria-label="COD charges"
+                    />
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between font-bold text-gray-900 dark:text-white border-t border-gray-200 dark:border-gray-600 pt-1"><span>Total</span><span>₹{total.toLocaleString()}</span></div>
             </div>
           </div>
@@ -982,6 +1001,12 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>(order.payment_method);
   const [notes, setNotes] = useState(order.notes || "");
   const [shipping, setShipping] = useState<number | "">(Number(order.shipping) || "");
+  // COD fee: keeps a hand-typed amount; follows the order total when it was automatic.
+  const [codOverride, setCodOverride] = useState<number | "">(() => {
+    const saved = Number(order.cod_charges) || 0;
+    const auto = codCharge(Number(order.subtotal) - Number(order.discount || 0) + (Number(order.shipping) || 0));
+    return order.payment_method === "cod" && saved !== auto ? saved : "";
+  });
   const [articleNumber, setArticleNumber] = useState(order.article_number || "");
   const [settlementStatus, setSettlementStatus] = useState<string>(order.settlement_status || "pending");
   const [amountReceived, setAmountReceived] = useState(order.amount_received != null ? Number(order.amount_received) : "");
@@ -1102,7 +1127,8 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
   const subtotal = lineItems.reduce((sum, li) => sum + li.price * li.quantity, 0);
   const isCodEdit = paymentMethod === "cod";
   const shippingAmount = shipping === "" ? 0 : shipping;
-  const codCharges = isCodEdit ? codCharge(subtotal + shippingAmount) : 0;
+  const autoCod = codCharge(subtotal + shippingAmount);
+  const codCharges = isCodEdit ? (codOverride === "" ? autoCod : codOverride) : 0;
   const total = subtotal + shippingAmount + codCharges;
 
   const handleSubmit = async () => {
@@ -1385,7 +1411,23 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
             <div className="mt-3 text-sm space-y-1">
               <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Subtotal</span><span>₹{subtotal.toLocaleString()}</span></div>
               <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Shipping</span><span>₹{shippingAmount.toLocaleString()}</span></div>
-              {isCodEdit && <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>COD Charges</span><span>₹{codCharges.toLocaleString()}</span></div>}
+              {isCodEdit && (
+                <div className="flex justify-between items-center gap-2 text-gray-500 dark:text-gray-400">
+                  <span>COD Charges</span>
+                  <span className="flex items-center gap-1.5">
+                    {codOverride !== "" && (
+                      <button type="button" onClick={() => setCodOverride("")} className="text-[11px] text-coral hover:underline">Auto ₹{autoCod}</button>
+                    )}
+                    <span>₹</span>
+                    <input
+                      type="number" min="0" step="1" value={codOverride === "" ? autoCod : codOverride}
+                      onChange={(e) => setCodOverride(e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
+                      className="w-20 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-right text-gray-900 dark:text-white"
+                      aria-label="COD charges"
+                    />
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between font-bold text-gray-900 dark:text-white border-t border-gray-200 dark:border-gray-600 pt-1"><span>Total</span><span>₹{total.toLocaleString()}</span></div>
             </div>
           </div>
