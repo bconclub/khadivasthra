@@ -82,6 +82,8 @@ function generateInvoiceHTML(order: Order): string {
   const grandTotal = Number(order.total) || 0;
   const round2 = (n: number) => Math.round(n * 100) / 100;
   const goodsAmount = grandTotal;
+  // Advance taken on a COD order; only the balance is collected on delivery.
+  const advance = isCod ? Math.min(Number(order.advance_paid) || 0, grandTotal) : 0;
   // Split what was paid for goods (after discount, with shipping) across the
   // items by value, and back each part's GST out at that product's rate.
   const itemsValue = order.items.reduce((sum, item) => sum + (Number(item.subtotal) || 0), 0);
@@ -255,6 +257,8 @@ function generateInvoiceHTML(order: Order): string {
       <div class="row"><span>Shipping</span><span>${inr(order.shipping || 0)}</span></div>
       ${codCharges > 0 ? `<div class="row"><span>COD Charges</span><span>${inr(codCharges)}</span></div>` : ''}
       <div class="row grand"><span>GRAND TOTAL</span><span>${inr(order.total)}</span></div>
+      ${advance > 0 ? `<div class="row"><span>Advance paid</span><span>&minus;${inr(advance)}</span></div>
+      <div class="row grand"><span>BALANCE ON DELIVERY</span><span>${inr(grandTotal - advance)}</span></div>` : ''}
     </div>
     ${isCod ? `<div style="margin-top:8px;font-size:12px;color:#666;">COD Settlement: ${(order.settlement_status || 'pending').toUpperCase()}</div>` : ''}
   </div>
@@ -311,6 +315,9 @@ function generateStickerHTML(order: Order): string {
   const codCharges = Number(order.cod_charges) || 0;
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const totalPcs = order.items.reduce((sum, item) => sum + item.quantity, 0);
+  // What the courier collects: the total less any advance already paid.
+  const labelAdvance = isCod ? Math.min(Number(order.advance_paid) || 0, Number(order.total) || 0) : 0;
+  const codToCollect = (Number(order.total) || 0) - labelAdvance;
   const itemLines = order.items.map((item) =>
     `<div class="item-row"><span>${esc(item.product_name)}${
       variantLabel(item) ? ` <b>${esc(variantLabel(item))}</b>` : ""
@@ -380,7 +387,7 @@ function generateStickerHTML(order: Order): string {
     <div class="checkbox-group">
       <span class="cb"><span class="cb-box${isCod ? ' checked' : ''}">${isCod ? '✓' : ''}</span> COD</span>
       <span class="cb"><span class="cb-box${!isCod ? ' checked' : ''}">${!isCod ? '✓' : ''}</span> PREPAID</span>
-      ${isCod ? `<span style="font-size:14px; margin-left:8px;">${inr(order.total)}</span>` : ''}
+      ${isCod ? `<span style="font-size:14px; margin-left:8px;">${inr(codToCollect)}</span>` : ''}
     </div>
     <span style="font-size:11px; font-weight:700; letter-spacing:0.5px;">CID: 1248959333</span>
   </div>
@@ -412,6 +419,8 @@ function generateStickerHTML(order: Order): string {
     ${itemLines}
     ${codCharges > 0 ? `<div class="item-row"><span>COD Charges</span><span>${inr(codCharges)}</span></div>` : ''}
     <div class="items-total"><span>Total</span><span>${inr(order.total)}</span></div>
+    ${labelAdvance > 0 ? `<div class="item-row"><span>Advance paid</span><span>&minus;${inr(labelAdvance)}</span></div>
+    <div class="items-total"><span>Collect</span><span>${inr(codToCollect)}</span></div>` : ''}
   </div>
 
   <!-- Logo Footer -->

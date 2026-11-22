@@ -185,6 +185,11 @@ serve(async (req) => {
     if (!/^\d{6}$/.test(String(order.customer_pincode || ""))) {
       return json({ error: "Order has an invalid customer pincode" }, 400);
     }
+    // Shipway collects order_total on COD; there is no separate collect amount,
+    // so an order with an advance would be over-collected. Book it elsewhere.
+    if (order.payment_method === "cod" && Number(order.advance_paid) > 0) {
+      return json({ error: "This COD order has an advance paid. Book it with India Post, which collects only the balance." }, 400);
+    }
 
     const payload: Record<string, unknown> = {
       order_id: order.order_number,

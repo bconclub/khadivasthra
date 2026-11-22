@@ -348,6 +348,8 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
   const [shipping, setShipping] = useState<number | "">("");
   // COD fee: worked out automatically ("") unless typed in by hand.
   const [codOverride, setCodOverride] = useState<number | "">("");
+  // Advance taken up front on a COD order (e.g. the COD fee by UPI).
+  const [advancePaid, setAdvancePaid] = useState<number | "">("");
   const [articleNumber, setArticleNumber] = useState("");
   const [settlementStatus, setSettlementStatus] = useState<string>("pending");
   const [amountReceived, setAmountReceived] = useState<number | "">("");
@@ -505,6 +507,7 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
   const autoCod = codCharge(subtotal + shippingAmount);
   const codCharges = isCodCreate ? (codOverride === "" ? autoCod : codOverride) : 0;
   const total = subtotal + shippingAmount + codCharges;
+  const advanceAmount = isCodCreate ? Math.min(advancePaid === "" ? 0 : advancePaid, total) : 0;
 
   const handlePaymentMethodChange = (method: PaymentMethod) => {
     setPaymentMethod(method);
@@ -593,6 +596,7 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
         subtotal,
         shipping: shippingAmount,
         cod_charges: codCharges,
+        advance_paid: advanceAmount,
         total,
         status,
         payment_status: paymentStatus,
@@ -919,6 +923,28 @@ function CreateOrderModal({ onClose, onCreated }: { onClose: () => void; onCreat
                 </div>
               )}
               <div className="flex justify-between font-bold text-gray-900 dark:text-white border-t border-gray-200 dark:border-gray-600 pt-1"><span>Total</span><span>₹{total.toLocaleString()}</span></div>
+              {isCodCreate && (
+                <>
+                  <div className="flex justify-between items-center gap-2 text-gray-500 dark:text-gray-400">
+                    <span>Advance paid</span>
+                    <span className="flex items-center gap-1.5">
+                      {codCharges > 0 && advanceAmount !== codCharges && (
+                        <button type="button" onClick={() => setAdvancePaid(codCharges)} className="text-[11px] text-coral hover:underline">COD fee ₹{codCharges}</button>
+                      )}
+                      <span>₹</span>
+                      <input
+                        type="number" min="0" step="1" value={advancePaid} placeholder="0"
+                        onChange={(e) => setAdvancePaid(e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
+                        className="w-20 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-right text-gray-900 dark:text-white"
+                        aria-label="Advance paid"
+                      />
+                    </span>
+                  </div>
+                  <div className="flex justify-between font-semibold text-gray-900 dark:text-white">
+                    <span>Collect on delivery</span><span>₹{(total - advanceAmount).toLocaleString()}</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -1007,6 +1033,7 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
     const auto = codCharge(Number(order.subtotal) - Number(order.discount || 0) + (Number(order.shipping) || 0));
     return order.payment_method === "cod" && saved !== auto ? saved : "";
   });
+  const [advancePaid, setAdvancePaid] = useState<number | "">(Number(order.advance_paid) || "");
   const [articleNumber, setArticleNumber] = useState(order.article_number || "");
   const [settlementStatus, setSettlementStatus] = useState<string>(order.settlement_status || "pending");
   const [amountReceived, setAmountReceived] = useState(order.amount_received != null ? Number(order.amount_received) : "");
@@ -1130,6 +1157,7 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
   const autoCod = codCharge(subtotal + shippingAmount);
   const codCharges = isCodEdit ? (codOverride === "" ? autoCod : codOverride) : 0;
   const total = subtotal + shippingAmount + codCharges;
+  const advanceAmount = isCodEdit ? Math.min(advancePaid === "" ? 0 : advancePaid, total) : 0;
 
   const handleSubmit = async () => {
     if (!name.trim() || !phone.trim() || !address.trim() || !city.trim() || !pincode.trim()) {
@@ -1167,6 +1195,7 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
         subtotal,
         shipping: shippingAmount,
         cod_charges: codCharges,
+        advance_paid: advanceAmount,
         total,
         status,
         payment_status: paymentStatus,
@@ -1429,6 +1458,28 @@ function EditOrderModal({ order, onClose, onUpdated }: { order: Order; onClose: 
                 </div>
               )}
               <div className="flex justify-between font-bold text-gray-900 dark:text-white border-t border-gray-200 dark:border-gray-600 pt-1"><span>Total</span><span>₹{total.toLocaleString()}</span></div>
+              {isCodEdit && (
+                <>
+                  <div className="flex justify-between items-center gap-2 text-gray-500 dark:text-gray-400">
+                    <span>Advance paid</span>
+                    <span className="flex items-center gap-1.5">
+                      {codCharges > 0 && advanceAmount !== codCharges && (
+                        <button type="button" onClick={() => setAdvancePaid(codCharges)} className="text-[11px] text-coral hover:underline">COD fee ₹{codCharges}</button>
+                      )}
+                      <span>₹</span>
+                      <input
+                        type="number" min="0" step="1" value={advancePaid} placeholder="0"
+                        onChange={(e) => setAdvancePaid(e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
+                        className="w-20 px-2 py-0.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-right text-gray-900 dark:text-white"
+                        aria-label="Advance paid"
+                      />
+                    </span>
+                  </div>
+                  <div className="flex justify-between font-semibold text-gray-900 dark:text-white">
+                    <span>Collect on delivery</span><span>₹{(total - advanceAmount).toLocaleString()}</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -2428,6 +2479,12 @@ export default function AdminOrdersPage() {
                             {Number(order.shipping) > 0 && <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Shipping</span><span>₹{Number(order.shipping).toLocaleString()}</span></div>}
                             {Number(order.cod_charges) > 0 && <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>COD Charges</span><span>₹{Number(order.cod_charges).toLocaleString()}</span></div>}
                             <div className="flex justify-between font-bold text-gray-900 dark:text-white"><span>Total</span><span>₹{Number(order.total).toLocaleString()}</span></div>
+                            {Number(order.advance_paid) > 0 && (
+                              <>
+                                <div className="flex justify-between text-gray-500 dark:text-gray-400"><span>Advance paid</span><span>−₹{Number(order.advance_paid).toLocaleString()}</span></div>
+                                <div className="flex justify-between font-semibold text-gray-900 dark:text-white"><span>Collect on delivery</span><span>₹{(Number(order.total) - Number(order.advance_paid)).toLocaleString()}</span></div>
+                              </>
+                            )}
                           </div>
                         </div>
 

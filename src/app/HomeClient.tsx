@@ -69,8 +69,9 @@ export default function HomeClient({
   // Hold the packaged cover back until the banner query settles — rendering it
   // immediately made the fallback flash and then swap to the admin image.
   // Rendered from build-time data first so the <img> exists on first paint;
-  // the client query only matters if the banner changed since the last build.
-  const heroBanner = initialHeroBanner ?? heroBanners?.[0] ?? null;
+  // once the live query answers it wins, so a banner changed in Admin shows
+  // without waiting for a new build.
+  const heroBanner = heroBanners ? (heroBanners[0] ?? null) : initialHeroBanner;
   const heroDesktop = heroBanner?.image_url || "/Cover KV.webp";
   const heroMobile = heroBanner?.mobile_image_url || heroDesktop;
   // Heritage story photo, admin-managed; falls back to the placeholder art.
@@ -78,8 +79,7 @@ export default function HomeClient({
   // so the section always shows something real even before a heritage banner
   // is uploaded in the admin.
   const heritageImage =
-    initialHeritageUrl ||
-    heritageBanners?.[0]?.image_url ||
+    (heritageBanners ? heritageBanners[0]?.image_url : initialHeritageUrl) ||
     "/Cover KV.webp";
 
   // Group products by category name

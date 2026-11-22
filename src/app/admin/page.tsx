@@ -55,7 +55,7 @@ export default function AdminDashboardPage() {
     const active = ordersInRange.filter((o) => ["confirmed", "shipped", "delivered", "billed"].includes(o.status));
     const totalRevenue = active.reduce((s, o) => s + Number(o.total), 0);
     const codRevenue = active.filter((o) => o.payment_method === "cod" && o.settlement_status === "settled").reduce((s, o) => s + Number(o.total), 0);
-    const codPending = active.filter((o) => o.payment_method === "cod" && (o.settlement_status === "pending" || !o.settlement_status)).reduce((s, o) => s + Number(o.total), 0);
+    const codPending = active.filter((o) => o.payment_method === "cod" && (o.settlement_status === "pending" || !o.settlement_status)).reduce((s, o) => s + Number(o.total) - Number(o.advance_paid || 0), 0);
     const prepaidRevenue = active.filter((o) => o.payment_method !== "cod").reduce((s, o) => s + Number(o.total), 0);
     const totalOrderValue = ordersInRange.reduce((s, o) => s + Number(o.total), 0);
     const abandoned = ordersInRange.filter((o) => (o.status === "pending" || o.status === "cancelled") && o.payment_status !== "paid");

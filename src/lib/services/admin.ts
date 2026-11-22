@@ -452,7 +452,7 @@ export async function getDashboardStats() {
   // Get all orders for revenue calculations (confirmed, shipped, delivered, billed)
   const { data: revenueOrders } = await supabase
     .from('orders')
-    .select('total, payment_method, settlement_status, status, payment_status')
+    .select('total, advance_paid, payment_method, settlement_status, status, payment_status')
     .in('status', ['confirmed', 'shipped', 'delivered', 'billed']);
 
   // Get all orders for abandoned cart calculation (pending + not paid, or cancelled + not paid)
@@ -474,7 +474,7 @@ export async function getDashboardStats() {
   // COD Pending: Sum of COD orders where settlement_status = 'pending'
   const codPending = activeOrders
     .filter(o => o.payment_method === 'cod' && o.settlement_status === 'pending')
-    .reduce((sum, o) => sum + Number(o.total), 0);
+    .reduce((sum, o) => sum + Number(o.total) - Number(o.advance_paid || 0), 0);
   
   // Prepaid Revenue: Sum of prepaid/online orders
   const prepaidRevenue = activeOrders

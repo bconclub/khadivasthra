@@ -197,6 +197,8 @@ export interface Order {
   cod_charges: number;
   settlement_status: 'pending' | 'received' | 'settled';
   amount_received: number | null;
+  /** Taken up front on a COD order; the courier collects total - advance_paid. */
+  advance_paid?: number | null;
   settlement_date: string | null;
   is_billed: boolean;
   billed_at: string | null;

@@ -105,7 +105,8 @@ serve(async (req) => {
         article_height: String(dims[2]),
         prepaid_flag: !isCod,
         vpcod_type: isCod ? "COD" : undefined,
-        vpcod_value: isCod ? finiteNumber(order.total) : undefined,
+        // Collect only what is left after any advance taken up front.
+        vpcod_value: isCod ? Math.max(0, finiteNumber(order.total) - finiteNumber(order.advance_paid)) : undefined,
         physical_weight: meta.parcel?.weight_g,
         recipient_name: order.customer_name,
         recipient_mobile: cleanPhone(order.customer_phone),
@@ -207,7 +208,8 @@ serve(async (req) => {
       drop_off_pincode: config.sender.pincode,
       codr_cod: "COD",
       // Prepaid orders collect nothing on delivery.
-      value_for_codr_cod: isCod ? finiteNumber(order.total) : 0,
+      // An advance taken up front is not collected again.
+      value_for_codr_cod: isCod ? Math.max(0, finiteNumber(order.total) - finiteNumber(order.advance_paid)) : 0,
       bulk_reference: order.order_number,
     };
 
